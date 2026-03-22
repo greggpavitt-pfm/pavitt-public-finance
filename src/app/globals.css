@@ -3,11 +3,23 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* PPF Brand Colors — derived from Original Logo.png */
+  --ppf-navy: #072A80;       /* Dark navy — text, dark backgrounds */
+  --ppf-blue: #0A6AB9;       /* Medium blue — accents, hover states */
+  --ppf-sky: #1F7FCF;        /* Bright blue — highlights, labels */
+  --ppf-light: #E8F1FB;      /* Light blue tint — light section backgrounds */
+  --ppf-pale: #F0F6FD;       /* Very light blue — subtle backgrounds */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-ppf-navy: var(--ppf-navy);
+  --color-ppf-blue: var(--ppf-blue);
+  --color-ppf-sky: var(--ppf-sky);
+  --color-ppf-light: var(--ppf-light);
+  --color-ppf-pale: var(--ppf-pale);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

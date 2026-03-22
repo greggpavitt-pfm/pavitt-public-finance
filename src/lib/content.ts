@@ -21,11 +21,19 @@ export const siteConfig = {
 // ---------------------------------------------------------------------------
 
 export const bio = {
+  tagline: "PFM Specialist · 25+ Years · Pacific, Africa, Asia",
   paragraphs: [
-    "Gregg Pavitt is the founder of Pavitt Public Finance, where he consults with organizations and governments to solve their public finance management challenges. He brings more than twenty-five years of experience in public financial management and administration, both managerial and technical assistance in Sub Saharan Africa, South Asia, and the Pacific. Capacity building, systems review and manual development, economic and accounting health studies, business process and review.",
-    "Gregg is a strategic thinker who is adept at building and maintaining relationships with government clients (politicians, ministers, secretaries, senior officials and ministry/agency staff), and development partners. He has demonstrated leadership, organization, communication and management skills, and is experienced in leading and managing small and large projects, leading multi-disciplinary teams of international advisers, national advisers and local staff during long-term (2+years) and short-term assignments. He has extensive experience developing and delivering capacity development and training programs, workshops, training of trainers, training needs assessments, training materials (manuals, training tools, analytical tools), training evaluation and improving or developing operation manuals and SOPs.",
+    "Gregg Pavitt is a public financial management specialist with over 25 years of experience helping governments in Sub-Saharan Africa, South Asia, and the Pacific strengthen how they plan, allocate, and account for public resources.",
+    "He provides technical assistance and advisory services in six core areas: PFM studies and assessments, public expenditure management (PEM), domestic revenue mobilisation (DRM), integrated financial management systems (IFMIS), public investment management (PIM), and International Public Sector Accounting Standards (IPSAS).",
+    "Gregg has served as Team Leader and Key Expert on programmes funded by the EU (EuropeAid), World Bank, DFAT, USAID, and DFID/FCDO — both in long-term embedded roles within Ministries of Finance and on targeted short-term assignments. He is known for effective policy dialogue with government counterparts, practical reform design, and building national capacity that outlasts the project cycle.",
+    "International consulting firms and development organisations engage Gregg for his ability to mobilise quickly, manage multi-disciplinary teams, and deliver reliably within the compliance and reporting frameworks that donor-funded programmes demand.",
   ],
-} as const
+};
+
+
+
+
+
 
 // ---------------------------------------------------------------------------
 // EXPERTISE AREAS
@@ -40,12 +48,13 @@ export interface ExpertiseArea {
 }
 
 export const expertiseAreas: ExpertiseArea[] = [
+  // Row 1: PFM Studies, IFMS, IPSAS
   {
-    id: "pim",
-    label: "PIM",
-    fullName: "Public Investment Management",
+    id: "pfm-studies",
+    label: "PFM Studies",
+    fullName: "PFM Studies & Assessments",
     description:
-      "Strengthening systems for planning, prioritizing, and executing public investment programs to maximize development outcomes.",
+      "Conducting diagnostic assessments (PEFA, fiduciary reviews) and research to inform PFM reform strategies.",
   },
   {
     id: "ifms",
@@ -53,6 +62,21 @@ export const expertiseAreas: ExpertiseArea[] = [
     fullName: "Integrated Financial Management Systems",
     description:
       "Advising on the design, implementation, and improvement of government financial information systems.",
+  },
+  {
+    id: "ipsas",
+    label: "IPSAS",
+    fullName: "International Public Sector Accounting Standards",
+    description:
+      "Supporting governments transitioning to accrual-basis accounting and IPSAS-compliant financial reporting.",
+  },
+  // Row 2: PIM, PEM, DRM
+  {
+    id: "pim",
+    label: "PIM",
+    fullName: "Public Investment Management",
+    description:
+      "Strengthening systems for planning, prioritizing, and executing public investment programs to maximize development outcomes.",
   },
   {
     id: "pem",
@@ -67,20 +91,6 @@ export const expertiseAreas: ExpertiseArea[] = [
     fullName: "Domestic Revenue Mobilization",
     description:
       "Helping governments increase domestic revenue through tax policy, administration reform, and compliance improvement.",
-  },
-  {
-    id: "pfm-studies",
-    label: "PFM Studies",
-    fullName: "PFM Studies & Assessments",
-    description:
-      "Conducting diagnostic assessments (PEFA, fiduciary reviews) and research to inform PFM reform strategies.",
-  },
-  {
-    id: "ipsas",
-    label: "IPSAS",
-    fullName: "International Public Sector Accounting Standards",
-    description:
-      "Supporting governments transitioning to accrual-basis accounting and IPSAS-compliant financial reporting.",
   },
 ]
 
@@ -108,8 +118,14 @@ export const currentCountries: Country[] = [
 ]
 
 export const completedCountries: Country[] = [
-  { name: "Afghanistan", region: "South Asia" },
-  { name: "Pakistan", region: "South Asia" },
+  // Pacific (left column)
+  {
+    name: "Federated States of Micronesia",
+    region: "Pacific",
+    years: "2021\u20132024",
+  },
+  { name: "Papua New Guinea", region: "Pacific" },
+  // Sub-Saharan Africa (middle column)
   { name: "Somalia", region: "Sub-Saharan Africa" },
   { name: "Kenya", region: "Sub-Saharan Africa" },
   { name: "Tanzania", region: "Sub-Saharan Africa" },
@@ -120,12 +136,9 @@ export const completedCountries: Country[] = [
   { name: "Nigeria", region: "Sub-Saharan Africa" },
   { name: "Ghana", region: "Sub-Saharan Africa" },
   { name: "Sierra Leone", region: "Sub-Saharan Africa" },
-  {
-    name: "Federated States of Micronesia",
-    region: "Pacific",
-    years: "2021\u20132024",
-  },
-  { name: "Papua New Guinea", region: "Pacific" },
+  // South Asia (right column)
+  { name: "Afghanistan", region: "South Asia" },
+  { name: "Pakistan", region: "South Asia" },
 ]
 
 // Convenience export: all 15 countries in one array (for Phase 3 map)
@@ -187,7 +200,9 @@ export const images = {
   hero: "/images/photo-hero.jpg",
   // About: professional headshot (gregg.jpg normalized, or placeholder)
   about: "/images/photo-about.jpg",
-  // Logos
-  logoTransparent: "/images/logo.png",
+  // Logos — sourced from PFS Branding kit
+  logoTransparent: "/images/logo-transparent.png",
+  logoTransparentSvg: "/images/logo-transparent.svg",
+  logoOriginalSvg: "/images/logo-original.svg",
   logoSvg: "/images/logo.svg",
 } as const

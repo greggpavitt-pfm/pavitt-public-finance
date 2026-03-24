@@ -1,8 +1,11 @@
 // /login — email + password sign-in page.
 // Uses a Client Component for the form so we can use useActionState for inline error display.
-// On success, the server action redirects to /training (middleware handles
+// On success, the server action redirects to /training (proxy handles
 // further routing based on account_status and onboarding_complete).
+//
+// LoginForm uses useSearchParams() which requires a Suspense boundary.
 
+import { Suspense } from "react"
 import type { Metadata } from "next"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
@@ -24,7 +27,10 @@ export default function LoginPage() {
             <p className="mb-8 text-sm text-slate-500">
               Access your IPSAS training account.
             </p>
-            <LoginForm />
+            {/* Suspense required because LoginForm reads useSearchParams() */}
+            <Suspense fallback={null}>
+              <LoginForm />
+            </Suspense>
             <p className="mt-6 text-center text-sm text-slate-500">
               Don&apos;t have an account?{" "}
               <a href="/register" className="font-medium text-ppf-sky hover:underline">

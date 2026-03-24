@@ -2,16 +2,39 @@
 // Client component for the login form.
 // useActionState wires the form to the server action and handles the pending/error states.
 
-import { useActionState } from "react"
+import { useActionState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import { loginUser, type AuthFormState } from "@/app/auth/actions"
+import { createClient } from "@/lib/supabase/client"
 
 const initialState: AuthFormState = { status: "idle", message: "" }
 
 export default function LoginForm() {
   const [state, formAction, isPending] = useActionState(loginUser, initialState)
+  const searchParams = useSearchParams()
+
+  // When middleware redirects a suspended user to /login?reason=suspended it
+  // cannot call signOut() itself (Edge Runtime restriction). We do it here
+  // client-side as soon as the login page mounts with that query param.
+  useEffect(() => {
+    if (searchParams.get("reason") === "suspended") {
+      const supabase = createClient()
+      supabase.auth.signOut()
+    }
+  }, [searchParams])
+
+  // Show a banner for the suspended-account redirect
+  const isSuspended = searchParams.get("reason") === "suspended"
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
+      {/* Suspended-account banner */}
+      {isSuspended && (
+        <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Your account has been suspended. Please contact support.
+        </div>
+      )}
+
       {/* Error banner */}
       {state.status === "error" && (
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

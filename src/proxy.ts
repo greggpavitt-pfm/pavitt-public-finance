@@ -1,4 +1,5 @@
-// Next.js middleware — runs on every request before the page renders.
+// Next.js proxy (formerly middleware) — runs on every request before the page renders.
+// In Next.js 16 this file must be named proxy.ts (middleware.ts is deprecated).
 //
 // Responsibilities:
 //   1. Refresh the Supabase session cookie so it doesn't expire mid-visit.
@@ -15,7 +16,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   // Create a Supabase client that can read/write cookies on the response.
@@ -72,7 +73,11 @@ export async function middleware(request: NextRequest) {
     }
 
     if (profile.account_status === 'suspended') {
-      await supabase.auth.signOut()
+      // Do NOT call signOut() here — middleware runs on the Edge Runtime and
+      // initiating a Supabase server-side signOut from the edge causes
+      // MIDDLEWARE_INVOCATION_FAILED on Vercel.
+      // Instead, redirect to /login with a flag; the login page clears the
+      // session on the client via supabase.auth.signOut() after it loads.
       return NextResponse.redirect(new URL('/login?reason=suspended', request.url))
     }
 

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Image from "next/image"
+import Link from "next/link"
 import { images } from "@/lib/content"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
@@ -50,7 +51,7 @@ export default function IpsasTrainingPage() {
               className="mx-auto mb-6 h-48 w-auto"
             />
             <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-ppf-sky">
-              Coming Soon
+              Now Live
             </p>
             <h1 className="text-4xl font-bold text-white md:text-5xl">
               IPSAS Training Platform
@@ -58,6 +59,22 @@ export default function IpsasTrainingPage() {
             <p className="mt-4 text-lg leading-relaxed text-blue-200/80 md:text-xl">
               Interactive training and an AI-powered accounting resource for public sector professionals working with International Public Sector Accounting Standards.
             </p>
+
+            {/* CTAs */}
+            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+              <Link
+                href="/register"
+                className="w-full rounded-md bg-ppf-sky px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-ppf-blue sm:w-auto"
+              >
+                Register
+              </Link>
+              <Link
+                href="/login"
+                className="w-full rounded-md border border-ppf-sky/50 px-8 py-3 text-base font-semibold text-blue-200 transition-colors hover:border-ppf-sky hover:text-white sm:w-auto"
+              >
+                Sign In
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -83,7 +100,7 @@ export default function IpsasTrainingPage() {
           </div>
         </section>
 
-        {/* How it will work */}
+        {/* How it works */}
         <section className="bg-ppf-light px-6 py-20 md:px-16">
           <div className="mx-auto max-w-4xl">
             <h2 className="mb-10 text-center text-3xl font-bold text-ppf-navy">
@@ -91,8 +108,8 @@ export default function IpsasTrainingPage() {
             </h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               {[
-                { step: "1", title: "Register", description: "Create your account to get started with personalised training." },
-                { step: "2", title: "Learn", description: "Work through IPSAS training questions organised by accounting standard." },
+                { step: "1", title: "Register", description: "Create your account using the licence key provided by your organisation." },
+                { step: "2", title: "Learn", description: "Work through IPSAS training questions organised by accounting standard and difficulty level." },
                 { step: "3", title: "Track", description: "Review your progress, revisit past questions, and build your expertise over time." },
               ].map((item) => (
                 <div key={item.step} className="text-center">
@@ -104,36 +121,22 @@ export default function IpsasTrainingPage() {
                 </div>
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* Register interest / notify me */}
-        <section className="bg-ppf-navy px-6 py-20 md:px-16">
-          <div className="mx-auto max-w-xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-white">
-              Get Notified at Launch
-            </h2>
-            <p className="mb-8 text-blue-200/80">
-              Leave your email and we&apos;ll let you know when the IPSAS Training Platform is ready.
-            </p>
-            <form className="flex flex-col gap-3 sm:flex-row sm:gap-0">
-              <input
-                type="email"
-                name="email"
-                required
-                placeholder="your@email.com"
-                className="flex-1 rounded-md border border-ppf-blue/40 bg-ppf-navy px-4 py-3 text-white placeholder-blue-300/40 focus:border-ppf-sky focus:outline-none sm:rounded-r-none"
-              />
-              <button
-                type="submit"
-                className="rounded-md bg-ppf-sky px-6 py-3 font-semibold text-white transition-colors hover:bg-ppf-blue sm:rounded-l-none"
+            {/* Bottom CTA */}
+            <div className="mt-12 text-center">
+              <Link
+                href="/register"
+                className="inline-block rounded-md bg-ppf-sky px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-ppf-blue"
               >
-                Notify Me
-              </button>
-            </form>
-            <p className="mt-4 text-xs text-blue-300/50">
-              No spam. We&apos;ll only email you about the IPSAS Training launch.
-            </p>
+                Get Started
+              </Link>
+              <p className="mt-3 text-sm text-slate-500">
+                Already have an account?{" "}
+                <Link href="/login" className="text-ppf-sky hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </div>
           </div>
         </section>
       </main>

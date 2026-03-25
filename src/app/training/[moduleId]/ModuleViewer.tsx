@@ -1,21 +1,27 @@
 "use client"
 // ModuleViewer — handles the interactive flashcard + MCQ experience.
 //
-// Flow:
-//   1. Questions are shown one at a time in sequence_number order.
-//   2. Flashcards: user clicks "Reveal answer" to flip, then marks themselves
-//      correct or incorrect. The correct answer comes back from the server
-//      action (never pre-loaded into the page).
-//   3. MCQs: user clicks an option, the server action checks it server-side,
-//      then shows the result + explanation.
-//   4. When all questions are done, a completion screen appears and
-//      markModuleComplete is called.
+// Session flow (new):
+//   1. On mount, calls startSession() to create or resume a server-side session.
+//      If the module is already completed, a read-only view is shown instead.
+//   2. Each answer is saved server-side via saveAnswer() immediately after
+//      the user submits. This means partial progress survives a page refresh.
+//   3. When all questions are answered, submitSession() is called. It calculates
+//      the final score, writes to assessment_results, marks progress complete,
+//      and returns an attemptId.
+//   4. The component redirects to /training/[moduleId]/results?attempt=[attemptId].
 //
 // Correct answers are never in the initial page HTML — they are only
 // returned by checkAnswer() after the user has already submitted.
 
-import { useState, useTransition } from "react"
-import { checkAnswer, markModuleComplete } from "@/app/training/actions"
+import { useState, useEffect, useTransition } from "react"
+import { useRouter } from "next/navigation"
+import {
+  checkAnswer,
+  startSession,
+  saveAnswer,
+  submitSession,
+} from "@/app/training/actions"
 
 // The shape of each question row (correct_answer excluded — blocked by RLS)
 interface Question {
@@ -40,6 +46,14 @@ interface AnswerResult {
 }
 
 export default function ModuleViewer({ moduleId, questions }: Props) {
+  const router = useRouter()
+
+  // Session state — set after startSession() resolves on mount
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [alreadyCompleted, setAlreadyCompleted] = useState(false)
+  const [sessionError, setSessionError] = useState<string | null>(null)
+  const [sessionLoading, setSessionLoading] = useState(true)
+
   // Index of the current question being shown
   const [currentIndex, setCurrentIndex] = useState(0)
 
@@ -52,13 +66,98 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
   // For MCQs: which option the user has clicked (before server round-trip)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
 
-  // Whether the module completion action is running
-  const [isCompleting, startCompleting] = useTransition()
-  const [isComplete, setIsComplete] = useState(false)
-  const [completionError, setCompletionError] = useState<string | null>(null)
+  // Whether the module submission action is running
+  const [isSubmitting, startSubmitting] = useTransition()
+  const [submissionError, setSubmissionError] = useState<string | null>(null)
 
   // General pending state for checkAnswer calls
   const [isChecking, startChecking] = useTransition()
+
+  // -------------------------------------------------------------------------
+  // Start or resume the session on mount
+  // -------------------------------------------------------------------------
+  useEffect(() => {
+    let cancelled = false
+    async function init() {
+      const response = await startSession(moduleId)
+      if (cancelled) return
+
+      if (response.error) {
+        setSessionError(response.error)
+        setSessionLoading(false)
+        return
+      }
+
+      if (response.alreadyCompleted) {
+        setAlreadyCompleted(true)
+        setSessionLoading(false)
+        return
+      }
+
+      setSessionId(response.sessionId)
+
+      // Restore any previously-saved answers so the user resumes where they left off
+      if (response.existingAnswers.length > 0) {
+        const restored: Record<string, AnswerResult> = {}
+        for (const a of response.existingAnswers) {
+          // We don't have the correctAnswer text here — user already saw it.
+          // We mark it as answered so the UI moves past it.
+          restored[a.question_id] = {
+            correct: a.correct,
+            correctAnswer: "",   // Not needed for already-answered questions
+            explanation: null,
+          }
+        }
+        setResults(restored)
+
+        // Advance index to the first unanswered question
+        const answeredIds = new Set(response.existingAnswers.map((a) => a.question_id))
+        const firstUnansweredIndex = questions.findIndex((q) => !answeredIds.has(q.id))
+        if (firstUnansweredIndex !== -1) {
+          setCurrentIndex(firstUnansweredIndex)
+        }
+      }
+
+      setSessionLoading(false)
+    }
+    init()
+    return () => { cancelled = true }
+  }, [moduleId]) // questions is stable (server-rendered), moduleId won't change
+
+  // -------------------------------------------------------------------------
+  // Loading / error / already-completed states
+  // -------------------------------------------------------------------------
+  if (sessionLoading) {
+    return (
+      <div className="rounded-lg border border-ppf-sky/20 bg-white p-10 text-center text-slate-400">
+        Loading session…
+      </div>
+    )
+  }
+
+  if (sessionError) {
+    return (
+      <div className="rounded-lg border border-red-200 bg-red-50 p-10 text-center text-red-700">
+        Could not start session: {sessionError}
+      </div>
+    )
+  }
+
+  if (alreadyCompleted) {
+    return (
+      <div className="rounded-lg border border-ppf-sky/20 bg-white p-10 text-center">
+        <p className="mb-4 text-slate-600">
+          You have already completed this module. Modules can only be attempted once.
+        </p>
+        <a
+          href="/training"
+          className="inline-block rounded-md bg-ppf-sky px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue"
+        >
+          Back to modules
+        </a>
+      </div>
+    )
+  }
 
   if (questions.length === 0) {
     return (
@@ -82,83 +181,69 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
     setSelectedOption(optionId)
     startChecking(async () => {
       const result = await checkAnswer(currentQuestion.id, optionId)
-      setResults((prev) => ({
-        ...prev,
-        [currentQuestion.id]: {
-          correct: result.correct,
-          correctAnswer: result.correctAnswer,
-          explanation: result.explanation,
-        },
-      }))
+      const answerResult: AnswerResult = {
+        correct: result.correct,
+        correctAnswer: result.correctAnswer,
+        explanation: result.explanation,
+      }
+      setResults((prev) => ({ ...prev, [currentQuestion.id]: answerResult }))
+
+      // Persist to server session (fire-and-forget — non-blocking)
+      if (sessionId) {
+        await saveAnswer(sessionId, currentQuestion.id, optionId, result.correct)
+      }
     })
   }
 
   // Flashcard: called when user marks correct/incorrect after revealing
   function handleFlashcardResult(correct: boolean) {
-    // For flashcards we still hit the server to get the explanation
-    // (and to ensure we don't skip the server check), but we also pass
-    // the user's self-assessment.
     startChecking(async () => {
-      // Fetch the correct answer from the server so we can show it
-      const result = await checkAnswer(currentQuestion.id, correct ? "__self_correct__" : "__self_incorrect__")
-      setResults((prev) => ({
-        ...prev,
-        [currentQuestion.id]: {
-          correct,
-          correctAnswer: result.correctAnswer,
-          explanation: result.explanation,
-        },
-      }))
+      // Fetch the correct answer from the server so we can display it
+      const result = await checkAnswer(
+        currentQuestion.id,
+        correct ? "__self_correct__" : "__self_incorrect__"
+      )
+      const answerResult: AnswerResult = {
+        correct,
+        correctAnswer: result.correctAnswer,
+        explanation: result.explanation,
+      }
+      setResults((prev) => ({ ...prev, [currentQuestion.id]: answerResult }))
+
+      // Persist to server session
+      if (sessionId) {
+        await saveAnswer(
+          sessionId,
+          currentQuestion.id,
+          correct ? "__self_correct__" : "__self_incorrect__",
+          correct
+        )
+      }
     })
   }
 
-  // Advance to the next question or trigger completion
+  // Advance to the next question or submit the whole session
   function handleNext() {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1)
       setRevealed(false)
       setSelectedOption(null)
     } else {
-      // Last question answered — mark module complete
-      startCompleting(async () => {
-        const result = await markModuleComplete(moduleId)
-        if (result.error) {
-          setCompletionError(result.error)
-        } else {
-          setIsComplete(true)
+      // Last question — submit the session and redirect to results
+      startSubmitting(async () => {
+        if (!sessionId) {
+          setSubmissionError("No active session found.")
+          return
         }
+        const { attemptId, error } = await submitSession(sessionId)
+        if (error || !attemptId) {
+          setSubmissionError(error ?? "Could not submit session.")
+          return
+        }
+        // Redirect to the dedicated results page
+        router.push(`/training/${moduleId}/results?attempt=${attemptId}`)
       })
     }
-  }
-
-  // -------------------------------------------------------------------------
-  // Completion screen
-  // -------------------------------------------------------------------------
-  if (isComplete) {
-    const correctCount = Object.values(results).filter((r) => r.correct).length
-    const total = questions.length
-    const percentage = Math.round((correctCount / total) * 100)
-
-    return (
-      <div className="rounded-lg border border-green-200 bg-green-50 p-10 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-8 w-8">
-            <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clipRule="evenodd" />
-          </svg>
-        </div>
-        <h2 className="mb-2 text-2xl font-bold text-green-800">Module complete!</h2>
-        <p className="mb-1 text-green-700">
-          You got <span className="font-semibold">{correctCount} of {total}</span> correct ({percentage}%)
-        </p>
-        <p className="mb-8 text-sm text-green-600">Your progress has been saved.</p>
-        <a
-          href="/training"
-          className="inline-block rounded-md bg-ppf-sky px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue"
-        >
-          Back to modules
-        </a>
-      </div>
-    )
   }
 
   // -------------------------------------------------------------------------
@@ -286,7 +371,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
           }`}>
             <p className="font-semibold mb-1">
               {currentResult.correct ? "Correct!" : "Not quite."}
-              {!currentResult.correct && currentQuestion.question_type === "mcq" && (
+              {!currentResult.correct && currentQuestion.question_type === "mcq" && currentResult.correctAnswer && (
                 <span className="font-normal"> The correct answer was <strong>{currentResult.correctAnswer}</strong>.</span>
               )}
             </p>
@@ -298,10 +383,10 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
           </div>
         )}
 
-        {/* Completion error */}
-        {completionError && (
+        {/* Submission error */}
+        {submissionError && (
           <div className="mt-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            Could not save progress: {completionError}
+            Could not submit: {submissionError}
           </div>
         )}
 
@@ -309,14 +394,14 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
         {isAnswered && (
           <button
             onClick={handleNext}
-            disabled={isCompleting}
+            disabled={isSubmitting}
             className="mt-5 w-full rounded-md bg-ppf-sky py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue disabled:opacity-60"
           >
-            {isCompleting
-              ? "Saving progress…"
+            {isSubmitting
+              ? "Submitting…"
               : currentIndex < questions.length - 1
               ? "Next question →"
-              : "Finish module"}
+              : "Finish & see results"}
           </button>
         )}
       </div>

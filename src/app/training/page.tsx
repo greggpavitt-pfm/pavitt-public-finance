@@ -5,9 +5,12 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import { logoutUser } from "@/app/auth/actions"
+import CertificatePanel from "@/components/CertificatePanel"
+import type { ResultSummary } from "@/components/CertificatePanel"
 
 export const metadata: Metadata = {
   title: "Training — IPSAS Training",
@@ -21,16 +24,18 @@ export default async function TrainingPage() {
   // Fetch profile + org jurisdiction in one query
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, pathway, ability_level, org_id, organisations ( jurisdiction_code )")
+    .select("full_name, pathway, ability_level, org_id, organisations ( name, jurisdiction_code )")
     .eq("id", user.id)
     .single()
 
   if (!profile) redirect("/login")
 
-  const jurisdiction =
+  const orgData =
     profile.organisations && !Array.isArray(profile.organisations)
-      ? (profile.organisations as { jurisdiction_code: string | null }).jurisdiction_code
+      ? (profile.organisations as { name: string | null; jurisdiction_code: string | null })
       : null
+
+  const jurisdiction = orgData?.jurisdiction_code ?? null
 
   // Build module query — RLS already filters to the user's pathway,
   // but we also filter by difficulty (null for cash-basis, specific level for accrual).
@@ -67,6 +72,42 @@ export default async function TrainingPage() {
 
   const completedCount = modules.filter((m) => completedIds.has(m.id)).length
 
+  // Fetch assessment results for the certificate panel
+  // Use service client so we can join module titles in one query
+  const serviceClient = await createServiceClient()
+  const { data: resultRows } = await serviceClient
+    .from("assessment_results")
+    .select("module_id, score, passed, submitted_at, attempt_number")
+    .eq("user_id", user.id)
+    .order("submitted_at", { ascending: false })
+
+  // Keep only the most recent attempt per module (dedup)
+  const seenModules = new Set<string>()
+  const dedupedResults = (resultRows ?? []).filter((r) => {
+    if (seenModules.has(r.module_id)) return false
+    seenModules.add(r.module_id)
+    return true
+  })
+
+  // Fetch module titles for the result rows
+  const resultModuleIds = dedupedResults.map((r) => r.module_id)
+  const { data: resultModules } = resultModuleIds.length > 0
+    ? await serviceClient.from("modules").select("id, title").in("id", resultModuleIds)
+    : { data: [] }
+
+  const resultTitleMap = new Map((resultModules ?? []).map((m) => [m.id, m.title]))
+
+  const certificateResults: ResultSummary[] = dedupedResults.map((r) => ({
+    module_id:      r.module_id,
+    module_title:   resultTitleMap.get(r.module_id) ?? r.module_id,
+    score:          r.score,
+    passed:         r.passed,
+    submitted_at:   r.submitted_at,
+    attempt_number: r.attempt_number,
+  }))
+
+  const orgName = orgData?.name ?? null
+
   // Human-readable labels
   const levelLabel =
     profile.pathway === "accrual" && profile.ability_level
@@ -92,6 +133,13 @@ export default async function TrainingPage() {
               {completedCount} of {modules.length} module{modules.length !== 1 ? "s" : ""} completed
             </p>
           )}
+
+          {/* Certificate / results panel */}
+          <CertificatePanel
+            results={certificateResults}
+            studentName={profile.full_name}
+            orgName={orgName}
+          />
 
           {/* Module list */}
           {modules.length === 0 ? (

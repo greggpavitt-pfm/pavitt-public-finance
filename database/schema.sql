@@ -127,6 +127,24 @@ create table progress (
   unique (user_id, module_id)
 );
 
+-- Tracks an in-progress quiz session for a user.
+-- Answers are saved incrementally so if the user exits, the session
+-- is auto-submitted on next login rather than lost.
+-- Only one 'in_progress' session per user+module at a time (enforced by unique constraint).
+create table module_sessions (
+  id           uuid        primary key default uuid_generate_v4(),
+  user_id      uuid        not null references profiles(id) on delete cascade,
+  module_id    text        not null references modules(id),
+  -- Running list of answers: [{question_id, selected, correct}, ...]
+  answers      jsonb       not null default '[]'::jsonb,
+  status       text        not null default 'in_progress'
+               check (status in ('in_progress', 'submitted')),
+  started_at   timestamptz default now(),
+  submitted_at timestamptz,
+  -- Prevent duplicate active sessions for the same user+module
+  unique (user_id, module_id, status)
+);
+
 -- Stores the outcome of each assessment attempt.
 -- attempt_number increments each time a user re-sits the same module.
 -- answers stores per-question detail as JSONB for future item-level analytics.
@@ -204,6 +222,7 @@ alter table admin_users        enable row level security;
 alter table modules            enable row level security;
 alter table questions          enable row level security;
 alter table progress           enable row level security;
+alter table module_sessions    enable row level security;
 alter table assessment_results enable row level security;
 
 -- --- organisations ---
@@ -339,6 +358,18 @@ create policy "Admins can view all progress"
   using (is_admin());
 
 
+-- --- module_sessions ---
+
+create policy "Users can manage their own sessions"
+  on module_sessions for all
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+
+create policy "Admins can view all sessions"
+  on module_sessions for select
+  using (is_admin());
+
+
 -- --- assessment_results ---
 
 create policy "Users can manage their own assessment results"
@@ -375,6 +406,7 @@ revoke select (licence_key) on organisations from authenticated;
 create index on modules (pathway, difficulty, jurisdiction, sequence_number);
 create index on questions (module_id, sequence_number);
 create index on progress (user_id, module_id);
+create index on module_sessions (user_id, module_id, status);
 create index on assessment_results (user_id, module_id, attempt_number);
 create index on profiles (org_id, account_status);
 create index on org_subgroups (org_id);

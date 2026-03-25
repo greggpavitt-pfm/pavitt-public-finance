@@ -142,3 +142,127 @@ export async function createOrg(
     return { error: (e as Error).message }
   }
 }
+
+// ---------------------------------------------------------------------------
+// Types shared by report actions
+// ---------------------------------------------------------------------------
+
+export type ResultRow = {
+  id: string
+  user_id: string
+  full_name: string
+  module_id: string
+  module_title: string
+  org_id: string | null
+  org_name: string | null
+  score: number
+  passed: boolean
+  submitted_at: string
+  attempt_number: number
+}
+
+// ---------------------------------------------------------------------------
+// Get results for an org (org admin report)
+// ---------------------------------------------------------------------------
+// Org admins see only their own org. Super admins can pass any orgId,
+// or null to get all results (use getMasterResults for that).
+
+export async function getOrgResults(orgId?: string): Promise<{
+  rows: ResultRow[]
+  error?: string
+}> {
+  try {
+    const { adminRow } = await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    // Determine which org(s) to query
+    // org_admin is always scoped to their own org
+    const targetOrgId = adminRow.role === "org_admin" ? adminRow.org_id : (orgId ?? null)
+
+    // Fetch profiles (limited to org scope)
+    let profileQuery = serviceClient
+      .from("profiles")
+      .select("id, full_name, org_id")
+
+    if (targetOrgId) {
+      profileQuery = profileQuery.eq("org_id", targetOrgId)
+    }
+
+    const { data: profiles, error: profileError } = await profileQuery
+    if (profileError) return { rows: [], error: profileError.message }
+
+    if (!profiles || profiles.length === 0) return { rows: [] }
+
+    const userIds = profiles.map((p) => p.id)
+
+    // Fetch assessment results for those users
+    const { data: results, error: resultError } = await serviceClient
+      .from("assessment_results")
+      .select("id, user_id, module_id, score, passed, submitted_at, attempt_number")
+      .in("user_id", userIds)
+      .order("submitted_at", { ascending: false })
+
+    if (resultError) return { rows: [], error: resultError.message }
+    if (!results || results.length === 0) return { rows: [] }
+
+    // Fetch module titles
+    const moduleIds = [...new Set(results.map((r) => r.module_id))]
+    const { data: modules } = await serviceClient
+      .from("modules")
+      .select("id, title")
+      .in("id", moduleIds)
+
+    // Fetch org names
+    const orgIds = [...new Set(profiles.map((p) => p.org_id).filter(Boolean))]
+    const { data: orgs } = await serviceClient
+      .from("organisations")
+      .select("id, name")
+      .in("id", orgIds as string[])
+
+    const profileMap  = new Map(profiles.map((p) => [p.id, p]))
+    const moduleMap   = new Map((modules ?? []).map((m) => [m.id, m.title]))
+    const orgMap      = new Map((orgs ?? []).map((o) => [o.id, o.name]))
+
+    const rows: ResultRow[] = results.map((r) => {
+      const profile = profileMap.get(r.user_id)
+      return {
+        id:             r.id,
+        user_id:        r.user_id,
+        full_name:      profile?.full_name ?? "Unknown",
+        module_id:      r.module_id,
+        module_title:   moduleMap.get(r.module_id) ?? r.module_id,
+        org_id:         profile?.org_id ?? null,
+        org_name:       profile?.org_id ? (orgMap.get(profile.org_id) ?? null) : null,
+        score:          r.score,
+        passed:         r.passed,
+        submitted_at:   r.submitted_at,
+        attempt_number: r.attempt_number,
+      }
+    })
+
+    return { rows }
+  } catch (e) {
+    return { rows: [], error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Get all results across all orgs (super admin master report)
+// ---------------------------------------------------------------------------
+
+export async function getMasterResults(): Promise<{
+  rows: ResultRow[]
+  error?: string
+}> {
+  try {
+    const { adminRow } = await requireAdmin()
+    if (adminRow.role !== "super_admin") {
+      return { rows: [], error: "Super admin access required" }
+    }
+
+    // Reuse getOrgResults with no org filter
+    return getOrgResults(undefined)
+  } catch (e) {
+    return { rows: [], error: (e as Error).message }
+  }
+}

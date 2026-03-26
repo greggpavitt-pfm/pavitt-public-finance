@@ -64,6 +64,11 @@ export default async function UsersPage({ searchParams }: PageProps) {
 
   const { data: profiles, error } = await query
 
+  // Fetch emails from auth.users so the admin can contact users directly.
+  // listUsers is paginated; 1000 covers any reasonable early user base.
+  const { data: { users: authUsers } } = await serviceClient.auth.admin.listUsers({ perPage: 1000 })
+  const emailByUserId = new Map(authUsers.map((u) => [u.id, u.email ?? ""]))
+
   const statusBadge: Record<string, string> = {
     pending:  "bg-amber-100 text-amber-700",
     approved: "bg-green-100 text-green-700",
@@ -112,6 +117,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                     <th className="px-4 py-3">Name</th>
+                    <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Organisation</th>
                     <th className="px-4 py-3">Pathway</th>
                     <th className="px-4 py-3">Status</th>
@@ -121,11 +127,13 @@ export default async function UsersPage({ searchParams }: PageProps) {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {profiles.map((profile) => {
-                    // organisations is a joined object (or null)
+                    // organisations is a joined object (or null for beta testers)
                     const orgName =
                       profile.organisations && !Array.isArray(profile.organisations)
                         ? (profile.organisations as { name: string }).name
-                        : "—"
+                        : "Beta tester"
+
+                    const userEmail = emailByUserId.get(profile.id) ?? "—"
 
                     const pathwayLabel =
                       profile.pathway === "accrual"
@@ -149,6 +157,15 @@ export default async function UsersPage({ searchParams }: PageProps) {
                               {profile.job_title}
                             </span>
                           )}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600">
+                          {/* Shown so the admin can send a manual approval email */}
+                          <a
+                            href={`mailto:${userEmail}`}
+                            className="text-ppf-sky hover:underline"
+                          >
+                            {userEmail}
+                          </a>
                         </td>
                         <td className="px-4 py-3 text-slate-600">{orgName}</td>
                         <td className="px-4 py-3 text-slate-600">{pathwayLabel}</td>

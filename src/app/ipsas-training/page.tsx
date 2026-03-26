@@ -108,7 +108,7 @@ export default function IpsasTrainingPage() {
             </h2>
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               {[
-                { step: "1", title: "Register", description: "Create your account using the licence key provided by your organisation." },
+                { step: "1", title: "Register", description: "Create your account and select your organisation, or register as a beta tester." },
                 { step: "2", title: "Learn", description: "Work through IPSAS training questions organised by accounting standard and difficulty level." },
                 { step: "3", title: "Track", description: "Review your progress, revisit past questions, and build your expertise over time." },
               ].map((item) => (

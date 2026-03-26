@@ -6,9 +6,19 @@
 import { useActionState, useState } from "react"
 import { registerUser, type AuthFormState } from "@/app/auth/actions"
 
+interface Org {
+  id: string
+  name: string
+  country: string
+}
+
+interface Props {
+  orgs: Org[]
+}
+
 const initialState: AuthFormState = { status: "idle", message: "" }
 
-export default function RegisterForm() {
+export default function RegisterForm({ orgs }: Props) {
   const [state, formAction, isPending] = useActionState(registerUser, initialState)
   // Track selected pathway so we can show/hide the difficulty dropdown
   const [pathway, setPathway] = useState("")
@@ -85,27 +95,39 @@ export default function RegisterForm() {
         />
       </div>
 
+      {/* Organisation / registration type */}
       <div>
-        <label htmlFor="licence_key" className="mb-1.5 block text-sm font-medium text-slate-700">
-          Organisation licence key <span className="text-red-500">*</span>
+        <label htmlFor="org_id" className="mb-1.5 block text-sm font-medium text-slate-700">
+          Organisation <span className="text-red-500">*</span>
         </label>
-        <input
-          id="licence_key"
-          name="licence_key"
-          type="text"
+        <select
+          id="org_id"
+          name="org_id"
           required
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm font-mono text-slate-900 placeholder-slate-400 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
-          placeholder="Provided by your administrator"
-        />
+          defaultValue=""
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
+        >
+          <option value="" disabled>— Select your organisation —</option>
+          {orgs.map((org) => (
+            <option key={org.id} value={org.id}>
+              {org.name}{org.country ? `, ${org.country}` : ""}
+            </option>
+          ))}
+          {/* Beta tester option — shown below a visual separator */}
+          <optgroup label="Other">
+            <option value="beta">Beta tester (independent)</option>
+          </optgroup>
+        </select>
         <p className="mt-1.5 text-xs text-slate-500">
-          Your organisation administrator will have given you this key.
+          If your organisation is not listed, select &ldquo;Beta tester&rdquo; to register independently.
+          Your account will be reviewed before access is granted.
         </p>
       </div>
 
       {/* Pathway */}
       <div>
         <label htmlFor="pathway" className="mb-1.5 block text-sm font-medium text-slate-700">
-          Reporting pathway <span className="text-red-500">*</span>
+          Basis of accounting <span className="text-red-500">*</span>
         </label>
         <select
           id="pathway"

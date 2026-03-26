@@ -42,6 +42,7 @@ export async function checkAnswer(
     .single()
 
   if (error || !question) {
+    console.error("checkAnswer: question not found", { questionId, error })
     return { correct: false, correctAnswer: "", explanation: null, error: "Question not found" }
   }
 
@@ -73,7 +74,10 @@ export async function startSession(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { sessionId: null, alreadyCompleted: false, existingAnswers: [], error: "Not authenticated" }
 
-  // Check if the module is already completed — if so, return early
+  // Check if the module is already completed — if so, return early.
+  // This is the enforcement gate for the one-attempt-per-module rule.
+  // assessment_results.attempt_number is for analytics only; this progress
+  // check is the single source of truth for whether re-entry is allowed.
   const { data: progress } = await supabase
     .from("progress")
     .select("status")
@@ -87,8 +91,31 @@ export async function startSession(
 
   const serviceClient = await createServiceClient()
 
-  // Look for an existing in-progress session for this user + module
-  const { data: existingSession } = await serviceClient
+  // Atomically insert a new session or do nothing if one already exists.
+  // This eliminates the race condition where two tabs opening the same module
+  // simultaneously could both attempt to insert, causing the second to fail
+  // on the unique (user_id, module_id, status) constraint.
+  // ignoreDuplicates: true maps to ON CONFLICT DO NOTHING — the existing row
+  // is left untouched so we can safely fetch it in the next step.
+  const { error: upsertError } = await serviceClient
+    .from("module_sessions")
+    .upsert(
+      {
+        user_id:   user.id,
+        module_id: moduleId,
+        answers:   [],
+        status:    "in_progress",
+      },
+      { onConflict: "user_id,module_id,status", ignoreDuplicates: true }
+    )
+
+  if (upsertError) {
+    console.error("startSession: upsert failed", { moduleId, userId: user.id, error: upsertError })
+    return { sessionId: null, alreadyCompleted: false, existingAnswers: [], error: upsertError.message }
+  }
+
+  // Fetch the session — guaranteed to exist now (either just created or already existed)
+  const { data: session, error: fetchError } = await serviceClient
     .from("module_sessions")
     .select("id, answers")
     .eq("user_id", user.id)
@@ -96,32 +123,12 @@ export async function startSession(
     .eq("status", "in_progress")
     .single()
 
-  if (existingSession) {
-    // Resume the existing session
-    return {
-      sessionId: existingSession.id,
-      alreadyCompleted: false,
-      existingAnswers: existingSession.answers ?? [],
-    }
+  if (fetchError || !session) {
+    console.error("startSession: could not fetch session after upsert", { moduleId, userId: user.id, error: fetchError })
+    return { sessionId: null, alreadyCompleted: false, existingAnswers: [], error: fetchError?.message ?? "Failed to start session" }
   }
 
-  // Create a new session
-  const { data: newSession, error } = await serviceClient
-    .from("module_sessions")
-    .insert({
-      user_id:   user.id,
-      module_id: moduleId,
-      answers:   [],
-      status:    "in_progress",
-    })
-    .select("id")
-    .single()
-
-  if (error || !newSession) {
-    return { sessionId: null, alreadyCompleted: false, existingAnswers: [], error: error?.message ?? "Failed to create session" }
-  }
-
-  return { sessionId: newSession.id, alreadyCompleted: false, existingAnswers: [] }
+  return { sessionId: session.id, alreadyCompleted: false, existingAnswers: session.answers ?? [] }
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +158,10 @@ export async function saveAnswer(
     .eq("user_id", user.id)  // Ownership check
     .single()
 
-  if (fetchError || !session) return { error: "Session not found" }
+  if (fetchError || !session) {
+    console.error("saveAnswer: session not found", { sessionId, userId: user.id, error: fetchError })
+    return { error: "Session not found" }
+  }
 
   const updatedAnswers = [
     ...(session.answers ?? []),
@@ -163,7 +173,10 @@ export async function saveAnswer(
     .update({ answers: updatedAnswers })
     .eq("id", sessionId)
 
-  if (error) return { error: error.message }
+  if (error) {
+    console.error("saveAnswer: update failed", { sessionId, error })
+    return { error: error.message }
+  }
   return {}
 }
 
@@ -194,8 +207,14 @@ export async function submitSession(
     .eq("user_id", user.id)
     .single()
 
-  if (fetchError || !session) return { attemptId: null, error: "Session not found" }
-  if (session.status === "submitted") return { attemptId: null, error: "Session already submitted" }
+  if (fetchError || !session) {
+    console.error("submitSession: session not found", { sessionId, userId: user.id, error: fetchError })
+    return { attemptId: null, error: "Session not found" }
+  }
+  if (session.status === "submitted") {
+    console.error("submitSession: session already submitted", { sessionId })
+    return { attemptId: null, error: "Session already submitted" }
+  }
 
   const answers: Array<{ question_id: string; selected: string; correct: boolean }> = session.answers ?? []
   const total = answers.length
@@ -230,6 +249,7 @@ export async function submitSession(
     .single()
 
   if (resultError || !result) {
+    console.error("submitSession: failed to write assessment_results", { sessionId, moduleId: session.module_id, error: resultError })
     return { attemptId: null, error: resultError?.message ?? "Failed to save results" }
   }
 
@@ -296,7 +316,10 @@ export async function getSessionResults(attemptId: string): Promise<{
     .eq("user_id", user.id)
     .single()
 
-  if (error || !row) return { result: null, error: "Result not found" }
+  if (error || !row) {
+    console.error("getSessionResults: result not found", { attemptId, userId: user.id, error })
+    return { result: null, error: "Result not found" }
+  }
 
   // Fetch module title
   const { data: module } = await serviceClient
@@ -369,7 +392,10 @@ export async function getUserResults(): Promise<{
     .eq("user_id", user.id)
     .order("submitted_at", { ascending: false })
 
-  if (error) return { results: [], error: error.message }
+  if (error) {
+    console.error("getUserResults: fetch failed", { userId: user.id, error })
+    return { results: [], error: error.message }
+  }
 
   // Keep only the most recent attempt per module
   const seen = new Set<string>()
@@ -398,6 +424,94 @@ export async function getUserResults(): Promise<{
   }))
 
   return { results }
+}
+
+// ---------------------------------------------------------------------------
+// Auto-submit stale sessions
+// ---------------------------------------------------------------------------
+// Finds any in_progress sessions for the current user that are older than
+// 24 hours and submits them automatically. Called from the training page on
+// each load so abandoned sessions are never left dangling indefinitely.
+// This fulfils the promise in the module_sessions schema comment.
+
+export async function autoSubmitStaleSessions(): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  const serviceClient = await createServiceClient()
+
+  // Find sessions started more than 24 hours ago that are still in_progress
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  const { data: staleSessions, error: fetchError } = await serviceClient
+    .from("module_sessions")
+    .select("id, module_id, answers")
+    .eq("user_id", user.id)
+    .eq("status", "in_progress")
+    .lt("started_at", cutoff)
+
+  if (fetchError) {
+    console.error("autoSubmitStaleSessions: fetch failed", { userId: user.id, error: fetchError })
+    return
+  }
+
+  if (!staleSessions || staleSessions.length === 0) return
+
+  for (const session of staleSessions) {
+    const answers: Array<{ question_id: string; selected: string; correct: boolean }> = session.answers ?? []
+    const total        = answers.length
+    const correctCount = answers.filter((a) => a.correct).length
+    const score        = total > 0 ? Math.round((correctCount / total) * 100) : 0
+    const passed       = score >= 70
+
+    // Determine attempt number for this module
+    const { count } = await serviceClient
+      .from("assessment_results")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id)
+      .eq("module_id", session.module_id)
+
+    const attemptNumber = (count ?? 0) + 1
+
+    // Write the assessment result
+    const { error: resultError } = await serviceClient
+      .from("assessment_results")
+      .insert({
+        user_id:        user.id,
+        module_id:      session.module_id,
+        attempt_number: attemptNumber,
+        score,
+        answers,
+        passed,
+        submitted_at:   new Date().toISOString(),
+      })
+
+    if (resultError) {
+      console.error("autoSubmitStaleSessions: failed to write result", { sessionId: session.id, error: resultError })
+      continue  // Skip remaining steps for this session; leave it in_progress so it can be retried next load
+    }
+
+    // Mark progress as completed
+    await serviceClient
+      .from("progress")
+      .upsert(
+        {
+          user_id:      user.id,
+          module_id:    session.module_id,
+          status:       "completed",
+          completed_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id,module_id" }
+      )
+
+    // Mark the session as submitted
+    await serviceClient
+      .from("module_sessions")
+      .update({ status: "submitted", submitted_at: new Date().toISOString() })
+      .eq("id", session.id)
+
+    console.log("autoSubmitStaleSessions: auto-submitted session", session.id, "for module", session.module_id)
+  }
 }
 
 // ---------------------------------------------------------------------------

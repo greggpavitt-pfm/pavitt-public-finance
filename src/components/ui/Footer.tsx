@@ -12,22 +12,14 @@ export default function Footer() {
         <Image
           src={images.logoTransparent}
           alt="PPF Logo"
-          width={48}
-          height={48}
-          className="h-12 w-auto opacity-80"
+          width={144}
+          height={144}
+          className="h-36 w-auto opacity-80"
         />
 
         <p className="text-center text-sm text-blue-200/70">
           &copy; {year} {siteConfig.companyName} &mdash; All rights reserved.
         </p>
-        <a
-          href={siteConfig.linkedIn}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-block text-sm text-blue-300 hover:text-white transition-colors"
-        >
-          LinkedIn
-        </a>
       </div>
     </footer>
   )

@@ -27,11 +27,12 @@ export default function PendingPage() {
 
             <h1 className="mb-3 text-2xl font-bold text-ppf-navy">Account pending approval</h1>
             <p className="mb-6 text-sm leading-relaxed text-slate-600">
-              Your account has been created and is waiting for approval from your organisation administrator.
-              You&apos;ll receive an email once your account is activated.
+              Your registration has been received and is waiting for review.
+              You will be contacted by email once your account is approved.
             </p>
             <p className="mb-8 text-sm text-slate-500">
-              If you haven&apos;t heard back within a few days, contact your administrator directly.
+              If you haven&apos;t heard back within a few business days, please get in touch
+              at <a href="mailto:gregg.pavitt@pfmexpert.net" className="text-ppf-sky hover:underline">gregg.pavitt@pfmexpert.net</a>.
             </p>
 
             {/* Sign out — uses a form so it triggers the server action */}

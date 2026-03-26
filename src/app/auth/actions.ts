@@ -3,8 +3,10 @@
 // These run on the server only and use the Supabase clients from src/lib/supabase/.
 //
 // Key security notes:
-//   - Licence key validation uses createServiceClient() so it bypasses RLS
+//   - Organisation lookup at registration uses createServiceClient() so it bypasses RLS
 //     (the organisations table has no public SELECT policy by design).
+//   - Beta testers register with org_id = null; the form sends the string "beta" which
+//     is resolved to null before the profile insert.
 //   - All other writes use the anon client with the user's session.
 
 import { redirect } from "next/navigation"
@@ -20,21 +22,22 @@ export interface AuthFormState {
 // ---------------------------------------------------------------------------
 // Creates a Supabase auth user, then inserts a profiles row with account_status
 // = 'pending'. The user cannot access /training until an admin approves them.
+// org_id is null for beta testers (independent registration).
 
 export async function registerUser(
   prevState: AuthFormState,
   formData: FormData
 ): Promise<AuthFormState> {
-  const email      = (formData.get("email")        as string | null)?.trim() ?? ""
-  const password   = (formData.get("password")     as string | null) ?? ""
-  const fullName   = (formData.get("full_name")    as string | null)?.trim() ?? ""
-  const jobTitle   = (formData.get("job_title")    as string | null)?.trim() ?? ""
-  const licenceKey = (formData.get("licence_key")  as string | null)?.trim() ?? ""
-  const pathway    = (formData.get("pathway")      as string | null) ?? ""
-  const ability    = (formData.get("ability_level") as string | null) ?? ""
+  const email    = (formData.get("email")         as string | null)?.trim() ?? ""
+  const password = (formData.get("password")      as string | null) ?? ""
+  const fullName = (formData.get("full_name")     as string | null)?.trim() ?? ""
+  const jobTitle = (formData.get("job_title")     as string | null)?.trim() ?? ""
+  const orgIdRaw = (formData.get("org_id")        as string | null)?.trim() ?? ""
+  const pathway  = (formData.get("pathway")       as string | null) ?? ""
+  const ability  = (formData.get("ability_level") as string | null) ?? ""
 
   // --- Basic validation ---
-  if (!email || !password || !fullName || !licenceKey || !pathway) {
+  if (!email || !password || !fullName || !orgIdRaw || !pathway) {
     return { status: "error", message: "Please fill in all required fields." }
   }
   if (pathway === "accrual" && !ability) {
@@ -44,18 +47,28 @@ export async function registerUser(
     return { status: "error", message: "Password must be at least 8 characters." }
   }
 
-  // --- Look up the licence key (service client bypasses RLS) ---
-  const serviceClient = await createServiceClient()
-  const { data: org, error: orgError } = await serviceClient
-    .from("organisations")
-    .select("id")
-    .eq("licence_key", licenceKey)
-    .in("licence_status", ["beta", "active"])
-    .single()
+  // --- Resolve the organisation ---
+  // "beta" is the sentinel value from the form meaning "independent / no org".
+  // Any other value should be a valid organisation UUID.
+  const isBeta = orgIdRaw === "beta"
+  let resolvedOrgId: string | null = null
 
-  if (orgError || !org) {
-    return { status: "error", message: "Licence key not recognised. Please check with your organisation administrator." }
+  if (!isBeta) {
+    // Verify the selected org exists and is accepting registrations (service client bypasses RLS)
+    const serviceClient = await createServiceClient()
+    const { data: org, error: orgError } = await serviceClient
+      .from("organisations")
+      .select("id")
+      .eq("id", orgIdRaw)
+      .in("licence_status", ["beta", "active"])
+      .single()
+
+    if (orgError || !org) {
+      return { status: "error", message: "Organisation not found. Please contact the administrator." }
+    }
+    resolvedOrgId = org.id
   }
+  // Beta testers: resolvedOrgId remains null
 
   // --- Create the auth user ---
   const supabase = await createClient()
@@ -79,23 +92,29 @@ export async function registerUser(
 
   // --- Insert the profile row ---
   // account_status defaults to 'pending' in the schema; we set it explicitly for clarity.
+  const serviceClient = await createServiceClient()
   const { error: profileError } = await serviceClient
     .from("profiles")
     .insert({
-      id:                 userId,
-      full_name:          fullName,
-      job_title:          jobTitle || null,
-      org_id:             org.id,
-      pathway:            pathway,
-      ability_level:      pathway === "accrual" ? ability : null,
-      account_status:     "pending",
+      id:                  userId,
+      full_name:           fullName,
+      job_title:           jobTitle || null,
+      org_id:              resolvedOrgId,   // null for beta testers
+      pathway:             pathway,
+      ability_level:       pathway === "accrual" ? ability : null,
+      account_status:      "pending",
       onboarding_complete: false,
     })
 
   if (profileError) {
-    // If profile insert fails, the auth user is orphaned — log it so it can be cleaned up.
+    // Profile insert failed — attempt to delete the orphaned auth user so they can try again.
+    // Without this, the user would be stuck: auth exists but no profile, so they can never log in.
     console.error("Profile insert failed for user", userId, profileError)
-    return { status: "error", message: "Account setup failed. Please contact support." }
+    const { error: deleteError } = await serviceClient.auth.admin.deleteUser(userId)
+    if (deleteError) {
+      console.error("Failed to clean up orphaned auth user", userId, deleteError)
+    }
+    return { status: "error", message: "Account setup failed. Please try again." }
   }
 
   // Redirect to the pending page — the user cannot log in to /training until approved.

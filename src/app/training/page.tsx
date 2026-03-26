@@ -9,6 +9,7 @@ import { createServiceClient } from "@/lib/supabase/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import { logoutUser } from "@/app/auth/actions"
+import { autoSubmitStaleSessions } from "@/app/training/actions"
 import CertificatePanel from "@/components/CertificatePanel"
 import type { ResultSummary } from "@/components/CertificatePanel"
 
@@ -29,6 +30,10 @@ export default async function TrainingPage() {
     .single()
 
   if (!profile) redirect("/login")
+
+  // Auto-submit any sessions abandoned for > 24 hours so they don't sit
+  // in_progress indefinitely. Runs silently — errors are logged server-side.
+  await autoSubmitStaleSessions()
 
   const orgData =
     profile.organisations && !Array.isArray(profile.organisations)

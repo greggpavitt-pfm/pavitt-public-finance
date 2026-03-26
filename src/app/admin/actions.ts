@@ -54,12 +54,16 @@ export async function approveUser(userId: string): Promise<{ error?: string }> {
       })
       .eq("id", userId)
 
-    if (error) return { error: error.message }
+    if (error) {
+      console.error("approveUser: update failed", { userId, error })
+      return { error: error.message }
+    }
 
     revalidatePath("/admin")
     revalidatePath("/admin/users")
     return {}
   } catch (e) {
+    console.error("approveUser: unexpected error", e)
     return { error: (e as Error).message }
   }
 }
@@ -79,12 +83,16 @@ export async function suspendUser(userId: string): Promise<{ error?: string }> {
       .update({ account_status: "suspended" })
       .eq("id", userId)
 
-    if (error) return { error: error.message }
+    if (error) {
+      console.error("suspendUser: update failed", { userId, error })
+      return { error: error.message }
+    }
 
     revalidatePath("/admin")
     revalidatePath("/admin/users")
     return {}
   } catch (e) {
+    console.error("suspendUser: unexpected error", e)
     return { error: (e as Error).message }
   }
 }
@@ -133,12 +141,14 @@ export async function createOrg(
       if (error.message.includes("unique")) {
         return { error: "Licence key collision — please try again." }
       }
+      console.error("createOrg: insert failed", { name, error })
       return { error: error.message }
     }
 
     revalidatePath("/admin/orgs")
     return { success: true }
   } catch (e) {
+    console.error("createOrg: unexpected error", e)
     return { error: (e as Error).message }
   }
 }
@@ -189,7 +199,10 @@ export async function getOrgResults(orgId?: string): Promise<{
     }
 
     const { data: profiles, error: profileError } = await profileQuery
-    if (profileError) return { rows: [], error: profileError.message }
+    if (profileError) {
+      console.error("getOrgResults: profile fetch failed", { targetOrgId, error: profileError })
+      return { rows: [], error: profileError.message }
+    }
 
     if (!profiles || profiles.length === 0) return { rows: [] }
 
@@ -202,7 +215,10 @@ export async function getOrgResults(orgId?: string): Promise<{
       .in("user_id", userIds)
       .order("submitted_at", { ascending: false })
 
-    if (resultError) return { rows: [], error: resultError.message }
+    if (resultError) {
+      console.error("getOrgResults: results fetch failed", { targetOrgId, error: resultError })
+      return { rows: [], error: resultError.message }
+    }
     if (!results || results.length === 0) return { rows: [] }
 
     // Fetch module titles
@@ -242,6 +258,7 @@ export async function getOrgResults(orgId?: string): Promise<{
 
     return { rows }
   } catch (e) {
+    console.error("getOrgResults: unexpected error", e)
     return { rows: [], error: (e as Error).message }
   }
 }
@@ -263,6 +280,7 @@ export async function getMasterResults(): Promise<{
     // Reuse getOrgResults with no org filter
     return getOrgResults(undefined)
   } catch (e) {
+    console.error("getMasterResults: unexpected error", e)
     return { rows: [], error: (e as Error).message }
   }
 }

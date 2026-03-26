@@ -70,7 +70,7 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
           {/* Module title */}
           <h1 className="mb-2 text-2xl font-bold text-ppf-navy">{result.module_title}</h1>
           <p className="mb-8 text-sm text-slate-400">
-            Attempt {result.attempt_number} &middot; Submitted {submittedDate}
+            Submitted {submittedDate}
           </p>
 
           {/* ---------------------------------------------------------------- */}

@@ -168,13 +168,18 @@ export default function CertificatePanel({ results, studentName, orgName }: Prop
 
               {/* Print certificate button — only if at least one pass */}
               {passedCount > 0 && (
-                <button
-                  onClick={handlePrint}
-                  disabled={printing}
-                  className="w-full rounded-md bg-ppf-sky px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue disabled:opacity-60"
-                >
-                  {printing ? "Preparing…" : "Print Achievement Certificate"}
-                </button>
+                <>
+                  <p className="mb-2 text-xs text-slate-400 text-center">
+                    Only modules with a score of 70% or above are included.
+                  </p>
+                  <button
+                    onClick={handlePrint}
+                    disabled={printing}
+                    className="w-full rounded-md bg-ppf-sky px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue disabled:opacity-60"
+                  >
+                    {printing ? "Preparing…" : "Print Achievement Certificate"}
+                  </button>
+                </>
               )}
             </>
           )}

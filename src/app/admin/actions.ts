@@ -154,6 +154,194 @@ export async function createOrg(
 }
 
 // ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export type Subgroup = {
+  id: string
+  org_id: string
+  name: string
+  sub_jurisdiction: string | null
+  created_at: string
+}
+
+// ---------------------------------------------------------------------------
+// Create a subgroup within an org
+// ---------------------------------------------------------------------------
+// super_admin can create for any org; org_admin only for their own org.
+
+export async function createSubgroup(
+  prevState: { error?: string; success?: boolean },
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    const { adminRow } = await requireAdmin()
+
+    const orgId         = (formData.get("org_id")          as string | null)?.trim() ?? ""
+    const name          = (formData.get("name")             as string | null)?.trim() ?? ""
+    const subJurisdiction = (formData.get("sub_jurisdiction") as string | null)?.trim() || null
+
+    if (!orgId || !name) {
+      return { error: "Organisation and subgroup name are required." }
+    }
+
+    // org_admin can only add subgroups to their own org
+    if (adminRow.role === "org_admin" && adminRow.org_id !== orgId) {
+      return { error: "Not authorised to add subgroups to this organisation." }
+    }
+
+    const serviceClient = await createServiceClient()
+    const { error } = await serviceClient
+      .from("org_subgroups")
+      .insert({ org_id: orgId, name, sub_jurisdiction: subJurisdiction })
+
+    if (error) {
+      console.error("createSubgroup: insert failed", { orgId, name, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/orgs")
+    return { success: true }
+  } catch (e) {
+    console.error("createSubgroup: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Delete a subgroup
+// ---------------------------------------------------------------------------
+// Refuses to delete if users are still assigned to avoid orphaning profiles.
+
+export async function deleteSubgroup(subgroupId: string): Promise<{ error?: string }> {
+  try {
+    const { adminRow } = await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    // If org_admin, verify the subgroup belongs to their org
+    if (adminRow.role === "org_admin") {
+      const { data: sg } = await serviceClient
+        .from("org_subgroups")
+        .select("org_id")
+        .eq("id", subgroupId)
+        .single()
+
+      if (!sg || sg.org_id !== adminRow.org_id) {
+        return { error: "Not authorised to delete this subgroup." }
+      }
+    }
+
+    // Check no users are assigned — give a friendly error before the DB constraint fires
+    const { count } = await serviceClient
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("subgroup_id", subgroupId)
+
+    if (count && count > 0) {
+      return { error: `Cannot delete: ${count} user(s) are still assigned to this subgroup. Reassign them first.` }
+    }
+
+    const { error } = await serviceClient
+      .from("org_subgroups")
+      .delete()
+      .eq("id", subgroupId)
+
+    if (error) {
+      console.error("deleteSubgroup: delete failed", { subgroupId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/orgs")
+    return {}
+  } catch (e) {
+    console.error("deleteSubgroup: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Assign a user to a subgroup (or clear their subgroup)
+// ---------------------------------------------------------------------------
+// Verifies the subgroup belongs to the same org as the user.
+
+export async function assignUserSubgroup(
+  userId: string,
+  subgroupId: string | null
+): Promise<{ error?: string }> {
+  try {
+    await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    // If assigning (not clearing), verify subgroup belongs to the user's org
+    if (subgroupId) {
+      const [{ data: profile }, { data: subgroup }] = await Promise.all([
+        serviceClient.from("profiles").select("org_id").eq("id", userId).single(),
+        serviceClient.from("org_subgroups").select("org_id").eq("id", subgroupId).single(),
+      ])
+
+      if (!profile || !subgroup) {
+        return { error: "User or subgroup not found." }
+      }
+
+      if (profile.org_id !== subgroup.org_id) {
+        return { error: "Subgroup does not belong to the user's organisation." }
+      }
+    }
+
+    const { error } = await serviceClient
+      .from("profiles")
+      .update({ subgroup_id: subgroupId })
+      .eq("id", userId)
+
+    if (error) {
+      console.error("assignUserSubgroup: update failed", { userId, subgroupId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("assignUserSubgroup: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Reassign a user to a different organisation (super_admin only)
+// ---------------------------------------------------------------------------
+// Clears subgroup_id at the same time — the old subgroup is no longer valid.
+
+export async function assignUserOrg(
+  userId: string,
+  orgId: string
+): Promise<{ error?: string }> {
+  try {
+    const { adminRow } = await requireAdmin()
+
+    if (adminRow.role !== "super_admin") {
+      return { error: "Super admin access required to reassign organisations." }
+    }
+
+    const serviceClient = await createServiceClient()
+    const { error } = await serviceClient
+      .from("profiles")
+      .update({ org_id: orgId, subgroup_id: null })
+      .eq("id", userId)
+
+    if (error) {
+      console.error("assignUserOrg: update failed", { userId, orgId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("assignUserOrg: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Types shared by report actions
 // ---------------------------------------------------------------------------
 

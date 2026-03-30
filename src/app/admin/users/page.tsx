@@ -1,4 +1,4 @@
-// /admin/users — list all users, approve or suspend them.
+// /admin/users — list all users, approve or suspend them, and assign subgroups.
 // Supports an optional ?filter=pending query param to show only pending users.
 
 import type { Metadata } from "next"
@@ -8,6 +8,7 @@ import { createClient, createServiceClient } from "@/lib/supabase/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import UserActions from "./UserActions"
+import SubgroupAssign from "./SubgroupAssign"
 
 export const metadata: Metadata = {
   title: "User Management — Admin",
@@ -46,11 +47,14 @@ export default async function UsersPage({ searchParams }: PageProps) {
       id,
       full_name,
       job_title,
+      org_id,
+      subgroup_id,
       pathway,
       ability_level,
       account_status,
       created_at,
-      organisations ( name )
+      organisations ( name ),
+      org_subgroups ( name )
     `)
     .order("created_at", { ascending: false })
 
@@ -69,6 +73,21 @@ export default async function UsersPage({ searchParams }: PageProps) {
   const { data: { users: authUsers } } = await serviceClient.auth.admin.listUsers({ perPage: 1000 })
   const emailByUserId = new Map(authUsers.map((u) => [u.id, u.email ?? ""]))
 
+  // Fetch all subgroups to build a per-org map for the SubgroupAssign dropdowns.
+  // This lets us pass only the relevant subgroups to each user row.
+  const { data: allSubgroups } = await serviceClient
+    .from("org_subgroups")
+    .select("id, org_id, name")
+    .order("name")
+
+  // Map: org_id → [{id, name}]
+  const subgroupsByOrg = new Map<string, { id: string; name: string }[]>()
+  for (const sg of allSubgroups ?? []) {
+    const existing = subgroupsByOrg.get(sg.org_id) ?? []
+    existing.push({ id: sg.id, name: sg.name })
+    subgroupsByOrg.set(sg.org_id, existing)
+  }
+
   const statusBadge: Record<string, string> = {
     pending:  "bg-amber-100 text-amber-700",
     approved: "bg-green-100 text-green-700",
@@ -79,7 +98,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
     <>
       <Navbar />
       <main className="min-h-screen bg-ppf-light px-6 py-16 md:px-16">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto max-w-6xl">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <div>
@@ -122,7 +141,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
                     <th className="px-4 py-3">Pathway</th>
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Joined</th>
-                    <th className="px-4 py-3">Actions</th>
+                    <th className="px-4 py-3">Actions / Subgroup</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -148,8 +167,13 @@ export default async function UsersPage({ searchParams }: PageProps) {
                       year: "numeric",
                     })
 
+                    // Subgroups available for this user's org
+                    const orgSubgroups = profile.org_id
+                      ? (subgroupsByOrg.get(profile.org_id) ?? [])
+                      : []
+
                     return (
-                      <tr key={profile.id} className="hover:bg-slate-50">
+                      <tr key={profile.id} className="hover:bg-slate-50 align-top">
                         <td className="px-4 py-3 font-medium text-ppf-navy">
                           {profile.full_name}
                           {profile.job_title && (
@@ -180,11 +204,18 @@ export default async function UsersPage({ searchParams }: PageProps) {
                         </td>
                         <td className="px-4 py-3 text-slate-500">{joinedDate}</td>
                         <td className="px-4 py-3">
+                          {/* Approve/suspend buttons */}
                           <UserActions
                             userId={profile.id}
                             currentStatus={
                               profile.account_status as "pending" | "approved" | "suspended"
                             }
+                          />
+                          {/* Subgroup assignment — only shown when the org has subgroups */}
+                          <SubgroupAssign
+                            userId={profile.id}
+                            currentSubgroupId={profile.subgroup_id ?? null}
+                            orgSubgroups={orgSubgroups}
                           />
                         </td>
                       </tr>

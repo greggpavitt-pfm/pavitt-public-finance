@@ -1,5 +1,6 @@
 // /admin/orgs — list all organisations and create new ones.
-// Each org shows its name, country, jurisdiction, licence key, status, and user count.
+// Each org shows its name, country, jurisdiction, licence key, status, user count,
+// and an expandable subgroup panel.
 
 import type { Metadata } from "next"
 import Link from "next/link"
@@ -8,6 +9,8 @@ import { createClient, createServiceClient } from "@/lib/supabase/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import CreateOrgForm from "./CreateOrgForm"
+import SubgroupPanel from "./SubgroupPanel"
+import type { Subgroup } from "@/app/admin/actions"
 
 export const metadata: Metadata = {
   title: "Organisations — Admin",
@@ -22,7 +25,7 @@ export default async function OrgsPage() {
 
   const { data: adminRow } = await supabase
     .from("admin_users")
-    .select("role")
+    .select("role, org_id")
     .eq("id", user.id)
     .single()
 
@@ -54,6 +57,19 @@ export default async function OrgsPage() {
         countMap[row.org_id] = (countMap[row.org_id] ?? 0) + 1
       }
     }
+  }
+
+  // Fetch all subgroups and group them by org_id for the panels
+  const { data: allSubgroups } = await serviceClient
+    .from("org_subgroups")
+    .select("id, org_id, name, sub_jurisdiction, created_at")
+    .order("name")
+
+  const subgroupsByOrg = new Map<string, Subgroup[]>()
+  for (const sg of allSubgroups ?? []) {
+    const existing = subgroupsByOrg.get(sg.org_id) ?? []
+    existing.push(sg as Subgroup)
+    subgroupsByOrg.set(sg.org_id, existing)
   }
 
   const statusBadge: Record<string, string> = {
@@ -101,40 +117,55 @@ export default async function OrgsPage() {
                     <th className="px-4 py-3">Status</th>
                     <th className="px-4 py-3">Users</th>
                     <th className="px-4 py-3">Max</th>
+                    <th className="px-4 py-3">Subgroups</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {orgs.map((org) => (
-                    <tr key={org.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-medium text-ppf-navy">
-                        {org.name}
-                        <span className="block text-xs font-normal text-slate-400">
-                          {org.country}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 font-mono text-xs text-slate-600">
-                        {org.licence_key}
-                      </td>
-                      <td className="px-4 py-3 text-slate-500">
-                        {org.jurisdiction_code ?? "Universal"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
-                            statusBadge[org.licence_status] ?? "bg-slate-100 text-slate-600"
-                          }`}
-                        >
-                          {org.licence_status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-slate-600">
-                        {countMap[org.id] ?? 0}
-                      </td>
-                      <td className="px-4 py-3 text-slate-400">
-                        {org.max_users ?? "∞"}
-                      </td>
-                    </tr>
-                  ))}
+                  {orgs.map((org) => {
+                    const orgSubgroups = subgroupsByOrg.get(org.id) ?? []
+                    // org_admin can manage subgroups only for their own org
+                    const canManageSubgroups =
+                      isSuperAdmin || adminRow.org_id === org.id
+
+                    return (
+                      <tr key={org.id} className="hover:bg-slate-50 align-top">
+                        <td className="px-4 py-3 font-medium text-ppf-navy">
+                          {org.name}
+                          <span className="block text-xs font-normal text-slate-400">
+                            {org.country}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs text-slate-600">
+                          {org.licence_key}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500">
+                          {org.jurisdiction_code ?? "Universal"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
+                              statusBadge[org.licence_status] ?? "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {org.licence_status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600">
+                          {countMap[org.id] ?? 0}
+                        </td>
+                        <td className="px-4 py-3 text-slate-400">
+                          {org.max_users ?? "∞"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <SubgroupPanel
+                            orgId={org.id}
+                            subgroups={orgSubgroups}
+                            canCreate={canManageSubgroups}
+                          />
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

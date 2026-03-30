@@ -1,6 +1,5 @@
-// /admin/orgs — list all organisations and create new ones.
-// Each org shows its name, country, jurisdiction, licence key, status, user count,
-// and an expandable subgroup panel.
+// /admin/orgs — list PFS organisations and manage IPSAS regulation subgroups.
+// Two tabs: "Admin Subgroups" (PFS) and "Regulation Subgroups" (IPSAS)
 
 import type { Metadata } from "next"
 import Link from "next/link"
@@ -10,13 +9,20 @@ import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import CreateOrgForm from "./CreateOrgForm"
 import SubgroupPanel from "./SubgroupPanel"
-import type { Subgroup } from "@/app/admin/actions"
+import IpsasOrgsTable from "./IpsasOrgsTable"
+import { getIpsasOrgsAndSubgroups, type Subgroup } from "@/app/admin/actions"
 
 export const metadata: Metadata = {
   title: "Organisations — Admin",
 }
 
-export default async function OrgsPage() {
+interface PageProps {
+  searchParams: Promise<{ section?: string }>
+}
+
+export default async function OrgsPage({ searchParams }: PageProps) {
+  const params = await searchParams
+  const section = params.section ?? "admin"
   // --- Auth + role check ---
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -72,12 +78,38 @@ export default async function OrgsPage() {
     subgroupsByOrg.set(sg.org_id, existing)
   }
 
+  // Fetch IPSAS data only if regulation tab is selected
+  let ipsasOrgs: any[] = []
+  let ipsasSubgroupsByOrg: Map<string, any[]> = new Map()
+  let ipsasError: string | null = null
+
+  if (section === "regulation") {
+    const ipsasResult = await getIpsasOrgsAndSubgroups()
+    ipsasOrgs = ipsasResult.orgs
+    ipsasSubgroupsByOrg = ipsasResult.subgroupsByOrg
+    ipsasError = ipsasResult.error ?? null
+  }
+
   const statusBadge: Record<string, string> = {
     beta:      "bg-blue-100 text-blue-700",
     active:    "bg-green-100 text-green-700",
     expired:   "bg-slate-100 text-slate-500",
     suspended: "bg-red-100 text-red-700",
   }
+
+  // Tab link component (inline)
+  const TabLink = ({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) => (
+    <Link
+      href={href}
+      className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+        active
+          ? "bg-ppf-sky text-white"
+          : "text-slate-500 hover:bg-ppf-pale hover:text-ppf-navy"
+      }`}
+    >
+      {children}
+    </Link>
+  )
 
   return (
     <>
@@ -92,7 +124,17 @@ export default async function OrgsPage() {
             >
               ← Dashboard
             </Link>
-            <h1 className="text-2xl font-bold text-ppf-navy">Organisations</h1>
+            <h1 className="text-2xl font-bold text-ppf-navy">Organisations & Subgroups</h1>
+          </div>
+
+          {/* Tabs */}
+          <div className="mb-6 flex gap-2">
+            <TabLink href="?section=admin" active={section === "admin"}>
+              Admin Subgroups
+            </TabLink>
+            <TabLink href="?section=regulation" active={section === "regulation"}>
+              Regulation Subgroups
+            </TabLink>
           </div>
 
           {error && (
@@ -101,82 +143,97 @@ export default async function OrgsPage() {
             </div>
           )}
 
-          {/* Org table */}
-          {!orgs || orgs.length === 0 ? (
-            <div className="mb-8 rounded-lg border border-ppf-sky/20 bg-white p-10 text-center text-slate-400">
-              No organisations yet.
-            </div>
-          ) : (
-            <div className="mb-10 overflow-x-auto rounded-lg border border-ppf-sky/20 bg-white shadow-sm">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                    <th className="px-4 py-3">Organisation</th>
-                    <th className="px-4 py-3">Licence key</th>
-                    <th className="px-4 py-3">Jurisdiction</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3">Users</th>
-                    <th className="px-4 py-3">Max</th>
-                    <th className="px-4 py-3">Subgroups</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {orgs.map((org) => {
-                    const orgSubgroups = subgroupsByOrg.get(org.id) ?? []
-                    // org_admin can manage subgroups only for their own org
-                    const canManageSubgroups =
-                      isSuperAdmin || adminRow.org_id === org.id
-
-                    return (
-                      <tr key={org.id} className="hover:bg-slate-50 align-top">
-                        <td className="px-4 py-3 font-medium text-ppf-navy">
-                          {org.name}
-                          <span className="block text-xs font-normal text-slate-400">
-                            {org.country}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-mono text-xs text-slate-600">
-                          {org.licence_key}
-                        </td>
-                        <td className="px-4 py-3 text-slate-500">
-                          {org.jurisdiction_code ?? "Universal"}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
-                              statusBadge[org.licence_status] ?? "bg-slate-100 text-slate-600"
-                            }`}
-                          >
-                            {org.licence_status}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {countMap[org.id] ?? 0}
-                        </td>
-                        <td className="px-4 py-3 text-slate-400">
-                          {org.max_users ?? "∞"}
-                        </td>
-                        <td className="px-4 py-3">
-                          <SubgroupPanel
-                            orgId={org.id}
-                            subgroups={orgSubgroups}
-                            canCreate={canManageSubgroups}
-                          />
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+          {ipsasError && section === "regulation" && (
+            <div className="mb-6 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              Failed to load IPSAS data: {ipsasError}
             </div>
           )}
 
-          {/* Create org form — super admin only */}
-          {isSuperAdmin && (
-            <div className="rounded-lg border border-ppf-sky/20 bg-white p-6 shadow-sm">
-              <h2 className="mb-5 text-lg font-semibold text-ppf-navy">Create organisation</h2>
-              <CreateOrgForm />
-            </div>
+          {/* ADMIN TAB — PFS organisations and subgroups */}
+          {section === "admin" && (
+            <>
+              {!orgs || orgs.length === 0 ? (
+                <div className="mb-8 rounded-lg border border-ppf-sky/20 bg-white p-10 text-center text-slate-400">
+                  No organisations yet.
+                </div>
+              ) : (
+                <div className="mb-10 overflow-x-auto rounded-lg border border-ppf-sky/20 bg-white shadow-sm">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <th className="px-4 py-3">Organisation</th>
+                        <th className="px-4 py-3">Licence key</th>
+                        <th className="px-4 py-3">Jurisdiction</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3">Users</th>
+                        <th className="px-4 py-3">Max</th>
+                        <th className="px-4 py-3">Subgroups</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {orgs.map((org) => {
+                        const orgSubgroups = subgroupsByOrg.get(org.id) ?? []
+                        // org_admin can manage subgroups only for their own org
+                        const canManageSubgroups =
+                          isSuperAdmin || adminRow.org_id === org.id
+
+                        return (
+                          <tr key={org.id} className="hover:bg-slate-50 align-top">
+                            <td className="px-4 py-3 font-medium text-ppf-navy">
+                              {org.name}
+                              <span className="block text-xs font-normal text-slate-400">
+                                {org.country}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 font-mono text-xs text-slate-600">
+                              {org.licence_key}
+                            </td>
+                            <td className="px-4 py-3 text-slate-500">
+                              {org.jurisdiction_code ?? "Universal"}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
+                                  statusBadge[org.licence_status] ?? "bg-slate-100 text-slate-600"
+                                }`}
+                              >
+                                {org.licence_status}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-slate-600">
+                              {countMap[org.id] ?? 0}
+                            </td>
+                            <td className="px-4 py-3 text-slate-400">
+                              {org.max_users ?? "∞"}
+                            </td>
+                            <td className="px-4 py-3">
+                              <SubgroupPanel
+                                orgId={org.id}
+                                subgroups={orgSubgroups}
+                                canCreate={canManageSubgroups}
+                              />
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* Create org form — super admin only */}
+              {isSuperAdmin && (
+                <div className="rounded-lg border border-ppf-sky/20 bg-white p-6 shadow-sm">
+                  <h2 className="mb-5 text-lg font-semibold text-ppf-navy">Create organisation</h2>
+                  <CreateOrgForm />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* REGULATION TAB — IPSAS organisations and subgroups */}
+          {section === "regulation" && (
+            <IpsasOrgsTable orgs={ipsasOrgs} subgroupsByOrg={ipsasSubgroupsByOrg} />
           )}
         </div>
       </main>

@@ -1,0 +1,69 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "PPF Logo Pavitt Public Finance" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - img "PPF Logo" [ref=e4]
+      - generic [ref=e5]: Pavitt Public Finance
+    - generic [ref=e6]:
+      - list [ref=e7]:
+        - listitem [ref=e8]:
+          - link "About" [ref=e9] [cursor=pointer]:
+            - /url: /#about
+        - listitem [ref=e10]:
+          - link "Expertise" [ref=e11] [cursor=pointer]:
+            - /url: /#expertise
+        - listitem [ref=e12]:
+          - link "Regions" [ref=e13] [cursor=pointer]:
+            - /url: /#regions
+        - listitem [ref=e14]:
+          - link "Donors" [ref=e15] [cursor=pointer]:
+            - /url: /#donors
+        - listitem [ref=e16]:
+          - link "Contact" [ref=e17] [cursor=pointer]:
+            - /url: /#contact
+      - link "IPSAS Training" [ref=e18] [cursor=pointer]:
+        - /url: /ipsas-training
+  - main [ref=e19]:
+    - generic [ref=e21]:
+      - img "PPF Logo" [ref=e22]
+      - paragraph [ref=e23]: Coming Soon
+      - heading "IPSAS Training Platform" [level=1] [ref=e24]
+      - paragraph [ref=e25]: Interactive training and an AI-powered accounting resource for public sector professionals working with International Public Sector Accounting Standards.
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - img [ref=e31]
+        - heading "Student Training" [level=2] [ref=e33]
+        - paragraph [ref=e34]: Interactive practice questions covering all International Public Sector Accounting Standards. Log in, work through training modules at your own pace, and track your progress over time.
+      - generic [ref=e35]:
+        - img [ref=e37]
+        - heading "Practitioner Resource" [level=2] [ref=e39]
+        - paragraph [ref=e40]: An AI-powered accounting assistant for working accountants in developing-country finance offices. Ask natural-language questions about IPSAS standards and get clear, contextual answers drawn from the full standards library.
+    - generic [ref=e42]:
+      - heading "How It Works" [level=2] [ref=e43]
+      - generic [ref=e44]:
+        - generic [ref=e45]:
+          - generic [ref=e46]: "1"
+          - heading "Register" [level=3] [ref=e47]
+          - paragraph [ref=e48]: Create your account to get started with personalised training.
+        - generic [ref=e49]:
+          - generic [ref=e50]: "2"
+          - heading "Learn" [level=3] [ref=e51]
+          - paragraph [ref=e52]: Work through IPSAS training questions organised by accounting standard.
+        - generic [ref=e53]:
+          - generic [ref=e54]: "3"
+          - heading "Track" [level=3] [ref=e55]
+          - paragraph [ref=e56]: Review your progress, revisit past questions, and build your expertise over time.
+    - generic [ref=e58]:
+      - heading "Get Notified at Launch" [level=2] [ref=e59]
+      - paragraph [ref=e60]: Leave your email and we'll let you know when the IPSAS Training Platform is ready.
+      - generic [ref=e61]:
+        - textbox "your@email.com" [ref=e62]
+        - button "Notify Me" [ref=e63]
+      - paragraph [ref=e64]: No spam. We'll only email you about the IPSAS Training launch.
+  - contentinfo [ref=e65]:
+    - generic [ref=e66]:
+      - img "PPF Logo" [ref=e67]
+      - paragraph [ref=e68]: © 2026 Pavitt Public Finance — All rights reserved.
+      - link "LinkedIn" [ref=e69] [cursor=pointer]:
+        - /url: https://www.linkedin.com/in/greggpavitt/
+  - alert [ref=e70]

@@ -1,0 +1,153 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "PPF Logo Pavitt Public Finance" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - img "PPF Logo" [ref=e4]
+      - generic [ref=e5]: Pavitt Public Finance
+    - generic [ref=e6]:
+      - list [ref=e7]:
+        - listitem [ref=e8]:
+          - link "About" [ref=e9] [cursor=pointer]:
+            - /url: /#about
+        - listitem [ref=e10]:
+          - link "Expertise" [ref=e11] [cursor=pointer]:
+            - /url: /#expertise
+        - listitem [ref=e12]:
+          - link "Regions" [ref=e13] [cursor=pointer]:
+            - /url: /#regions
+        - listitem [ref=e14]:
+          - link "Donors" [ref=e15] [cursor=pointer]:
+            - /url: /#donors
+        - listitem [ref=e16]:
+          - link "Contact" [ref=e17] [cursor=pointer]:
+            - /url: /#contact
+      - link "IPSAS Training" [ref=e18] [cursor=pointer]:
+        - /url: /ipsas-training
+  - main [ref=e19]:
+    - generic [ref=e20]:
+      - img "Gregg Pavitt — fieldwork" [ref=e21]
+      - generic [ref=e23]:
+        - img "PPF Logo" [ref=e24]
+        - heading "Pavitt Public Finance" [level=1] [ref=e25]
+        - paragraph [ref=e26]: International PFM Expert
+    - generic [ref=e28]:
+      - paragraph [ref=e29]: About
+      - generic [ref=e30]:
+        - img "Gregg Pavitt" [ref=e33]
+        - generic [ref=e34]:
+          - paragraph [ref=e35]: Gregg Pavitt is a public financial management specialist with over 25 years of experience helping governments in Sub-Saharan Africa, South Asia, and the Pacific strengthen how they plan, allocate, and account for public resources.
+          - paragraph [ref=e36]: "He provides technical assistance and advisory services in six core areas: PFM studies and assessments, public expenditure management (PEM), domestic revenue mobilisation (DRM), integrated financial management systems (IFMIS), public investment management (PIM), and International Public Sector Accounting Standards (IPSAS)."
+          - paragraph [ref=e37]: Gregg has served as Team Leader and Key Expert on programmes funded by the EU (EuropeAid), World Bank, DFAT, USAID, and DFID/FCDO — both in long-term embedded roles within Ministries of Finance and on targeted short-term assignments. He is known for effective policy dialogue with government counterparts, practical reform design, and building national capacity that outlasts the project cycle.
+          - paragraph [ref=e38]: International consulting firms and development organisations engage Gregg for his ability to mobilise quickly, manage multi-disciplinary teams, and deliver reliably within the compliance and reporting frameworks that donor-funded programmes demand.
+    - generic [ref=e40]:
+      - paragraph [ref=e41]: Areas of Expertise
+      - heading "Public Financial Management Services" [level=2] [ref=e42]
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - paragraph [ref=e45]: PFM Studies
+          - heading "PFM Studies & Assessments" [level=3] [ref=e46]
+          - paragraph [ref=e47]: Conducting diagnostic assessments (PEFA, fiduciary reviews) and research to inform PFM reform strategies.
+        - generic [ref=e48]:
+          - paragraph [ref=e49]: IFMS
+          - heading "Integrated Financial Management Systems" [level=3] [ref=e50]
+          - paragraph [ref=e51]: Advising on the design, implementation, and improvement of government financial information systems.
+        - generic [ref=e52]:
+          - paragraph [ref=e53]: IPSAS
+          - heading "International Public Sector Accounting Standards" [level=3] [ref=e54]
+          - paragraph [ref=e55]: Supporting governments transitioning to accrual-basis accounting and IPSAS-compliant financial reporting.
+        - generic [ref=e56]:
+          - paragraph [ref=e57]: PIM
+          - heading "Public Investment Management" [level=3] [ref=e58]
+          - paragraph [ref=e59]: Strengthening systems for planning, prioritizing, and executing public investment programs to maximize development outcomes.
+        - generic [ref=e60]:
+          - paragraph [ref=e61]: PEM
+          - heading "Public Expenditure Management" [level=3] [ref=e62]
+          - paragraph [ref=e63]: Supporting budget formulation, execution, and reporting reforms to improve fiscal discipline and service delivery.
+        - generic [ref=e64]:
+          - paragraph [ref=e65]: DRM
+          - heading "Domestic Revenue Mobilization" [level=3] [ref=e66]
+          - paragraph [ref=e67]: Helping governments increase domestic revenue through tax policy, administration reform, and compliance improvement.
+    - generic [ref=e69]:
+      - paragraph [ref=e70]: Global Reach
+      - heading "Countries & Regions Served" [level=2] [ref=e71]
+      - generic [ref=e73]:
+        - img [ref=e74]:
+          - generic [ref=e77]:
+            - generic [ref=e80]: Solomon Is.
+            - generic [ref=e83]: FSM
+        - generic [ref=e84]:
+          - generic [ref=e85]: Sub-Saharan Africa
+          - generic [ref=e87]: South Asia
+          - generic [ref=e89]: Current Engagement
+      - generic [ref=e92]:
+        - generic [ref=e93]: Current Engagement
+        - paragraph [ref=e94]: Solomon Islands
+        - paragraph [ref=e95]: 2024–present
+      - generic [ref=e96]:
+        - generic [ref=e97]:
+          - heading "Pacific" [level=3] [ref=e98]
+          - list [ref=e99]:
+            - listitem [ref=e100]: Federated States of Micronesia
+            - listitem [ref=e101]: Papua New Guinea
+        - generic [ref=e102]:
+          - heading "Sub-Saharan Africa" [level=3] [ref=e103]
+          - list [ref=e104]:
+            - listitem [ref=e105]: Somalia
+            - listitem [ref=e106]: Kenya
+            - listitem [ref=e107]: Tanzania
+            - listitem [ref=e108]: Malawi
+            - listitem [ref=e109]: Mozambique
+            - listitem [ref=e110]: Zambia
+            - listitem [ref=e111]: Liberia
+            - listitem [ref=e112]: Nigeria
+            - listitem [ref=e113]: Ghana
+            - listitem [ref=e114]: Sierra Leone
+        - generic [ref=e115]:
+          - heading "South Asia" [level=3] [ref=e116]
+          - list [ref=e117]:
+            - listitem [ref=e118]: Afghanistan
+            - listitem [ref=e119]: Pakistan
+    - generic [ref=e121]:
+      - paragraph [ref=e122]: Partners & Donors
+      - heading "Trusted by Leading Development Agencies" [level=2] [ref=e123]
+      - generic [ref=e124]:
+        - generic "World Bank" [ref=e125]:
+          - img "World Bank" [ref=e126]
+        - generic "European Union" [ref=e127]:
+          - img "European Union" [ref=e128]
+        - generic "USAID" [ref=e129]:
+          - img "USAID" [ref=e130]
+        - generic "Millennium Challenge Corporation" [ref=e131]:
+          - img "Millennium Challenge Corporation" [ref=e132]
+        - generic "DFAT (Australian Aid)" [ref=e133]:
+          - img "DFAT (Australian Aid)" [ref=e134]
+        - generic "FCDO" [ref=e135]:
+          - img "FCDO" [ref=e136]
+    - generic [ref=e138]:
+      - paragraph [ref=e139]: Get in Touch
+      - heading "Contact" [level=2] [ref=e140]
+      - link "Connect on LinkedIn" [ref=e141] [cursor=pointer]:
+        - /url: https://www.linkedin.com/in/greggpavitt/
+        - img [ref=e142]
+        - text: Connect on LinkedIn
+      - generic [ref=e144]:
+        - generic [ref=e145]:
+          - generic [ref=e146]: Your Name
+          - textbox "Your Name" [ref=e147]:
+            - /placeholder: Jane Smith
+        - generic [ref=e148]:
+          - generic [ref=e149]: Your Email
+          - textbox "Your Email" [ref=e150]:
+            - /placeholder: jane@example.com
+        - generic [ref=e151]:
+          - generic [ref=e152]: Message
+          - textbox "Message" [ref=e153]:
+            - /placeholder: Tell Gregg about your project...
+        - button "Send Message" [ref=e154]
+  - contentinfo [ref=e155]:
+    - generic [ref=e156]:
+      - img "PPF Logo" [ref=e157]
+      - paragraph [ref=e158]: © 2026 Pavitt Public Finance — All rights reserved.
+      - link "LinkedIn" [ref=e159] [cursor=pointer]:
+        - /url: https://www.linkedin.com/in/greggpavitt/
+  - alert [ref=e160]

@@ -7,6 +7,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
+import { createIpsasAdminClient } from "@/lib/supabase/ipsas-admin-client"
 
 // ---------------------------------------------------------------------------
 // Helper — verify the calling user is in admin_users
@@ -470,5 +471,138 @@ export async function getMasterResults(): Promise<{
   } catch (e) {
     console.error("getMasterResults: unexpected error", e)
     return { rows: [], error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// IPSAS Advisor integration — manage regulation subgroups
+// ---------------------------------------------------------------------------
+// These actions call the IPSAS Supabase project to manage org_subgroups
+// used for gating content visibility by sub_jurisdiction codes.
+
+export type IpsasOrg = {
+  id: string
+  name: string
+}
+
+export type IpsasSubgroup = {
+  id: string
+  org_id: string
+  name: string
+  sub_jurisdiction: string | null
+  created_at: string
+}
+
+// ---------------------------------------------------------------------------
+// Get all IPSAS organisations and their regulation subgroups
+// ---------------------------------------------------------------------------
+
+export async function getIpsasOrgsAndSubgroups(): Promise<{
+  orgs: IpsasOrg[]
+  subgroupsByOrg: Map<string, IpsasSubgroup[]>
+  error?: string
+}> {
+  try {
+    await requireAdmin()
+    const ipsasClient = createIpsasAdminClient()
+
+    // Fetch all orgs
+    const { data: orgs, error: orgsError } = await ipsasClient
+      .from("organisations")
+      .select("id, name")
+      .order("name")
+
+    if (orgsError) {
+      console.error("getIpsasOrgsAndSubgroups: orgs fetch failed", orgsError)
+      return { orgs: [], subgroupsByOrg: new Map(), error: orgsError.message }
+    }
+
+    // Fetch all subgroups
+    const { data: subgroups, error: subError } = await ipsasClient
+      .from("org_subgroups")
+      .select("id, org_id, name, sub_jurisdiction, created_at")
+      .order("name")
+
+    if (subError) {
+      console.error("getIpsasOrgsAndSubgroups: subgroups fetch failed", subError)
+      return { orgs: [], subgroupsByOrg: new Map(), error: subError.message }
+    }
+
+    // Group subgroups by org_id
+    const subgroupsByOrg = new Map<string, IpsasSubgroup[]>()
+    for (const sg of subgroups ?? []) {
+      const existing = subgroupsByOrg.get(sg.org_id) ?? []
+      existing.push(sg)
+      subgroupsByOrg.set(sg.org_id, existing)
+    }
+
+    return { orgs: orgs ?? [], subgroupsByOrg, error: undefined }
+  } catch (e) {
+    console.error("getIpsasOrgsAndSubgroups: unexpected error", e)
+    return { orgs: [], subgroupsByOrg: new Map(), error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Create a regulation subgroup in IPSAS
+// ---------------------------------------------------------------------------
+
+export async function createIpsasSubgroup(
+  prevState: { error?: string; success?: boolean },
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    await requireAdmin()
+
+    const orgId = (formData.get("org_id") as string | null)?.trim() ?? ""
+    const name = (formData.get("name") as string | null)?.trim() ?? ""
+    const subJurisdiction = (formData.get("sub_jurisdiction") as string | null)?.trim() ?? ""
+
+    if (!orgId || !name || !subJurisdiction) {
+      return { error: "Organisation, subgroup name, and sub_jurisdiction code are required." }
+    }
+
+    const ipsasClient = createIpsasAdminClient()
+    const { error } = await ipsasClient
+      .from("org_subgroups")
+      .insert({ org_id: orgId, name, sub_jurisdiction: subJurisdiction })
+
+    if (error) {
+      console.error("createIpsasSubgroup: insert failed", { orgId, name, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/orgs")
+    return { success: true }
+  } catch (e) {
+    console.error("createIpsasSubgroup: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Delete a regulation subgroup from IPSAS
+// ---------------------------------------------------------------------------
+
+export async function deleteIpsasSubgroup(subgroupId: string): Promise<{ error?: string }> {
+  try {
+    await requireAdmin()
+    const ipsasClient = createIpsasAdminClient()
+
+    const { error } = await ipsasClient
+      .from("org_subgroups")
+      .delete()
+      .eq("id", subgroupId)
+
+    if (error) {
+      console.error("deleteIpsasSubgroup: delete failed", { subgroupId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/orgs")
+    return {}
+  } catch (e) {
+    console.error("deleteIpsasSubgroup: unexpected error", e)
+    return { error: (e as Error).message }
   }
 }

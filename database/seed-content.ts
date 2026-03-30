@@ -109,9 +109,9 @@ function generateSlug(
   const moduleNum = String(frontmatter.module).padStart(2, '0')
   const topic = (frontmatter.topic as string) || 'untitled'
 
-  // Solomon Islands overlay
-  if (filePath.includes('Solomon-Island-Government')) {
-    return `sig-${topic}`
+  // Solomon Islands overlay — either legacy folder or new org/sig path
+  if (filePath.includes('Solomon-Island-Government') || filePath.replace(/\\/g, '/').includes('/org/sig/')) {
+    return `sig-${moduleNum}-${topic}`
   }
 
   // Determine difficulty tier from file path (for accrual)
@@ -157,7 +157,10 @@ function getDifficultyFromPath(
 
 function getJurisdiction(filePath: string): string | null {
   const normalised = filePath.replace(/\\/g, '/')
+  // Legacy location: content/Solomon-Island-Government/
   if (normalised.includes('Solomon-Island-Government')) return 'SIG'
+  // Current location: content/cash-basis/org/sig/
+  if (normalised.includes('/org/sig/')) return 'SIG'
   return null
 }
 
@@ -174,8 +177,8 @@ function parseFlashCards(content: string, moduleId: string): ParsedQuestion[] {
 
   const fcSection = fcSectionMatch[1]
 
-  // Split by card headers (### FC-01, ### FC-02, etc.)
-  const cardBlocks = fcSection.split(/### FC-\d+/).slice(1) // skip text before first card
+  // Split by card headers (### FC-01, ### [Basic] FC-01, etc. — difficulty tag optional)
+  const cardBlocks = fcSection.split(/### (?:\[.*?\]\s+)?FC-\d+/).slice(1)
 
   for (let i = 0; i < cardBlocks.length; i++) {
     const block = cardBlocks[i].trim()
@@ -223,8 +226,8 @@ function parseMCQs(content: string, moduleId: string): ParsedQuestion[] {
 
   const mcqSection = mcqSectionMatch[1]
 
-  // Split by question headers (### MCQ-01, ### MCQ-02, etc.)
-  const questionBlocks = mcqSection.split(/### MCQ-\d+/).slice(1)
+  // Split by question headers (### MCQ-01, ### [Basic] MCQ-01, etc. — difficulty tag optional)
+  const questionBlocks = mcqSection.split(/### (?:\[.*?\]\s+)?MCQ-\d+/).slice(1)
 
   for (let i = 0; i < questionBlocks.length; i++) {
     const block = questionBlocks[i].trim()
@@ -298,6 +301,69 @@ function parseMCQs(content: string, moduleId: string): ParsedQuestion[] {
 }
 
 // ---------------------------------------------------------------------------
+// Parse True/False questions from markdown content
+// These are stored as question_type = 'mcq' with two fixed options:
+//   [{id: "True", text: "True"}, {id: "False", text: "False"}]
+// This avoids a schema change while still supporting T/F content.
+// ---------------------------------------------------------------------------
+
+function parseTrueFalseQuestions(content: string, moduleId: string): ParsedQuestion[] {
+  const questions: ParsedQuestion[] = []
+
+  // Find the True/False section (may appear as "True/False Questions" or "True/False")
+  const tfSectionMatch = content.match(
+    /## True\/False Questions?\s*\n([\s\S]*?)(?=\n## (?!True\/False)|$)/
+  )
+  if (!tfSectionMatch) return questions
+
+  const tfSection = tfSectionMatch[1]
+
+  // Split by question headers: ### TF-01, ### [Basic] TF-01, etc.
+  const questionBlocks = tfSection.split(/### (?:\[.*?\]\s+)?TF-\d+/).slice(1)
+
+  for (let i = 0; i < questionBlocks.length; i++) {
+    const block = questionBlocks[i].trim()
+    if (!block) continue
+
+    // Extract answer — "**Answer: True**" or "**Answer: False**"
+    const answerMatch = block.match(/\*\*Answer:\s*(True|False)\*\*/i)
+    if (!answerMatch) {
+      console.warn(`  Warning: No answer in TF-${String(i + 1).padStart(2, '0')} in ${moduleId}`)
+      continue
+    }
+
+    const correctAnswer = answerMatch[1].charAt(0).toUpperCase() + answerMatch[1].slice(1).toLowerCase()
+    const answerLineIndex = block.indexOf(answerMatch[0])
+
+    // Everything before the answer line is the statement
+    const questionText = block.slice(0, answerLineIndex).trim()
+
+    // Everything after the answer line is the explanation
+    const afterAnswer = block.slice(answerLineIndex + answerMatch[0].length)
+    const explanationText = afterAnswer
+      .replace(/^\s*\n/, '')
+      .replace(/\n---\s*$/, '')
+      .replace(/^Explanation:?\s*/i, '')
+      .trim()
+
+    questions.push({
+      module_id: moduleId,
+      question_text: questionText,
+      question_type: 'mcq',
+      options: [
+        { id: 'True', text: 'True' },
+        { id: 'False', text: 'False' },
+      ],
+      correct_answer: correctAnswer,
+      explanation: explanationText || null,
+      sequence_number: i + 1,
+    })
+  }
+
+  return questions
+}
+
+// ---------------------------------------------------------------------------
 // Parse a single markdown file into a module + questions
 // ---------------------------------------------------------------------------
 
@@ -348,13 +414,14 @@ function parseFile(
     description: (fm.description as string) || '',
   }
 
-  // Parse questions (flash cards + MCQs)
+  // Parse questions (flash cards + MCQs + True/False)
   const flashCards = parseFlashCards(content, slug)
   const mcqs = parseMCQs(content, slug)
+  const trueFalse = parseTrueFalseQuestions(content, slug)
 
   return {
     module: moduleData,
-    questions: [...flashCards, ...mcqs],
+    questions: [...flashCards, ...mcqs, ...trueFalse],
   }
 }
 
@@ -524,9 +591,10 @@ async function main() {
   console.log(`  SIG overlay: ${sigModules.length} modules`)
 
   const fcCount = allQuestions.filter(q => q.question_type === 'flashcard').length
+  // MCQ count includes both standard MCQs and True/False questions (stored as mcq type)
   const mcqCount = allQuestions.filter(q => q.question_type === 'mcq').length
-  console.log(`\n  Flash cards: ${fcCount}`)
-  console.log(`  MCQs:        ${mcqCount}`)
+  console.log(`\n  Flash cards:      ${fcCount}`)
+  console.log(`  MCQs + True/False: ${mcqCount}`)
 
   if (moduleErrors > 0 || questionErrors > 0) {
     console.log('\n⚠ Some errors occurred — review the output above.')

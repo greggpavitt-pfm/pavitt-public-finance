@@ -9,7 +9,6 @@
 // listConversations — fetch user's conversation list
 // archiveConversation — mark conversation as archived
 
-import { Anthropic } from "@anthropic-ai/sdk"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { readFileSync } from "fs"
 import { join } from "path"
@@ -49,6 +48,31 @@ interface ClarifyingQuestionsResponse {
 }
 
 type IPSASResponse = QuickTreatmentResponse | ClarifyingQuestionsResponse
+
+// ---------------------------------------------------------------------------
+// Helper: Get model ID for a task type from advisor_model_config
+// Falls back to hardcoded defaults if the table is unavailable
+// ---------------------------------------------------------------------------
+
+const MODEL_DEFAULTS: Record<string, string> = {
+  logic_and_drafting:    "deepseek/deepseek-r1",
+  citation_verification: "google/gemini-1.5-flash",
+  summary_for_office:    "openai/gpt-5-nano",
+}
+
+async function getModelForTask(taskType: string): Promise<string> {
+  try {
+    const serviceClient = await createServiceClient()
+    const { data } = await serviceClient
+      .from("advisor_model_config")
+      .select("model_id")
+      .eq("task_type", taskType)
+      .single()
+    return data?.model_id ?? MODEL_DEFAULTS[taskType] ?? "deepseek/deepseek-r1"
+  } catch {
+    return MODEL_DEFAULTS[taskType] ?? "deepseek/deepseek-r1"
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Helper: Load reference content for system prompt
@@ -460,126 +484,149 @@ export async function sendMessage(
   const referenceContent = loadReferenceContent()
   const systemPrompt = buildSystemPrompt(context, conversation.output_mode, referenceContent)
 
-  // Call Anthropic API with tool-use for structured output
-  const apiKey = process.env.ANTHROPIC_API_KEY
+  // Look up which model to use for logic & drafting (admin-configurable)
+  const modelId = await getModelForTask("logic_and_drafting")
+
+  const apiKey = process.env.OPENROUTER_API_KEY
   if (!apiKey) {
-    console.error("sendMessage: ANTHROPIC_API_KEY not set")
+    console.error("sendMessage: OPENROUTER_API_KEY not set")
     return { messageId: null, error: "API key not configured" }
   }
 
-  const client = new Anthropic({ apiKey })
-
   try {
-    const response = await client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2048,
-      system: systemPrompt,
-      tools: [
-        {
-          name: "ipsas_response",
-          description: "Structured IPSAS treatment response",
-          input_schema: {
-            type: "object",
-            properties: {
-              applicable_standards: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    standard_id: { type: "string" },
-                    title: { type: "string" },
+    // Call OpenRouter using the OpenAI-compatible API format
+    const httpResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        // OpenRouter uses these headers to attribute usage in their dashboard
+        "HTTP-Referer": "https://pfmexpert.net",
+        "X-Title": "IPSAS Advisor",
+      },
+      body: JSON.stringify({
+        model: modelId,
+        max_tokens: 2048,
+        // Enable OpenRouter response caching to reduce cost on repeated queries
+        plugins: { caching: true },
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...conversationHistory,
+          { role: "user", content: userMessage },
+        ],
+        // OpenAI-compatible tool use (function calling)
+        tools: [
+          {
+            type: "function",
+            function: {
+              name: "ipsas_response",
+              description: "Structured IPSAS treatment response",
+              parameters: {
+                type: "object",
+                properties: {
+                  applicable_standards: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        standard_id: { type: "string" },
+                        title: { type: "string" },
+                      },
+                      required: ["standard_id", "title"],
+                    },
                   },
-                  required: ["standard_id", "title"],
-                },
-              },
-              why_applies: { type: "string" },
-              complexity: {
-                type: "string",
-                enum: ["Straightforward", "Moderate", "Complex"],
-              },
-              recognition_criteria: { type: "string" },
-              measurement_guidance: { type: "string" },
-              disclosure_requirements: { type: "string" },
-              journal_entry: { type: "string" },
-              related_topics: { type: "array", items: { type: "string" } },
-              citations: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    standard: { type: "string" },
-                    paragraph: { type: "string" },
-                    text: { type: "string" },
+                  why_applies: { type: "string" },
+                  complexity: {
+                    type: "string",
+                    enum: ["Straightforward", "Moderate", "Complex"],
                   },
-                  required: ["standard", "paragraph"],
+                  recognition_criteria: { type: "string" },
+                  measurement_guidance: { type: "string" },
+                  disclosure_requirements: { type: "string" },
+                  journal_entry: { type: "string" },
+                  related_topics: { type: "array", items: { type: "string" } },
+                  citations: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        standard: { type: "string" },
+                        paragraph: { type: "string" },
+                        text: { type: "string" },
+                      },
+                      required: ["standard", "paragraph"],
+                    },
+                  },
                 },
+                required: [
+                  "applicable_standards",
+                  "why_applies",
+                  "complexity",
+                  "recognition_criteria",
+                  "measurement_guidance",
+                  "disclosure_requirements",
+                  "related_topics",
+                  "citations",
+                ],
               },
             },
-            required: [
-              "applicable_standards",
-              "why_applies",
-              "complexity",
-              "recognition_criteria",
-              "measurement_guidance",
-              "disclosure_requirements",
-              "related_topics",
-              "citations",
-            ],
           },
-        },
-        {
-          name: "clarifying_questions",
-          description: "Questions to clarify the user's situation before providing treatment",
-          input_schema: {
-            type: "object",
-            properties: {
-              questions: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    id: { type: "string" },
-                    text: { type: "string" },
-                    options: { type: "array", items: { type: "string" } },
+          {
+            type: "function",
+            function: {
+              name: "clarifying_questions",
+              description: "Questions to clarify the user's situation before providing treatment",
+              parameters: {
+                type: "object",
+                properties: {
+                  questions: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        id: { type: "string" },
+                        text: { type: "string" },
+                        options: { type: "array", items: { type: "string" } },
+                      },
+                      required: ["id", "text", "options"],
+                    },
                   },
-                  required: ["id", "text", "options"],
                 },
+                required: ["questions"],
               },
             },
-            required: ["questions"],
           },
-        },
-      ],
-      messages: [
-        ...conversationHistory,
-        { role: "user", content: userMessage },
-      ],
+        ],
+        // Force the model to always call one of the tools (no free-text fallback)
+        tool_choice: "required",
+      }),
     })
 
-    // Extract tool use from response
-    let assistantContent = ""
-    let toolUsed: "ipsas_response" | "clarifying_questions" | null = null
-    let structuredOutput: IPSASResponse | null = null
-
-    for (const block of response.content) {
-      if (block.type === "text") {
-        assistantContent = block.text
-      } else if (block.type === "tool_use") {
-        toolUsed = block.name as "ipsas_response" | "clarifying_questions"
-        structuredOutput = block.input as IPSASResponse
-      }
+    if (!httpResponse.ok) {
+      const errorText = await httpResponse.text()
+      console.error("sendMessage: OpenRouter API error", { status: httpResponse.status, errorText })
+      return { messageId: null, error: `LLM API error: ${httpResponse.status}` }
     }
 
-    if (!toolUsed || !structuredOutput) {
-      console.error("sendMessage: no tool use in response", { conversationId })
+    const data = await httpResponse.json()
+
+    // Parse OpenAI-format response
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0]
+    if (!toolCall) {
+      console.error("sendMessage: no tool call in response", { conversationId, data })
       return { messageId: null, error: "Invalid LLM response" }
     }
 
+    const toolUsed = toolCall.function.name as "ipsas_response" | "clarifying_questions"
+    // arguments is a JSON string in OpenAI format
+    const structuredOutput: IPSASResponse = JSON.parse(toolCall.function.arguments)
+
+    const usage = data.usage ?? {}
+
     // Handle clarifying questions flow
-    if (toolUsed === "clarifying_questions" && "needs_clarification" in structuredOutput) {
+    if (toolUsed === "clarifying_questions") {
       const clarQ = structuredOutput as ClarifyingQuestionsResponse
 
-      // Save assistant message with questions
       const { data: assistantMsg, error: assistantError } = await serviceClient
         .from("advisor_messages")
         .insert({
@@ -607,7 +654,6 @@ export async function sendMessage(
     if (toolUsed === "ipsas_response") {
       const treatment = structuredOutput as QuickTreatmentResponse
 
-      // Build markdown response for display
       const standardsList = treatment.applicable_standards
         .map((s) => `- ${s.standard_id}: ${s.title}`)
         .join("\n")
@@ -643,7 +689,7 @@ ${treatment.related_topics.map((t) => `- ${t}`).join("\n")}
 ${citationsList}
 `.trim()
 
-      // Save assistant message
+      // OpenRouter uses OpenAI token field names (prompt_tokens / completion_tokens)
       const { data: assistantMsg, error: assistantError } = await serviceClient
         .from("advisor_messages")
         .insert({
@@ -653,8 +699,8 @@ ${citationsList}
           citations: treatment.citations,
           standards_cited: treatment.applicable_standards.map((s) => s.standard_id),
           complexity: treatment.complexity,
-          token_count_in: response.usage?.input_tokens ?? 0,
-          token_count_out: response.usage?.output_tokens ?? 0,
+          token_count_in: usage.prompt_tokens ?? 0,
+          token_count_out: usage.completion_tokens ?? 0,
         })
         .select("id")
         .single()
@@ -664,7 +710,7 @@ ${citationsList}
         return { messageId: null, error: "Failed to save response" }
       }
 
-      // Auto-update conversation title from first message (if title is still "New Conversation")
+      // Auto-update conversation title from first message
       if (conversation.title === "New Conversation") {
         const titleSummary = userMessage.substring(0, 60).replace(/\n/g, " ")
         await serviceClient
@@ -683,7 +729,7 @@ ${citationsList}
 
     return { messageId: null, error: "Unexpected response format" }
   } catch (err) {
-    console.error("sendMessage: Anthropic API error", { conversationId, error: err })
+    console.error("sendMessage: OpenRouter API error", { conversationId, error: err })
     return { messageId: null, error: err instanceof Error ? err.message : "LLM error" }
   }
 }

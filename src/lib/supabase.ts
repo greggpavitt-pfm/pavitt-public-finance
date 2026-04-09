@@ -3,7 +3,6 @@
 // See .env.example for required environment variables.
 
 import { createClient } from "@supabase/supabase-js"
-import { NextRequest } from "next/server"
 
 // ---------------------------------------------------------------------------
 // Browser client (uses anon key — safe for client bundle)
@@ -64,11 +63,3 @@ export function createAuthedClient(token: string) {
   })
 }
 
-// ---------------------------------------------------------------------------
-// Helper: extract Bearer token from an API request
-// ---------------------------------------------------------------------------
-
-export function getBearerToken(req: NextRequest): string | null {
-  const auth = req.headers.get("authorization")
-  return auth?.startsWith("Bearer ") ? auth.slice(7) : null
-}

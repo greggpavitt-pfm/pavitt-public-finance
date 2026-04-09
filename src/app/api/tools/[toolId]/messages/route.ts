@@ -3,7 +3,12 @@
 // Saves the user message, calls the AI, saves the assistant reply, returns it.
 
 import { NextRequest, NextResponse } from "next/server"
-import { createAuthedClient, getBearerToken } from "@/lib/supabase"
+import { createAuthedClient } from "@/lib/supabase"
+
+function getBearerToken(req: NextRequest): string | null {
+  const auth = req.headers.get("authorization")
+  return auth?.startsWith("Bearer ") ? auth.slice(7) : null
+}
 import { chat, AIMessage } from "@/lib/ai"
 
 type Params = Promise<{ toolId: string }>

@@ -40,4 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
+# playwright test output (screenshots and recordings — not source code)
+*.png
+*.yml

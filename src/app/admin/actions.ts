@@ -62,6 +62,7 @@ export async function approveUser(userId: string): Promise<{ error?: string }> {
 
     revalidatePath("/admin")
     revalidatePath("/admin/users")
+    revalidatePath("/admin/results")
     return {}
   } catch (e) {
     console.error("approveUser: unexpected error", e)
@@ -91,6 +92,7 @@ export async function suspendUser(userId: string): Promise<{ error?: string }> {
 
     revalidatePath("/admin")
     revalidatePath("/admin/users")
+    revalidatePath("/admin/results")
     return {}
   } catch (e) {
     console.error("suspendUser: unexpected error", e)

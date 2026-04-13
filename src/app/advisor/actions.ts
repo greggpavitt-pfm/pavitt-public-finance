@@ -110,33 +110,164 @@ function loadReferenceContent(): string {
 // ---------------------------------------------------------------------------
 // Helper: Check daily token limit for user
 // ---------------------------------------------------------------------------
+// Queries advisor_usage_log (the denormalised usage table) for today's token
+// total for this specific user. dailyCap comes from profiles.daily_token_limit
+// so it can be configured per-user without a code deploy.
 
-async function checkTokenLimit(userId: string): Promise<{ allowed: boolean; reason?: string }> {
-  const serviceClient = await createServiceClient()
-
-  // Get today's date in UTC
+async function checkTokenLimit(
+  userId: string,
+  dailyCap: number,
+  serviceClient: Awaited<ReturnType<typeof createServiceClient>>
+): Promise<{ allowed: boolean; reason?: string }> {
+  // Get today's date boundary in UTC
   const today = new Date()
   today.setUTCHours(0, 0, 0, 0)
 
-  // Sum tokens used by this user today
-  const { data: todaysMessages } = await serviceClient
-    .from("advisor_messages")
-    .select("token_count_in, token_count_out")
-    .eq("role", "assistant")
+  // Sum tokens used by this user today from the usage log.
+  // advisor_usage_log has user_id directly, so no join is needed.
+  const { data: todaysUsage } = await serviceClient
+    .from("advisor_usage_log")
+    .select("total_tokens")
+    .eq("user_id", userId)
     .gte("created_at", today.toISOString())
 
-  const totalTokens = (todaysMessages ?? []).reduce(
-    (sum, msg) => sum + (msg.token_count_in || 0) + (msg.token_count_out || 0),
+  const tokensUsedToday = (todaysUsage ?? []).reduce(
+    (sum, row) => sum + (row.total_tokens || 0),
     0
   )
 
-  // Daily cap: 100k tokens per user (conservative for MVP)
-  const dailyCap = 100000
-  if (totalTokens >= dailyCap) {
-    return { allowed: false, reason: `Daily token limit reached (${totalTokens}/${dailyCap})` }
+  if (tokensUsedToday >= dailyCap) {
+    return {
+      allowed: false,
+      reason: `Daily token limit reached (${tokensUsedToday.toLocaleString()}/${dailyCap.toLocaleString()}). Resets at midnight UTC.`,
+    }
   }
 
   return { allowed: true }
+}
+
+// ---------------------------------------------------------------------------
+// Helper: Load pre-computed RAG context from Supabase cache
+// ---------------------------------------------------------------------------
+// Tries to find relevant cached knowledge packets for the user's question.
+// Each packet contains pre-retrieved ChromaDB chunks for a specific IPSAS
+// standard or topic cluster, stored in the rag_knowledge_cache table.
+//
+// Matching: simple keyword overlap + bonus for explicit standard ID mentions
+// (e.g. user types "IPSAS 23"). This is fast, transparent, and easy to debug
+// — no vector embeddings needed for ~80 entries.
+//
+// Returns:
+//   context    — formatted text ready to inject into the system prompt, or null
+//   cacheHit   — false means fall back to loadReferenceContent()
+//   matchedKeys — which cache entries were used (stored in advisor_messages)
+
+async function loadCachedContext(
+  userQuestion: string,
+  reportingBasis: string,
+  serviceClient: Awaited<ReturnType<typeof createServiceClient>>
+): Promise<{ context: string | null; cacheHit: boolean; matchedKeys: string[] }> {
+  try {
+    const questionLower = userQuestion.toLowerCase()
+
+    // Map reporting basis to the pathway value stored in the cache table
+    const pathwayFilter = reportingBasis === "Cash Basis IPSAS" ? "cash-basis" : "accrual"
+
+    // Load all cache entry metadata for this pathway.
+    // We load only the lightweight columns (no raw_chunks yet) because
+    // we want to score all ~80 entries before deciding which chunks to fetch.
+    const { data: allEntries, error } = await serviceClient
+      .from("rag_knowledge_cache")
+      .select("cache_key, label, standard_ids, keywords, pathway, standard_status")
+      .in("pathway", [pathwayFilter, "both"])
+      .eq("standard_status", "current")
+
+    if (error || !allEntries || allEntries.length === 0) {
+      // Cache not yet populated or unavailable — caller will use static files
+      if (error) console.warn("loadCachedContext: DB error", { error })
+      return { context: null, cacheHit: false, matchedKeys: [] }
+    }
+
+    // Score each entry by how well it matches the user's question.
+    // +10 if user explicitly mentioned the standard ID (e.g. "IPSAS 23", "IPSAS-23")
+    // +2  for each keyword that appears in the question text
+    const scored = allEntries.map((entry) => {
+      let score = 0
+
+      for (const stdId of (entry.standard_ids as string[])) {
+        // Match "IPSAS 23", "IPSAS-23", "ipsas23", "IPSAS23.7" etc.
+        const pattern = stdId.replace("-", "[ -]?").toLowerCase()
+        if (new RegExp(pattern).test(questionLower)) {
+          score += 10
+        }
+      }
+
+      for (const keyword of (entry.keywords as string[])) {
+        if (questionLower.includes(keyword.toLowerCase())) {
+          score += 2
+        }
+      }
+
+      return { ...entry, score }
+    })
+
+    // Take the top 3 matches (cap at 3 to keep prompt size manageable:
+    // 3 entries × 12 chunks × ~900 chars ≈ ~10,000 tokens of context)
+    const topMatches = scored
+      .filter((e) => e.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3)
+
+    if (topMatches.length === 0) {
+      // No keyword match — caller falls back to static reference files
+      return { context: null, cacheHit: false, matchedKeys: [] }
+    }
+
+    // Now fetch the full raw_chunks data only for the matched entries.
+    // (raw_chunks is a large JSONB column — only load it when needed.)
+    const matchedKeys = topMatches.map((e) => e.cache_key as string)
+    const { data: fullEntries, error: fetchError } = await serviceClient
+      .from("rag_knowledge_cache")
+      .select("cache_key, label, raw_chunks, synthesised_summary")
+      .in("cache_key", matchedKeys)
+
+    if (fetchError || !fullEntries) {
+      console.warn("loadCachedContext: failed to fetch chunk data", { fetchError })
+      return { context: null, cacheHit: false, matchedKeys: [] }
+    }
+
+    // Build the context string to inject into the system prompt.
+    // Prefer synthesised_summary if available (compact, ~400-word LLM overview).
+    // Fall back to raw chunks (verbatim IPSAS source text, up to 12 chunks).
+    const contextBlocks = fullEntries.map((entry) => {
+      if (entry.synthesised_summary) {
+        return `### ${entry.label}\n\n${entry.synthesised_summary}`
+      }
+
+      const chunks = entry.raw_chunks as Array<{ text: string; source: string; score: number }>
+      const chunkText = chunks
+        .slice(0, 12) // Limit to 12 chunks per entry to control prompt token count
+        .map((c, i) => `[${i + 1}] Source: ${c.source} (relevance: ${Math.round(c.score * 100)}%)\n${c.text}`)
+        .join("\n\n")
+
+      return `### ${entry.label}\n\n${chunkText}`
+    })
+
+    const context = [
+      "## Pre-Retrieved IPSAS Knowledge Base",
+      "The following content was retrieved from IPSAS source documents based on the user's question.",
+      "Use this as your primary reference. Cite specific paragraphs where identifiable.",
+      "",
+      ...contextBlocks,
+    ].join("\n\n")
+
+    return { context, cacheHit: true, matchedKeys }
+  } catch (err) {
+    // Any error falls back gracefully — the cache is a performance enhancement,
+    // not a hard requirement. The LLM can still answer using static reference files.
+    console.warn("loadCachedContext: unexpected error, falling back to static files", { err })
+    return { context: null, cacheHit: false, matchedKeys: [] }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -394,8 +525,17 @@ export async function sendMessage(
 
   const serviceClient = await createServiceClient()
 
-  // Check token limit
-  const tokenCheck = await checkTokenLimit(user.id)
+  // Fetch profile to get org/subgroup for the usage log and the per-user daily cap.
+  // Falls back to the platform default (100,000) if the profile row is missing.
+  const { data: profile } = await serviceClient
+    .from("profiles")
+    .select("org_id, subgroup_id, daily_token_limit")
+    .eq("id", user.id)
+    .single()
+  const dailyCap: number = profile?.daily_token_limit ?? 100000
+
+  // Check token limit using the configurable cap
+  const tokenCheck = await checkTokenLimit(user.id, dailyCap, serviceClient)
   if (!tokenCheck.allowed) {
     return { messageId: null, error: tokenCheck.reason }
   }
@@ -480,8 +620,26 @@ export async function sendMessage(
     reporting_period: string
   }
 
-  // Load reference content and build system prompt
-  const referenceContent = loadReferenceContent()
+  // Try the pre-computed RAG cache first; fall back to static reference files if no match.
+  // The cache holds pre-retrieved ChromaDB chunks for each IPSAS standard and topic cluster.
+  // A cache hit replaces the live ChromaDB search — one fast Supabase read instead.
+  const { context: cachedContext, cacheHit, matchedKeys } = await loadCachedContext(
+    userMessage,
+    context.reporting_basis,
+    serviceClient
+  )
+  console.log(`sendMessage: context cache ${cacheHit ? "HIT" : "MISS"}`, {
+    conversationId,
+    matchedKeys,
+  })
+
+  // If the cache returned context, use it; otherwise fall back to static reference files
+  const referenceContent = cachedContext ?? loadReferenceContent()
+
+  // Store which cache keys were used — shown in advisor_messages.topics_matched column.
+  // 'live-search-fallback' means no cache match was found for this question.
+  const topicsMatched = cacheHit ? matchedKeys : ["live-search-fallback"]
+
   const systemPrompt = buildSystemPrompt(context, conversation.output_mode, referenceContent)
 
   // Look up which model to use for logic & drafting (admin-configurable)
@@ -634,6 +792,7 @@ export async function sendMessage(
           role: "assistant",
           content: "I need to understand your situation better before providing a complete treatment.",
           clarifying_questions: clarQ.questions,
+          topics_matched: topicsMatched,
         })
         .select("id")
         .single()
@@ -642,6 +801,26 @@ export async function sendMessage(
         console.error("sendMessage: failed to save clarifying questions", { conversationId, error: assistantError })
         return { messageId: null, error: "Failed to save response" }
       }
+
+      // Write usage log entry (best-effort — failure here does not fail the request)
+      const clarifyTotalTokens = (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0)
+      serviceClient
+        .from("advisor_usage_log")
+        .insert({
+          user_id: user.id,
+          org_id: profile?.org_id ?? null,
+          subgroup_id: profile?.subgroup_id ?? null,
+          conversation_id: conversationId,
+          message_id: assistantMsg.id,
+          model_used: modelId,
+          task_type: "logic_and_drafting",
+          prompt_tokens: usage.prompt_tokens ?? 0,
+          completion_tokens: usage.completion_tokens ?? 0,
+          total_tokens: clarifyTotalTokens,
+        })
+        .then(({ error: logError }) => {
+          if (logError) console.warn("sendMessage: usage log write failed (clarifying)", { logError })
+        })
 
       return {
         messageId: assistantMsg.id,
@@ -697,6 +876,7 @@ ${citationsList}
           role: "assistant",
           content: responseContent,
           citations: treatment.citations,
+          topics_matched: topicsMatched,
           standards_cited: treatment.applicable_standards.map((s) => s.standard_id),
           complexity: treatment.complexity,
           token_count_in: usage.prompt_tokens ?? 0,
@@ -718,6 +898,26 @@ ${citationsList}
           .update({ title: titleSummary })
           .eq("id", conversationId)
       }
+
+      // Write usage log entry (best-effort — failure here does not fail the request)
+      const treatmentTotalTokens = (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0)
+      serviceClient
+        .from("advisor_usage_log")
+        .insert({
+          user_id: user.id,
+          org_id: profile?.org_id ?? null,
+          subgroup_id: profile?.subgroup_id ?? null,
+          conversation_id: conversationId,
+          message_id: assistantMsg.id,
+          model_used: modelId,
+          task_type: "logic_and_drafting",
+          prompt_tokens: usage.prompt_tokens ?? 0,
+          completion_tokens: usage.completion_tokens ?? 0,
+          total_tokens: treatmentTotalTokens,
+        })
+        .then(({ error: logError }) => {
+          if (logError) console.warn("sendMessage: usage log write failed (treatment)", { logError })
+        })
 
       return {
         messageId: assistantMsg.id,
@@ -776,14 +976,16 @@ function buildSystemPrompt(
   outputMode: string,
   referenceContent: string
 ): string {
+  // Reference content may be either:
+  //   (a) Pre-computed cached chunks — already structured as markdown with headers
+  //   (b) Static curated reference file — raw text loaded from disk
+  // Both are injected directly; no code-fence wrapper so markdown renders correctly.
   const referenceSection = referenceContent
     ? `## Reference Knowledge Base
 
-Below is curated IPSAS reference material. Use this as your authoritative source for standards citations and guidance.
+Below is IPSAS reference material retrieved for this question. Use this as your authoritative source for citations and guidance.
 
-\`\`\`
 ${referenceContent}
-\`\`\`
 
 ---
 

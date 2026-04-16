@@ -6,7 +6,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { createServiceClient } from "@/lib/supabase/server"
-import Navbar from "@/components/ui/Navbar"
+import AuthNavbar from "@/components/ui/AuthNavbar"
 import Footer from "@/components/ui/Footer"
 import { logoutUser } from "@/app/auth/actions"
 import { autoSubmitStaleSessions } from "@/app/training/actions"
@@ -124,7 +124,7 @@ export default async function TrainingPage() {
 
   return (
     <>
-      <Navbar />
+      <AuthNavbar userName={profile.full_name || undefined} currentPath="/training" />
       <main className="min-h-screen bg-ppf-light px-6 py-16 md:px-16">
         <div className="mx-auto max-w-3xl">
           {/* Header */}

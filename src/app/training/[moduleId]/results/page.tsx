@@ -14,7 +14,7 @@ import Link from "next/link"
 import { redirect, notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getSessionResults } from "@/app/training/actions"
-import Navbar from "@/components/ui/Navbar"
+import AuthNavbar from "@/components/ui/AuthNavbar"
 import Footer from "@/components/ui/Footer"
 import PrintButton from "./PrintButton"
 
@@ -55,7 +55,7 @@ export default async function ResultsPage({ params, searchParams }: PageProps) {
 
   return (
     <>
-      <Navbar />
+      <AuthNavbar currentPath="/training" />
       <main className="min-h-screen bg-ppf-light px-6 py-16 md:px-16 print:bg-white print:p-8">
         <div className="mx-auto max-w-3xl">
 

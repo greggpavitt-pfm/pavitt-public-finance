@@ -1,5 +1,7 @@
-// Next.js middleware — runs on every request before the page renders.
-// Must be named middleware.ts and export a function named `middleware`.
+// Next.js 16+ proxy file — runs on every request before the page renders.
+// In Next.js 16 the convention changed: this file must be named proxy.ts and
+// export a function named `proxy` (the old middleware.ts / middleware() names
+// are deprecated and will not run on Vercel).
 //
 // Responsibilities:
 //   1. Refresh the Supabase session cookie so it doesn't expire mid-visit.
@@ -7,21 +9,22 @@
 //   3. Redirect users to the right place based on their account state.
 //
 // Route rules:
-//   /advisor/*   — must be logged in + account approved + onboarding complete
-//   /training/*  — must be logged in + account approved + onboarding complete
-//   /admin/*     — must be logged in + admin (checked again server-side per page)
-//   /pending     — accessible when logged in but not yet approved
-//   /onboarding  — accessible when logged in but onboarding not complete
-//   All others   — public (marketing site, login, register)
+//   /advisor/*          — must be logged in + account approved + onboarding complete
+//   /training/*         — must be logged in + account approved + onboarding complete
+//   /admin/*            — must be logged in + admin (checked again server-side per page)
+//   /pending            — accessible when logged in but not yet approved
+//   /onboarding         — accessible when logged in but onboarding not complete
+//   /practitioner-login — redirect to /advisor if already logged in
+//   All others          — public (marketing site, login, register)
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
   // Create a Supabase client that can read/write cookies on the response.
-  // This is the pattern recommended by Supabase for Next.js App Router middleware.
+  // This is the pattern recommended by Supabase for Next.js App Router proxy.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -74,7 +77,7 @@ export async function middleware(request: NextRequest) {
     }
 
     if (profile.account_status === 'suspended') {
-      // Do NOT call signOut() here — middleware runs on the Edge Runtime and
+      // Do NOT call signOut() here — proxy runs on the Edge Runtime and
       // initiating a Supabase server-side signOut from the edge causes
       // MIDDLEWARE_INVOCATION_FAILED on Vercel.
       // Instead, redirect to /login with a flag; the login page clears the
@@ -127,17 +130,21 @@ export async function middleware(request: NextRequest) {
   }
 
   // --- Redirect logged-in users away from /login and /register ---
+  // Training login → student area; practitioner login → advisor area.
   if (user && (pathname === '/login' || pathname === '/register')) {
     return NextResponse.redirect(new URL('/training', request.url))
+  }
+  if (user && pathname === '/practitioner-login') {
+    return NextResponse.redirect(new URL('/advisor', request.url))
   }
 
   return supabaseResponse
 }
 
-// Tell Next.js which paths this middleware should run on.
+// Tell Next.js which paths this proxy should run on.
 // Skip static assets, images, Next.js internals, and /auth/* routes.
 // /auth/callback must be excluded so the route handler can exchange the
-// confirmation code for a session before the middleware tries to read it.
+// confirmation code for a session before the proxy tries to read it.
 export const config = {
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico|images/|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',

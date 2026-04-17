@@ -43,12 +43,20 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* IPSAS Training — prominent call-to-action button */}
+        {/* IPSAS Training — student practice questions */}
         <a
           href="/ipsas-training"
           className="ml-2 rounded-md bg-ppf-sky px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue"
         >
           IPSAS Training
+        </a>
+
+        {/* IPSAS Questions — practitioner advisor */}
+        <a
+          href="/ipsas-questions"
+          className="rounded-md bg-ppf-navy px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue border border-ppf-blue/30"
+        >
+          IPSAS Questions
         </a>
       </div>
     </nav>

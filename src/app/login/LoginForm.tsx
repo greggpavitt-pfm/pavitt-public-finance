@@ -9,7 +9,13 @@ import { createClient } from "@/lib/supabase/client"
 
 const initialState: AuthFormState = { status: "idle", message: "" }
 
-export default function LoginForm() {
+interface Props {
+  // Where to send the user after a successful login.
+  // Defaults to /training (student path). Pass /advisor for practitioners.
+  redirectTo?: string
+}
+
+export default function LoginForm({ redirectTo = "/training" }: Props) {
   const [state, formAction, isPending] = useActionState(loginUser, initialState)
   const searchParams = useSearchParams()
 
@@ -30,6 +36,8 @@ export default function LoginForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
+      {/* Hidden field tells the server action where to redirect after login */}
+      <input type="hidden" name="redirect_to" value={redirectTo} />
       {/* Suspended-account banner */}
       {isSuspended && (
         <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">

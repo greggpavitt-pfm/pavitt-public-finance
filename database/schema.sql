@@ -57,6 +57,10 @@ create table profiles (
   approved_by         uuid        references auth.users(id),
   approved_at         timestamptz,
   onboarding_complete boolean     default false,
+  -- Which product(s) this user registered for: 'training', 'advisor', or 'both'.
+  -- Used for admin visibility; actual feature access is controlled by account_status.
+  product_access      text        not null default 'training'
+                      check (product_access in ('training', 'advisor', 'both')),
   created_at          timestamptz default now()
 );
 
@@ -411,6 +415,17 @@ create index on assessment_results (user_id, module_id, attempt_number);
 create index on profiles (org_id, account_status);
 create index on org_subgroups (org_id);
 
+
+-- =============================================================================
+-- MIGRATION: add product_access column (run once on existing databases)
+-- If deploying a fresh schema, this column is already included above.
+-- For existing Supabase databases, run this in the SQL editor:
+--
+--   alter table profiles
+--     add column if not exists product_access text not null default 'training'
+--     check (product_access in ('training', 'advisor', 'both'));
+--
+-- =============================================================================
 
 -- =============================================================================
 -- SEED: first super-admin

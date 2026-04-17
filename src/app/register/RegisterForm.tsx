@@ -169,6 +169,28 @@ export default function RegisterForm({ orgs }: Props) {
         </div>
       )}
 
+      {/* Product access — which part of the platform the user needs */}
+      <div>
+        <label htmlFor="product_access" className="mb-1.5 block text-sm font-medium text-slate-700">
+          What will you use this for? <span className="text-red-500">*</span>
+        </label>
+        <select
+          id="product_access"
+          name="product_access"
+          required
+          defaultValue=""
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
+        >
+          <option value="" disabled>— Select access type —</option>
+          <option value="training">Training modules (student)</option>
+          <option value="advisor">Practitioner Advisor (Q&amp;A)</option>
+          <option value="both">Both training and advisor</option>
+        </select>
+        <p className="mt-1.5 text-xs text-slate-500">
+          You can use both products once your account is approved.
+        </p>
+      </div>
+
       <button
         type="submit"
         disabled={isPending}

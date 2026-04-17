@@ -28,13 +28,14 @@ export async function registerUser(
   prevState: AuthFormState,
   formData: FormData
 ): Promise<AuthFormState> {
-  const email    = (formData.get("email")         as string | null)?.trim() ?? ""
-  const password = (formData.get("password")      as string | null) ?? ""
-  const fullName = (formData.get("full_name")     as string | null)?.trim() ?? ""
-  const jobTitle = (formData.get("job_title")     as string | null)?.trim() ?? ""
-  const orgIdRaw = (formData.get("org_id")        as string | null)?.trim() ?? ""
-  const pathway  = (formData.get("pathway")       as string | null) ?? ""
-  const ability  = (formData.get("ability_level") as string | null) ?? ""
+  const email         = (formData.get("email")          as string | null)?.trim() ?? ""
+  const password      = (formData.get("password")       as string | null) ?? ""
+  const fullName      = (formData.get("full_name")      as string | null)?.trim() ?? ""
+  const jobTitle      = (formData.get("job_title")      as string | null)?.trim() ?? ""
+  const orgIdRaw      = (formData.get("org_id")         as string | null)?.trim() ?? ""
+  const pathway       = (formData.get("pathway")        as string | null) ?? ""
+  const ability       = (formData.get("ability_level")  as string | null) ?? ""
+  const productAccess = (formData.get("product_access") as string | null) ?? "training"
 
   // --- Basic validation ---
   if (!email || !password || !fullName || !orgIdRaw || !pathway) {
@@ -93,6 +94,10 @@ export async function registerUser(
   // --- Insert the profile row ---
   // account_status defaults to 'pending' in the schema; we set it explicitly for clarity.
   const serviceClient = await createServiceClient()
+  // Validate product_access to the three allowed values
+  const allowedProducts = ["training", "advisor", "both"]
+  const resolvedProductAccess = allowedProducts.includes(productAccess) ? productAccess : "training"
+
   const { error: profileError } = await serviceClient
     .from("profiles")
     .insert({
@@ -104,6 +109,7 @@ export async function registerUser(
       ability_level:       pathway === "accrual" ? ability : null,
       account_status:      "pending",
       onboarding_complete: false,
+      product_access:      resolvedProductAccess,
     })
 
   if (profileError) {
@@ -124,15 +130,17 @@ export async function registerUser(
 // ---------------------------------------------------------------------------
 // Login
 // ---------------------------------------------------------------------------
-// Signs the user in. Middleware handles redirecting based on their profile state
-// (pending → /pending, onboarding incomplete → /onboarding, approved → /training).
+// Signs the user in. The form can pass an optional hidden `redirect_to` field
+// to control where the user lands after login (e.g. /advisor for practitioners).
+// Only /training and /advisor are accepted — anything else defaults to /training.
 
 export async function loginUser(
   prevState: AuthFormState,
   formData: FormData
 ): Promise<AuthFormState> {
-  const email    = (formData.get("email")    as string | null)?.trim() ?? ""
-  const password = (formData.get("password") as string | null) ?? ""
+  const email      = (formData.get("email")       as string | null)?.trim() ?? ""
+  const password   = (formData.get("password")    as string | null) ?? ""
+  const redirectTo = (formData.get("redirect_to") as string | null) ?? ""
 
   if (!email || !password) {
     return { status: "error", message: "Please enter your email and password." }
@@ -145,8 +153,13 @@ export async function loginUser(
     return { status: "error", message: "Incorrect email or password. Please try again." }
   }
 
-  // Middleware will redirect them to the right page based on profile state.
-  redirect("/training")
+  // Safelist: only allow redirecting to known internal destinations
+  const allowed = ["/training", "/advisor"]
+  const destination = allowed.includes(redirectTo) ? redirectTo : "/training"
+
+  // Middleware will redirect them to the right page based on profile state
+  // (pending → /pending, onboarding incomplete → /onboarding).
+  redirect(destination)
 }
 
 // ---------------------------------------------------------------------------

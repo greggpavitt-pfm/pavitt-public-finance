@@ -25,6 +25,8 @@ export default function LoginForm() {
 
   // Show a banner for the suspended-account redirect
   const isSuspended = searchParams.get("reason") === "suspended"
+  // Show a banner when the email confirmation link was invalid or expired
+  const isConfirmationFailed = searchParams.get("error") === "confirmation_failed"
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
@@ -32,6 +34,13 @@ export default function LoginForm() {
       {isSuspended && (
         <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Your account has been suspended. Please contact support.
+        </div>
+      )}
+
+      {/* Expired/invalid confirmation link banner */}
+      {isConfirmationFailed && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          The confirmation link has expired or is invalid. Please register again or contact support.
         </div>
       )}
 

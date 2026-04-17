@@ -135,9 +135,11 @@ export async function middleware(request: NextRequest) {
 }
 
 // Tell Next.js which paths this middleware should run on.
-// Skip static assets, images, and Next.js internals.
+// Skip static assets, images, Next.js internals, and /auth/* routes.
+// /auth/callback must be excluded so the route handler can exchange the
+// confirmation code for a session before the middleware tries to read it.
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|images/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|images/|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

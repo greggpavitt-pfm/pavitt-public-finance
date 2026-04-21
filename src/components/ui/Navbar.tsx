@@ -114,12 +114,7 @@ export default function Navbar() {
           </Link>
           <Link
             href="/ipsas-questions"
-            className={[
-              "rounded-md border px-3.5 py-1.5 text-sm font-medium transition-colors",
-              solid
-                ? "border-ink-200 text-ink-900 hover:border-ink-300 hover:bg-ink-50"
-                : "border-white/20 text-white hover:bg-white/10",
-            ].join(" ")}
+            className="rounded-md bg-[#2A8FE0] px-3.5 py-1.5 text-sm font-medium text-white shadow-crisp-sm transition-colors hover:bg-[#3B9AE1]"
           >
             IPSAS Questions
           </Link>
@@ -181,7 +176,7 @@ export default function Navbar() {
             <Link
               href="/ipsas-questions"
               onClick={() => setOpen(false)}
-              className="rounded-md border border-ink-200 px-4 py-2.5 text-center text-sm font-medium text-ink-900"
+              className="rounded-md bg-[#2A8FE0] px-4 py-2.5 text-center text-sm font-medium text-white"
             >
               IPSAS Questions
             </Link>

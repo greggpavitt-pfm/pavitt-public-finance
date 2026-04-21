@@ -48,10 +48,10 @@ const CASES: CaseStudy[] = [
   },
   {
     id: "ifmis",
-    tag: "South Asia",
+    tag: "FSM · Pacific",
     years: "2015–2018",
     title: "IFMIS design & operationalisation",
-    desc: "Specified the functional architecture for a national IFMIS rollout, managed vendor procurement through go-live, and stood up the internal capability to own it.",
+    desc: "Specified the functional architecture for a national IFMIS rollout, managed vendor procurement and network expansion, and stood up the internal capability to own it.",
     image: images.hero,
     metrics: [
       { label: "Go-Live On Time", value: "Yes", pos: true },

@@ -60,12 +60,10 @@ export default function RegionsMap() {
 
   return (
     <div className="w-full overflow-hidden rounded-lg bg-ppf-pale">
-      {/* Tooltip display */}
-      {tooltip && (
-        <div className="text-center py-2 text-sm font-semibold text-ppf-navy bg-ppf-light">
-          {tooltip}
-        </div>
-      )}
+      {/* Tooltip display — fixed height so map doesn't jump when tooltip appears */}
+      <div className="min-h-[36px] text-center py-2 text-sm font-semibold text-ppf-navy bg-ppf-light">
+        {tooltip}
+      </div>
 
       <ComposableMap
         projection="geoMercator"

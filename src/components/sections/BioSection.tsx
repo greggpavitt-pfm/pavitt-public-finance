@@ -11,7 +11,7 @@ const FACTS = [
   { k: "Based",      v: "Sub-Saharan Africa / Pacific" },
   { k: "Experience", v: "25+ years" },
   { k: "Countries",  v: "15" },
-  { k: "Languages",  v: "English, French (working)" },
+  { k: "Languages",  v: "English" },
 ]
 
 export default function BioSection() {

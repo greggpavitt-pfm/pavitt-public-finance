@@ -14,7 +14,7 @@ const FACTS: Array<[string, string]> = [
   ["Response time", "< 48 hours"],
   ["Availability", "Q1 2026"],
   ["Based", "Pacific / SSA"],
-  ["Languages", "EN"],
+  ["Areas", "PFM Studies · IFMS · IPSAS · PIM · PEM · DRM"],
 ]
 
 export default function ContactSection() {

@@ -4,6 +4,7 @@
 
 import type { Metadata } from "next"
 import Navbar from "@/components/ui/Navbar"
+import Footer from "@/components/ui/Footer"
 import { logoutUser } from "@/app/auth/actions"
 
 export const metadata: Metadata = {
@@ -46,6 +47,7 @@ export default function PendingPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </>
   )
 }

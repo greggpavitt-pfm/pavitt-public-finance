@@ -11,11 +11,12 @@
    New tokens are additive.
    ============================================================================ */
 
-@import "tailwindcss";
-
 /* ---------- Google Fonts (Inter + JetBrains Mono) ------------------------- */
 /* Inter is the primary UI face. JetBrains Mono is used for metrics / eyebrows. */
+/* Must come BEFORE @import "tailwindcss" per CSS spec */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@import "tailwindcss";
 
 /* ---------- Raw CSS variables -------------------------------------------- */
 :root {

@@ -25,6 +25,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* No-JS fallback: reveal-on-scroll sections are hidden by default via CSS;
+            this ensures they're visible for users without JavaScript. */}
+        <noscript>
+          <style>{`.reveal-on-scroll { opacity: 1 !important; transform: none !important; transition: none !important; }`}</style>
+        </noscript>
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

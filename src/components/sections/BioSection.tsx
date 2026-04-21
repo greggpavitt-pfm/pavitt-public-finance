@@ -1,37 +1,95 @@
-// Bio section — headshot + two bio paragraphs side by side
+// src/components/sections/BioSection.tsx  (v2 fintech — drop-in replacement)
+//
+// Sticky headshot + quick-facts card on the left;
+// heading, all 4 bio paragraphs, and a pull-quote on the right.
+"use client"
 import Image from "next/image"
-import { bio, images } from "@/lib/content"
+import { bio, images, siteConfig } from "@/lib/content"
+import { useReveal } from "@/lib/useReveal"
+
+const FACTS = [
+  { k: "Based",      v: "Sub-Saharan Africa / Pacific" },
+  { k: "Experience", v: "25+ years" },
+  { k: "Countries",  v: "15" },
+  { k: "Languages",  v: "English, French (working)" },
+]
 
 export default function BioSection() {
-  return (
-    <section id="about" className="bg-white px-6 py-20 md:px-16">
-      <div className="mx-auto max-w-6xl">
-        {/* Section label — brand blue */}
-        <p className="mb-10 text-sm font-semibold uppercase tracking-widest text-ppf-blue">
-          About
-        </p>
+  const reveal = useReveal<HTMLElement>()
 
-        <div className="flex flex-col gap-10 md:flex-row md:gap-16">
-          {/* Headshot with brand-colored border accent */}
-          <div className="flex-shrink-0">
-            <div className="relative h-64 w-64 overflow-hidden rounded-lg shadow-lg ring-4 ring-ppf-sky/20 md:h-80 md:w-80">
-              <Image
-                src={images.about}
-                alt="Gregg Pavitt"
-                fill
-                className="object-cover object-top"
-              />
-            </div>
+  return (
+    <section
+      ref={reveal}
+      id="about"
+      className="reveal-on-scroll border-t border-ink-200 bg-white px-6 py-24 md:px-12 md:py-[120px]"
+    >
+      <div className="mx-auto grid max-w-[1240px] gap-12 md:grid-cols-[360px_1fr] md:gap-[72px]">
+        {/* Aside — sticky photo + facts */}
+        <aside className="md:sticky md:top-[84px] md:self-start">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-lg border border-ink-200 bg-ink-100">
+            <Image
+              src={images.about}
+              alt="Gregg Pavitt"
+              fill
+              className="object-cover object-top"
+            />
           </div>
 
-          {/* Bio text */}
-          <div className="flex flex-col justify-center gap-6">
-            {bio.paragraphs.map((paragraph, index) => (
-              <p key={index} className="text-lg leading-relaxed text-gray-700">
-                {paragraph}
+          <dl className="mt-5 overflow-hidden rounded-md border border-ink-200 bg-ink-50">
+            {FACTS.map((f, i) => (
+              <div
+                key={f.k}
+                className={[
+                  "grid grid-cols-[110px_1fr] gap-3.5 px-4 py-3 text-[13px]",
+                  i < FACTS.length - 1 ? "border-b border-ink-200" : "",
+                ].join(" ")}
+              >
+                <dt className="pt-0.5 text-[11px] font-medium uppercase tracking-[0.1em] text-ink-500">
+                  {f.k}
+                </dt>
+                <dd className="m-0 font-medium tabular-nums text-ink-900">{f.v}</dd>
+              </div>
+            ))}
+          </dl>
+        </aside>
+
+        {/* Body */}
+        <div>
+          <p className="eyebrow">About</p>
+          <h2 className="mt-3 max-w-[24ch] text-[clamp(28px,3.2vw,44px)] font-semibold leading-[1.1] tracking-[-0.028em] text-ink-900">
+            Reliable delivery in the toughest PFM environments.
+          </h2>
+
+          {/* All 4 paragraphs from content.ts — do not slice */}
+          <div className="mt-7 space-y-4">
+            {bio.paragraphs.map((p, i) => (
+              <p key={i} className="text-base leading-[1.7] text-ink-700">
+                {p}
               </p>
             ))}
           </div>
+
+          {/* Pull-quote — placeholder attribution, replace before shipping */}
+          <blockquote className="mt-10 rounded-md border-l-4 border-ppf-sky bg-ppf-pale px-5 py-4">
+            <p className="text-[17px] font-medium leading-[1.55] tracking-[-0.005em] text-ink-900">
+              &ldquo;Gregg has the rare ability to mobilise fast, run the policy
+              dialogue, and leave a Ministry measurably stronger than he found it.&rdquo;
+            </p>
+            <footer className="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-500">
+              Programme Director &middot; EuropeAid PFM Facility
+            </footer>
+          </blockquote>
+
+          {/* LinkedIn quick link */}
+          <a
+            href={siteConfig.linkedIn}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-ppf-sky hover:text-ppf-blue"
+          >
+            Full profile on LinkedIn
+            <span aria-hidden>→</span>
+          </a>
         </div>
       </div>
     </section>

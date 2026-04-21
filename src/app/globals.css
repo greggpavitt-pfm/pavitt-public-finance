@@ -1,38 +1,190 @@
+/* ============================================================================
+   Pavitt Public Finance — globals.css  (v2 fintech direction)
+   Drop-in replacement for: src/app/globals.css
+
+   Tailwind v4 — tokens are declared in @theme so they become utilities
+   (e.g. bg-ppf-navy, text-slate-700, rounded-lg). Uses the existing
+   next/font Geist loader already wired up in src/app/layout.tsx.
+
+   Back-compat: every v1 class name that the current components use
+   (bg-ppf-navy, text-ppf-sky, bg-ppf-pale, bg-ppf-light) still works.
+   New tokens are additive.
+   ============================================================================ */
+
 @import "tailwindcss";
 
+/* ---------- Google Fonts (Inter + JetBrains Mono) ------------------------- */
+/* Inter is the primary UI face. JetBrains Mono is used for metrics / eyebrows. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ---------- Raw CSS variables -------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- Brand core (verified from PPF brand PDF) --- */
+  --ppf-navy:         #072A80;
+  --ppf-navy-deep:    #051C5A;
+  --ppf-blue:         #0A6AB9;
+  --ppf-sky:          #1F7FCF;
+  --ppf-sky-hover:    #2A8FE0;
+  --ppf-sky-soft:     #D6E8F7;
+  --ppf-light:        #E8F1FB;
+  --ppf-pale:         #F0F6FD;
 
-  /* PPF Brand Colors — derived from Original Logo.png */
-  --ppf-navy: #072A80;       /* Dark navy — text, dark backgrounds */
-  --ppf-blue: #0A6AB9;       /* Medium blue — accents, hover states */
-  --ppf-sky: #1F7FCF;        /* Bright blue — highlights, labels */
-  --ppf-light: #E8F1FB;      /* Light blue tint — light section backgrounds */
-  --ppf-pale: #F0F6FD;       /* Very light blue — subtle backgrounds */
+  /* --- Cool slate neutrals (fintech-flavored) --- */
+  --slate-950:        #070B18;
+  --slate-900:        #0F1729;
+  --slate-800:        #1A2237;
+  --slate-700:        #2A3553;
+  --slate-500:        #5B6684;
+  --slate-400:        #8B94AE;
+  --slate-300:        #C2C9D9;
+  --slate-200:        #E1E5EE;
+  --slate-100:        #EEF1F7;
+  --slate-50:         #F7F8FB;
+
+  /* --- Semantic status --- */
+  --success:          #0F7A4B;
+  --success-bg:       #E4F4EC;
+  --success-fg:       #0A5734;
+  --warning:          #B97309;
+  --warning-bg:       #FCF2DF;
+  --danger:           #B4322A;
+  --danger-bg:        #FCEBE9;
+
+  /* --- Surfaces --- */
+  --background:       #ffffff;
+  --foreground:       #0F1729;
+
+  /* --- Type --- */
+  --font-sans-brand:  'Inter', var(--font-geist-sans, ui-sans-serif), -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  --font-mono-brand:  'JetBrains Mono', var(--font-geist-mono, ui-monospace), 'SF Mono', Menlo, Consolas, monospace;
+
+  /* --- Motion --- */
+  --ease-out:         cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast:         140ms;
+  --dur-med:          240ms;
+  --ring-focus:       0 0 0 3px rgba(31, 127, 207, 0.30);
 }
 
+/* ---------- Tailwind v4 theme mapping ------------------------------------ */
+/* Each --color-* / --font-* / --radius-* entry here becomes a Tailwind
+   utility (bg-*, text-*, border-*, font-*, rounded-*). */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-ppf-navy: var(--ppf-navy);
-  --color-ppf-blue: var(--ppf-blue);
-  --color-ppf-sky: var(--ppf-sky);
-  --color-ppf-light: var(--ppf-light);
-  --color-ppf-pale: var(--ppf-pale);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Base */
+  --color-background:        var(--background);
+  --color-foreground:        var(--foreground);
+
+  /* Brand */
+  --color-ppf-navy:          var(--ppf-navy);
+  --color-ppf-navy-deep:     var(--ppf-navy-deep);
+  --color-ppf-blue:          var(--ppf-blue);
+  --color-ppf-sky:           var(--ppf-sky);
+  --color-ppf-sky-hover:     var(--ppf-sky-hover);
+  --color-ppf-light:         var(--ppf-light);
+  --color-ppf-pale:          var(--ppf-pale);
+
+  /* Neutrals — expose as ink-* so you don't shadow Tailwind's built-in slate-* */
+  --color-ink-950:           var(--slate-950);
+  --color-ink-900:           var(--slate-900);
+  --color-ink-800:           var(--slate-800);
+  --color-ink-700:           var(--slate-700);
+  --color-ink-500:           var(--slate-500);
+  --color-ink-400:           var(--slate-400);
+  --color-ink-300:           var(--slate-300);
+  --color-ink-200:           var(--slate-200);
+  --color-ink-100:           var(--slate-100);
+  --color-ink-50:            var(--slate-50);
+
+  /* Status */
+  --color-success:           var(--success);
+  --color-success-bg:        var(--success-bg);
+  --color-success-fg:        var(--success-fg);
+  --color-warning:           var(--warning);
+  --color-warning-bg:        var(--warning-bg);
+  --color-danger:            var(--danger);
+  --color-danger-bg:         var(--danger-bg);
+
+  /* Fonts */
+  --font-sans:               var(--font-sans-brand);
+  --font-mono:               var(--font-mono-brand);
+
+  /* Radii — fintech-tight */
+  --radius-xs:               2px;
+  --radius-sm:               4px;
+  --radius-md:               6px;
+  --radius-lg:               10px;
+  --radius-xl:               14px;
+
+  /* Shadows */
+  --shadow-crisp-sm:         0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-crisp-md:         0 4px 12px rgba(15, 23, 42, 0.08);
+  --shadow-crisp-lg:         0 12px 32px -12px rgba(15, 23, 42, 0.22);
+  --shadow-crisp-xl:         0 24px 60px -24px rgba(7, 42, 128, 0.30);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ---------- Base ---------------------------------------------------------- */
+html {
+  color-scheme: light;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans-brand);
+  font-feature-settings: "ss01", "cv11", "tnum";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
+
+/* Eyebrow label used across sections */
+.eyebrow {
+  font-family: var(--font-sans-brand);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--ppf-blue);
+}
+.on-dark .eyebrow { color: var(--ppf-sky); }
+
+/* Tabular numerics helper */
+.tnum { font-variant-numeric: tabular-nums; }
+
+/* Focus ring */
+:where(button, a, input, textarea, select):focus-visible {
+  outline: 0;
+  box-shadow: var(--ring-focus);
+  border-radius: 4px;
+}
+
+/* ---------- Scroll-reveal (drives .reveal-on-scroll + useReveal hook) ---- */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 600ms var(--ease-out), transform 600ms var(--ease-out);
+  will-change: opacity, transform;
+}
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-on-scroll[data-delay="1"] { transition-delay: 80ms; }
+.reveal-on-scroll[data-delay="2"] { transition-delay: 160ms; }
+.reveal-on-scroll[data-delay="3"] { transition-delay: 240ms; }
+.reveal-on-scroll[data-delay="4"] { transition-delay: 320ms; }
+.reveal-on-scroll[data-delay="5"] { transition-delay: 400ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-on-scroll,
+  .reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------- Tiny keyframes used by hero pulse dot etc. ------------------- */
+@keyframes ppf-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(74,222,128,0.22); }
+  50%      { box-shadow: 0 0 0 6px rgba(74,222,128,0.05); }
+}
+.ppf-pulse { animation: ppf-pulse 2.2s infinite; }

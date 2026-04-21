@@ -1,75 +1,132 @@
-// Regions section — map + country lists, grouped by region
-// Solomon Islands is highlighted as the current engagement
-import { currentCountries, completedCountries } from "@/lib/content"
+// src/components/sections/RegionsSection.tsx  (v2 fintech — drop-in replacement)
+//
+// Header + current-engagement callout(s) + 2-column board:
+//   • Left: existing <RegionsMap /> (react-simple-maps) in a muted panel
+//   • Right: stacked region rows with country chips; Solomon Islands glows
+//
+// Maps over all currentCountries for the callout — safe when
+// currentCountries grows beyond one entry.
+"use client"
+import { currentCountries, completedCountries, allCountries } from "@/lib/content"
 import RegionsMap from "@/components/sections/RegionsMap"
+import { useReveal } from "@/lib/useReveal"
 
-// Group countries by region for display
-function groupByRegion(countries: typeof completedCountries) {
-  const groups: Record<string, string[]> = {}
-  for (const country of countries) {
-    if (!groups[country.region]) {
-      groups[country.region] = []
-    }
-    groups[country.region].push(country.name)
-  }
-  return groups
+type Country = (typeof completedCountries)[number]
+
+function groupByRegion(countries: Country[]) {
+  const order: Country["region"][] = ["Pacific", "Sub-Saharan Africa", "South Asia"]
+  const groups: Record<string, Country[]> = {}
+  for (const c of countries) (groups[c.region] ||= []).push(c)
+  return order
+    .filter((r) => groups[r]?.length)
+    .map((r) => ({ region: r, items: groups[r] }))
 }
 
 export default function RegionsSection() {
-  const completedGroups = groupByRegion(completedCountries)
+  const reveal = useReveal<HTMLElement>()
+  const groups = groupByRegion(allCountries)
 
   return (
-    <section id="regions" className="bg-white px-6 py-20 md:px-16">
-      <div className="mx-auto max-w-6xl">
-        {/* Section label */}
-        <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-ppf-blue">
-          Global Reach
-        </p>
-        <h2 className="mb-12 text-3xl font-bold text-ppf-navy md:text-4xl">
-          Countries &amp; Regions Served
-        </h2>
+    <section
+      ref={reveal}
+      id="regions"
+      className="reveal-on-scroll border-t border-ink-200 bg-white px-6 py-24 md:px-12 md:py-[120px]"
+    >
+      <div className="mx-auto max-w-[1240px]">
+        {/* Head */}
+        <div className="mb-12 grid gap-8 md:grid-cols-[1.3fr_1fr] md:items-end md:gap-12">
+          <div>
+            <p className="eyebrow">Global Reach</p>
+            <h2 className="mt-3 max-w-[20ch] text-[clamp(28px,3.2vw,44px)] font-semibold leading-[1.1] tracking-[-0.028em] text-ink-900">
+              Fifteen countries, three regions, one playbook.
+            </h2>
+          </div>
 
-        {/* Interactive map */}
-        <div className="mb-14">
-          <RegionsMap />
+          {/* Current engagement callout — maps over all current countries */}
+          {currentCountries.length > 0 && (
+            <div className="flex flex-col gap-3">
+              {currentCountries.map((country) => (
+                <div
+                  key={country.name}
+                  className="grid grid-cols-[auto_1fr_auto] items-center gap-4 rounded-lg border border-ink-200 bg-white px-5 py-4"
+                >
+                  <span className="inline-flex items-center gap-1.5 rounded-sm bg-success-bg px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-success-fg">
+                    <span className="ppf-pulse h-[7px] w-[7px] rounded-full bg-success" />
+                    {country.badge ?? "Current"}
+                  </span>
+                  <div>
+                    <div className="text-[17px] font-semibold tracking-[-0.01em] text-ink-900">
+                      {country.name}
+                    </div>
+                    <div className="mt-0.5 text-xs text-ink-500">
+                      Ministry of Finance & Treasury
+                    </div>
+                  </div>
+                  {country.years && (
+                    <span className="font-mono text-xs tabular-nums text-ink-500">
+                      {country.years}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Current engagement callout — brand blue accent */}
-        {currentCountries.map((country) => (
-          <div
-            key={country.name}
-            className="mb-12 flex items-center gap-4 rounded-lg border-l-4 border-ppf-sky bg-ppf-light px-6 py-5"
-          >
-            <div>
-              <span className="inline-block rounded-full bg-ppf-sky px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
-                {country.badge}
-              </span>
-              <p className="mt-2 text-xl font-semibold text-ppf-navy">
-                {country.name}
-              </p>
-              {country.years && (
-                <p className="text-sm text-slate-600">{country.years}</p>
-              )}
+        {/* Board */}
+        <div className="grid gap-0 overflow-hidden rounded-lg border border-ink-200 bg-white md:grid-cols-[1.4fr_1fr]">
+          {/* Map */}
+          <div className="flex min-h-[420px] items-center justify-center border-b border-ink-200 bg-ink-50 p-8 md:border-b-0 md:border-r">
+            <div className="w-full">
+              <RegionsMap />
             </div>
           </div>
-        ))}
 
-        {/* Completed engagements by region */}
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
-          {Object.entries(completedGroups).map(([region, names]) => (
-            <div key={region}>
-              <h3 className="mb-4 text-sm font-bold uppercase tracking-widest text-ppf-blue">
-                {region}
-              </h3>
-              <ul className="space-y-2">
-                {names.map((name) => (
-                  <li key={name} className="text-base text-slate-700">
-                    {name}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* List */}
+          <div>
+            {groups.map((g, i) => (
+              <div
+                key={g.region}
+                className={[
+                  "px-6 py-5",
+                  i < groups.length - 1 ? "border-b border-ink-200" : "",
+                ].join(" ")}
+              >
+                <div className="mb-2.5 flex items-baseline justify-between">
+                  <h3 className="m-0 text-[12px] font-semibold uppercase tracking-[0.12em] text-ppf-blue">
+                    {g.region}
+                  </h3>
+                  <span className="font-mono text-[11px] tabular-nums text-ink-500">
+                    {String(g.items.length).padStart(2, "0")}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {g.items.map((c) => {
+                    const isActive = currentCountries.some((cc) => cc.name === c.name)
+                    return (
+                      <span
+                        key={c.name}
+                        className={[
+                          "inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 text-[13px]",
+                          isActive
+                            ? "border-success/25 bg-success-bg text-success-fg"
+                            : "border-ink-200 bg-ink-50 text-ink-700",
+                        ].join(" ")}
+                      >
+                        <span
+                          className={[
+                            "h-1.5 w-1.5 shrink-0 rounded-full",
+                            isActive ? "bg-success" : "bg-ink-400",
+                          ].join(" ")}
+                        />
+                        {c.name}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

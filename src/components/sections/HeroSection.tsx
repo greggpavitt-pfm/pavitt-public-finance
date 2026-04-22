@@ -132,7 +132,7 @@ export default function HeroSection() {
               alt="Gregg Pavitt — fieldwork"
               fill
               priority
-              className="object-cover object-center"
+              className="object-cover object-top"
             />
             {/* Bottom scrim */}
             <div

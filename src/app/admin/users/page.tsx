@@ -10,12 +10,13 @@ import Footer from "@/components/ui/Footer"
 import UserActions from "./UserActions"
 import SubgroupAssign from "./SubgroupAssign"
 import PathwayEditor from "./PathwayEditor"
+import ProductApprovals from "./ProductApprovals"
+import UsageLimits from "./UsageLimits"
 
 export const metadata: Metadata = {
   title: "User Management — Admin",
 }
 
-// Next.js passes searchParams as a prop to page components
 interface PageProps {
   searchParams: Promise<{ filter?: string }>
 }
@@ -35,13 +36,11 @@ export default async function UsersPage({ searchParams }: PageProps) {
 
   if (!adminRow) redirect("/training")
 
-  // Await searchParams (required in Next.js 15+)
   const { filter } = await searchParams
 
   // --- Fetch users ---
   const serviceClient = await createServiceClient()
 
-  // Build the query — org_admins only see users from their own org
   let query = serviceClient
     .from("profiles")
     .select(`
@@ -53,9 +52,16 @@ export default async function UsersPage({ searchParams }: PageProps) {
       pathway,
       ability_level,
       account_status,
+      account_type,
+      guest_expires_at,
+      training_approved,
+      practitioner_approved,
+      blacklisted,
+      training_question_limit,
+      practitioner_submission_limit,
       created_at,
-      organisations ( name ),
-      org_subgroups ( name )
+      organisations ( name, default_training_question_limit, default_practitioner_submission_limit ),
+      org_subgroups ( name, default_training_question_limit, default_practitioner_submission_limit )
     `)
     .order("created_at", { ascending: false })
 
@@ -69,19 +75,14 @@ export default async function UsersPage({ searchParams }: PageProps) {
 
   const { data: profiles, error } = await query
 
-  // Fetch emails from auth.users so the admin can contact users directly.
-  // listUsers is paginated; 1000 covers any reasonable early user base.
   const { data: { users: authUsers } } = await serviceClient.auth.admin.listUsers({ perPage: 1000 })
   const emailByUserId = new Map(authUsers.map((u) => [u.id, u.email ?? ""]))
 
-  // Fetch all subgroups to build a per-org map for the SubgroupAssign dropdowns.
-  // This lets us pass only the relevant subgroups to each user row.
   const { data: allSubgroups } = await serviceClient
     .from("org_subgroups")
     .select("id, org_id, name")
     .order("name")
 
-  // Map: org_id → [{id, name}]
   const subgroupsByOrg = new Map<string, { id: string; name: string }[]>()
   for (const sg of allSubgroups ?? []) {
     const existing = subgroupsByOrg.get(sg.org_id) ?? []
@@ -99,7 +100,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
     <>
       <Navbar />
       <main className="min-h-screen bg-ppf-light px-6 py-16 md:px-16">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-7xl">
           {/* Header */}
           <div className="mb-8 flex items-center justify-between">
             <div>
@@ -111,7 +112,6 @@ export default async function UsersPage({ searchParams }: PageProps) {
               </Link>
               <h1 className="text-2xl font-bold text-ppf-navy">Users</h1>
             </div>
-            {/* Filter tabs */}
             <div className="flex gap-2">
               <FilterLink href="/admin/users" active={!filter}>All</FilterLink>
               <FilterLink href="/admin/users?filter=pending" active={filter === "pending"}>
@@ -126,7 +126,6 @@ export default async function UsersPage({ searchParams }: PageProps) {
             </div>
           )}
 
-          {/* User table */}
           {!profiles || profiles.length === 0 ? (
             <div className="rounded-lg border border-ppf-sky/20 bg-white p-10 text-center text-slate-400">
               No users found.
@@ -141,18 +140,31 @@ export default async function UsersPage({ searchParams }: PageProps) {
                     <th className="px-4 py-3">Organisation</th>
                     <th className="px-4 py-3">Pathway</th>
                     <th className="px-4 py-3">Status</th>
+                    <th className="px-4 py-3">Approvals</th>
+                    <th className="px-4 py-3">Limits</th>
                     <th className="px-4 py-3">Joined</th>
                     <th className="px-4 py-3">Actions / Subgroup</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {profiles.map((profile) => {
-                    // organisations is a joined object (or null for beta testers)
-                    const orgName =
-                      profile.organisations && !Array.isArray(profile.organisations)
-                        ? (profile.organisations as { name: string }).name
-                        : "Beta tester"
+                    const orgData = profile.organisations && !Array.isArray(profile.organisations)
+                      ? (profile.organisations as {
+                          name: string
+                          default_training_question_limit: number | null
+                          default_practitioner_submission_limit: number | null
+                        })
+                      : null
 
+                    const subgroupData = profile.org_subgroups && !Array.isArray(profile.org_subgroups)
+                      ? (profile.org_subgroups as {
+                          name: string
+                          default_training_question_limit: number | null
+                          default_practitioner_submission_limit: number | null
+                        })
+                      : null
+
+                    const orgName = orgData?.name ?? "Beta tester"
                     const userEmail = emailByUserId.get(profile.id) ?? "—"
 
                     const joinedDate = new Date(profile.created_at).toLocaleDateString("en-GB", {
@@ -161,10 +173,34 @@ export default async function UsersPage({ searchParams }: PageProps) {
                       year: "numeric",
                     })
 
-                    // Subgroups available for this user's org
+                    // Placeholder text for usage limit inputs shows the effective inherited default
+                    const effectiveTrainingDefault =
+                      subgroupData?.default_training_question_limit ??
+                      orgData?.default_training_question_limit
+
+                    const effectivePractitionerDefault =
+                      subgroupData?.default_practitioner_submission_limit ??
+                      orgData?.default_practitioner_submission_limit
+
+                    const trainingPlaceholder = effectiveTrainingDefault != null
+                      ? `Default (${effectiveTrainingDefault})`
+                      : "Default"
+
+                    const practitionerPlaceholder = effectivePractitionerDefault != null
+                      ? `Default (${effectivePractitionerDefault})`
+                      : "Default"
+
                     const orgSubgroups = profile.org_id
                       ? (subgroupsByOrg.get(profile.org_id) ?? [])
                       : []
+
+                    // Guest expiry label (shown in status cell)
+                    const guestExpiry = profile.guest_expires_at
+                      ? new Date(profile.guest_expires_at).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                        })
+                      : null
 
                     return (
                       <tr key={profile.id} className="hover:bg-slate-50 align-top">
@@ -175,9 +211,13 @@ export default async function UsersPage({ searchParams }: PageProps) {
                               {profile.job_title}
                             </span>
                           )}
+                          {profile.account_type === "guest" && (
+                            <span className="mt-0.5 block text-xs font-semibold text-amber-600">
+                              Guest{guestExpiry ? ` · expires ${guestExpiry}` : ""}
+                            </span>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-slate-600">
-                          {/* Shown so the admin can send a manual approval email */}
                           <a
                             href={`mailto:${userEmail}`}
                             className="text-ppf-sky hover:underline"
@@ -196,22 +236,40 @@ export default async function UsersPage({ searchParams }: PageProps) {
                         <td className="px-4 py-3">
                           <span
                             className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
-                              statusBadge[profile.account_status] ?? "bg-slate-100 text-slate-600"
+                              profile.blacklisted
+                                ? "bg-red-900 text-white"
+                                : (statusBadge[profile.account_status] ?? "bg-slate-100 text-slate-600")
                             }`}
                           >
-                            {profile.account_status}
+                            {profile.blacklisted ? "Blacklisted" : profile.account_status}
                           </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <ProductApprovals
+                            userId={profile.id}
+                            trainingApproved={profile.training_approved ?? false}
+                            practitionerApproved={profile.practitioner_approved ?? false}
+                          />
+                        </td>
+                        <td className="px-4 py-3">
+                          <UsageLimits
+                            userId={profile.id}
+                            trainingLimit={profile.training_question_limit ?? null}
+                            practitionerLimit={profile.practitioner_submission_limit ?? null}
+                            trainingPlaceholder={trainingPlaceholder}
+                            practitionerPlaceholder={practitionerPlaceholder}
+                          />
                         </td>
                         <td className="px-4 py-3 text-slate-500">{joinedDate}</td>
                         <td className="px-4 py-3">
-                          {/* Approve/suspend buttons */}
                           <UserActions
                             userId={profile.id}
                             currentStatus={
                               profile.account_status as "pending" | "approved" | "suspended"
                             }
+                            accountType={(profile.account_type as "guest" | "standard") ?? "standard"}
+                            blacklisted={profile.blacklisted ?? false}
                           />
-                          {/* Subgroup assignment — only shown when the org has subgroups */}
                           <SubgroupAssign
                             userId={profile.id}
                             currentSubgroupId={profile.subgroup_id ?? null}
@@ -232,7 +290,6 @@ export default async function UsersPage({ searchParams }: PageProps) {
   )
 }
 
-// Simple link that shows as active/inactive depending on the current filter
 function FilterLink({
   href,
   active,

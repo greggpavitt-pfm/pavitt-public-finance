@@ -71,6 +71,194 @@ export async function approveUser(userId: string): Promise<{ error?: string }> {
 }
 
 // ---------------------------------------------------------------------------
+// Blacklist a user (permanent ban)
+// ---------------------------------------------------------------------------
+// Sets blacklisted = true and account_status = 'suspended'. The user cannot
+// sign in or re-register under the same email. Reversible only by a direct
+// DB update — there is intentionally no UI "un-blacklist" action.
+
+export async function blacklistUser(userId: string): Promise<{ error?: string }> {
+  try {
+    await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    const { error } = await serviceClient
+      .from("profiles")
+      .update({ blacklisted: true, account_status: "suspended" })
+      .eq("id", userId)
+
+    if (error) {
+      console.error("blacklistUser: update failed", { userId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin")
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("blacklistUser: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Update per-product approval flags
+// ---------------------------------------------------------------------------
+// Admin sets training_approved and practitioner_approved independently.
+// Also transitions account_status to 'approved' if at least one is checked,
+// or back to 'pending' if both are unchecked and account was pending.
+
+export async function updateUserApprovals(
+  userId: string,
+  trainingApproved: boolean,
+  practitionerApproved: boolean
+): Promise<{ error?: string }> {
+  try {
+    const { user } = await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    // Read current status to decide whether to transition account_status
+    const { data: profile } = await serviceClient
+      .from("profiles")
+      .select("account_status")
+      .eq("id", userId)
+      .single()
+
+    // Move suspended/pending → approved when at least one product is approved.
+    // Don't touch a suspended account's status — that's controlled by suspend/reinstate.
+    const shouldSetApproved =
+      (trainingApproved || practitionerApproved) &&
+      profile?.account_status === "pending"
+
+    const { error } = await serviceClient
+      .from("profiles")
+      .update({
+        training_approved:     trainingApproved,
+        practitioner_approved: practitionerApproved,
+        ...(shouldSetApproved
+          ? { account_status: "approved", approved_by: user.id, approved_at: new Date().toISOString() }
+          : {}),
+      })
+      .eq("id", userId)
+
+    if (error) {
+      console.error("updateUserApprovals: update failed", { userId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin")
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("updateUserApprovals: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Update per-user usage limits
+// ---------------------------------------------------------------------------
+// null clears the override so the user inherits the org/subgroup default.
+
+export async function updateUserLimits(
+  userId: string,
+  trainingLimit: number | null,
+  practitionerLimit: number | null
+): Promise<{ error?: string }> {
+  try {
+    await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    const { error } = await serviceClient
+      .from("profiles")
+      .update({
+        training_question_limit:      trainingLimit,
+        practitioner_submission_limit: practitionerLimit,
+      })
+      .eq("id", userId)
+
+    if (error) {
+      console.error("updateUserLimits: update failed", { userId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("updateUserLimits: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Renew a guest account (+7 days from today)
+// ---------------------------------------------------------------------------
+
+export async function renewGuestAccount(userId: string): Promise<{ error?: string }> {
+  try {
+    await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    const newExpiry = new Date()
+    newExpiry.setDate(newExpiry.getDate() + 7)
+
+    const { error } = await serviceClient
+      .from("profiles")
+      .update({
+        guest_expires_at: newExpiry.toISOString(),
+        account_status:   "approved",
+      })
+      .eq("id", userId)
+      .eq("account_type", "guest")   // safety: only affect guest accounts
+
+    if (error) {
+      console.error("renewGuestAccount: update failed", { userId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("renewGuestAccount: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Cancel a guest account
+// ---------------------------------------------------------------------------
+// Suspends the guest and clears guest fields so the email can be re-used
+// to register a standard account.
+
+export async function cancelGuestAccount(userId: string): Promise<{ error?: string }> {
+  try {
+    await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    const { error } = await serviceClient
+      .from("profiles")
+      .update({
+        account_type:     "standard",
+        guest_expires_at: null,
+        account_status:   "suspended",
+      })
+      .eq("id", userId)
+      .eq("account_type", "guest")
+
+    if (error) {
+      console.error("cancelGuestAccount: update failed", { userId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("cancelGuestAccount: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Reinstate a suspended user
 // ---------------------------------------------------------------------------
 // Sets account_status back to 'approved'. Records who reinstated and when

@@ -17,13 +17,13 @@ import { join } from "path"
 // Type definitions (structured output from LLM tool-use)
 // ---------------------------------------------------------------------------
 
-interface Citation {
+export interface Citation {
   standard: string
   paragraph: string
   text: string
 }
 
-interface QuickTreatmentResponse {
+export interface QuickTreatmentResponse {
   applicable_standards: Array<{
     standard_id: string
     title: string
@@ -38,7 +38,7 @@ interface QuickTreatmentResponse {
   citations: Citation[]
 }
 
-interface ClarifyingQuestionsResponse {
+export interface ClarifyingQuestionsResponse {
   needs_clarification: true
   questions: Array<{
     id: string
@@ -47,7 +47,7 @@ interface ClarifyingQuestionsResponse {
   }>
 }
 
-type IPSASResponse = QuickTreatmentResponse | ClarifyingQuestionsResponse
+export type IPSASResponse = QuickTreatmentResponse | ClarifyingQuestionsResponse
 
 // ---------------------------------------------------------------------------
 // Helper: Get model ID for a task type from advisor_model_config

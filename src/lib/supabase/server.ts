@@ -32,7 +32,7 @@ export async function createClient() {
             )
           } catch {
             // setAll is called from a Server Component where cookies are read-only.
-            // The middleware (src/middleware.ts) handles refreshing the session,
+            // The proxy (src/proxy.ts) handles refreshing the session,
             // so this error is safe to ignore here.
           }
         },

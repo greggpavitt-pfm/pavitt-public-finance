@@ -49,10 +49,10 @@ const CASES: CaseStudy[] = [
   {
     id: "ifmis",
     tag: "FSM · Pacific",
-    years: "2015–2018",
+    years: "2021–2024",
     title: "IFMIS design & operationalisation",
-    desc: "Specified the functional architecture for a national IFMIS rollout, managed vendor procurement and network expansion, and stood up the internal capability to own it.",
-    image: images.hero,
+    desc: "Developing custom IPSAS reporting system. Modifying secondary chart of accounts, automating power pivot production system for multi-year reporting of governmental, donor, and special purpose funds.",
+    image: images.ifmis,
     metrics: [
       { label: "Go-Live On Time", value: "Yes", pos: true },
       { label: "Ministries Onboarded", value: "12" },

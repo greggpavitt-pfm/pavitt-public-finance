@@ -205,4 +205,5 @@ export const images = {
   logoTransparentSvg: "/images/logo-transparent.svg",
   logoOriginalSvg: "/images/logo-original.svg",
   logoSvg: "/images/logo.svg",
+  ifmis: "/images/photo-ifmis.jpg",
 } as const

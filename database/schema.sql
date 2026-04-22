@@ -17,11 +17,19 @@ create table organisations (
   id                 uuid        primary key default uuid_generate_v4(),
   name               text        not null,
   country            text        not null,
+  -- accounting_type drives which module set users in this org train on.
+  -- 'cash-basis' → cash-basis pathway
+  -- 'accrual'    → accrual pathway
+  -- 'custom'     → pathway derived from jurisdiction_code (e.g. SIG → cash-basis)
+  accounting_type    text        not null default 'accrual'
+                     check (accounting_type in ('cash-basis', 'accrual', 'custom')),
   -- jurisdiction_code drives which overlay content is shown.
   -- null  = universal IPSAS content only
   -- 'SIG' = Solomon Islands Government overlay added on top
   -- 'PNG', 'FJI', etc. can be added later without schema changes
   jurisdiction_code  text,
+  -- demo orgs auto-approve new registrations (no admin review step)
+  demo               boolean     not null default false,
   licence_key        text        unique not null,
   licence_status     text        not null default 'beta'
                      check (licence_status in ('beta', 'active', 'expired', 'suspended')),
@@ -428,6 +436,28 @@ create index on org_subgroups (org_id);
 -- =============================================================================
 
 -- =============================================================================
+-- MIGRATION: add accounting_type + demo columns to organisations
+-- Run this in the Supabase SQL editor on existing databases.
+-- Fresh schema deployments already include these columns above.
+--
+--   alter table organisations
+--     add column if not exists accounting_type text not null default 'accrual'
+--       check (accounting_type in ('cash-basis', 'accrual', 'custom')),
+--     add column if not exists demo boolean not null default false;
+--
+--   -- Update existing SIG org to correct accounting type
+--   update organisations set accounting_type = 'custom' where jurisdiction_code = 'SIG';
+--
+--   -- Seed the two demo orgs (run once)
+--   insert into organisations (name, country, accounting_type, jurisdiction_code, licence_key, licence_status, demo)
+--   values
+--     ('Demo — Cash Basis',  'Demo', 'cash-basis', null, 'PPF-DEMO-CASH-0001', 'active', true),
+--     ('Demo — Accrual',     'Demo', 'accrual',    null, 'PPF-DEMO-ACCR-0001', 'active', true)
+--   on conflict (licence_key) do nothing;
+--
+-- =============================================================================
+
+-- =============================================================================
 -- SEED: first super-admin
 -- After running this schema, create your admin account via Supabase Auth,
 -- then run this insert (replace the UUID with your actual auth.users id):
@@ -437,11 +467,12 @@ create index on org_subgroups (org_id);
 --
 -- Then create the first organisation manually:
 --
---   insert into organisations (name, country, jurisdiction_code, licence_key, licence_status)
+--   insert into organisations (name, country, jurisdiction_code, accounting_type, licence_key, licence_status)
 --   values (
 --     'Ministry of Finance — Solomon Islands',
 --     'Solomon Islands',
 --     'SIG',
+--     'custom',
 --     'PPF-SIG-2025-BETA',   -- change this to something harder to guess
 --     'beta'
 --   );

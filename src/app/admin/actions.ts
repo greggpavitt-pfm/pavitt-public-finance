@@ -146,14 +146,26 @@ export async function createOrg(
   try {
     await requireAdmin()
 
-    const name             = (formData.get("name")             as string | null)?.trim() ?? ""
-    const country          = (formData.get("country")          as string | null)?.trim() ?? ""
-    const jurisdictionCode = (formData.get("jurisdiction_code") as string | null)?.trim() || null
-    const maxUsersRaw      = formData.get("max_users") as string | null
-    const maxUsers         = maxUsersRaw ? parseInt(maxUsersRaw, 10) : null
+    const name           = (formData.get("name")             as string | null)?.trim() ?? ""
+    const country        = (formData.get("country")          as string | null)?.trim() ?? ""
+    const accountingType = (formData.get("accounting_type")  as string | null)?.trim() || "accrual"
+    const maxUsersRaw    = formData.get("max_users") as string | null
+    const maxUsers       = maxUsersRaw ? parseInt(maxUsersRaw, 10) : null
+    const isDemo         = formData.get("demo") === "true"
+
+    // jurisdiction_code only applies to custom accounting type
+    const jurisdictionCode = accountingType === "custom"
+      ? (formData.get("jurisdiction_code") as string | null)?.trim() || null
+      : null
 
     if (!name || !country) {
       return { error: "Organisation name and country are required." }
+    }
+    if (!["cash-basis", "accrual", "custom"].includes(accountingType)) {
+      return { error: "Invalid accounting type." }
+    }
+    if (accountingType === "custom" && !jurisdictionCode) {
+      return { error: "Jurisdiction code is required for custom accounting type." }
     }
 
     // Generate a readable licence key: PPF-XXXX-XXXX (uppercase alphanumeric)
@@ -167,10 +179,12 @@ export async function createOrg(
       .insert({
         name,
         country,
+        accounting_type:   accountingType,
         jurisdiction_code: jurisdictionCode,
-        licence_key:        licenceKey,
-        licence_status:     "active",
-        max_users:          maxUsers,
+        demo:              isDemo,
+        licence_key:       licenceKey,
+        licence_status:    "active",
+        max_users:         maxUsers,
       })
 
     if (error) {

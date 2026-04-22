@@ -38,8 +38,12 @@ export async function registerUser(
   const productAccess = (formData.get("product_access") as string | null) ?? "training"
 
   // --- Basic validation ---
-  if (!email || !password || !fullName || !orgIdRaw || !pathway) {
+  if (!email || !password || !fullName || !orgIdRaw) {
     return { status: "error", message: "Please fill in all required fields." }
+  }
+  // Beta testers must choose a pathway manually; org users get it derived from their org
+  if (orgIdRaw === "beta" && !pathway) {
+    return { status: "error", message: "Please select a basis of accounting." }
   }
   if (pathway === "accrual" && !ability) {
     return { status: "error", message: "Please select a difficulty level for the accrual pathway." }
@@ -53,13 +57,15 @@ export async function registerUser(
   // Any other value should be a valid organisation UUID.
   const isBeta = orgIdRaw === "beta"
   let resolvedOrgId: string | null = null
+  let resolvedPathway = pathway
+  let isDemo = false
 
   if (!isBeta) {
     // Verify the selected org exists and is accepting registrations (service client bypasses RLS)
     const serviceClient = await createServiceClient()
     const { data: org, error: orgError } = await serviceClient
       .from("organisations")
-      .select("id")
+      .select("id, accounting_type, jurisdiction_code, demo")
       .eq("id", orgIdRaw)
       .in("licence_status", ["beta", "active"])
       .single()
@@ -68,8 +74,21 @@ export async function registerUser(
       return { status: "error", message: "Organisation not found. Please contact the administrator." }
     }
     resolvedOrgId = org.id
+    isDemo = org.demo ?? false
+
+    // Derive pathway from org's accounting type — overrides whatever the form sent
+    if (org.accounting_type === "cash-basis") {
+      resolvedPathway = "cash-basis"
+    } else if (org.accounting_type === "accrual") {
+      resolvedPathway = "accrual"
+    } else if (org.accounting_type === "custom") {
+      // Custom type: look up the base pathway for this jurisdiction
+      // SIG (Solomon Islands) = cash-basis
+      const CUSTOM_PATHWAY: Record<string, string> = { SIG: "cash-basis" }
+      resolvedPathway = CUSTOM_PATHWAY[org.jurisdiction_code ?? ""] ?? "cash-basis"
+    }
   }
-  // Beta testers: resolvedOrgId remains null
+  // Beta testers: resolvedOrgId remains null, pathway comes from form
 
   // --- Create the auth user ---
   const supabase = await createClient()
@@ -98,6 +117,9 @@ export async function registerUser(
   const allowedProducts = ["training", "advisor", "both"]
   const resolvedProductAccess = allowedProducts.includes(productAccess) ? productAccess : "training"
 
+  // Demo orgs skip the admin approval step — account goes straight to approved
+  const accountStatus = isDemo ? "approved" : "pending"
+
   const { error: profileError } = await serviceClient
     .from("profiles")
     .insert({
@@ -105,9 +127,9 @@ export async function registerUser(
       full_name:           fullName,
       job_title:           jobTitle || null,
       org_id:              resolvedOrgId,   // null for beta testers
-      pathway:             pathway,
-      ability_level:       pathway === "accrual" ? ability : null,
-      account_status:      "pending",
+      pathway:             resolvedPathway, // derived from org accounting type
+      ability_level:       resolvedPathway === "accrual" ? ability : null,
+      account_status:      accountStatus,
       onboarding_complete: false,
       product_access:      resolvedProductAccess,
     })
@@ -123,8 +145,9 @@ export async function registerUser(
     return { status: "error", message: "Account setup failed. Please try again." }
   }
 
-  // Redirect to the pending page — the user cannot log in to /training until approved.
-  redirect("/pending")
+  // Demo org users are already approved — send straight to training.
+  // All others wait for admin approval.
+  redirect(isDemo ? "/training" : "/pending")
 }
 
 // ---------------------------------------------------------------------------

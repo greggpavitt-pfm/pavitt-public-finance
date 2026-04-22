@@ -22,7 +22,7 @@ export default async function RegisterPage() {
   const serviceClient = await createServiceClient()
   const { data: orgs } = await serviceClient
     .from("organisations")
-    .select("id, name, country")
+    .select("id, name, country, accounting_type, demo")
     .in("licence_status", ["beta", "active"])
     .order("name")
 

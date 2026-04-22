@@ -9,6 +9,7 @@ import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import UserActions from "./UserActions"
 import SubgroupAssign from "./SubgroupAssign"
+import PathwayEditor from "./PathwayEditor"
 
 export const metadata: Metadata = {
   title: "User Management — Admin",
@@ -154,13 +155,6 @@ export default async function UsersPage({ searchParams }: PageProps) {
 
                     const userEmail = emailByUserId.get(profile.id) ?? "—"
 
-                    const pathwayLabel =
-                      profile.pathway === "accrual"
-                        ? `Accrual${profile.ability_level ? ` / ${profile.ability_level}` : ""}`
-                        : profile.pathway === "cash-basis"
-                        ? "Cash basis"
-                        : "—"
-
                     const joinedDate = new Date(profile.created_at).toLocaleDateString("en-GB", {
                       day: "numeric",
                       month: "short",
@@ -192,7 +186,13 @@ export default async function UsersPage({ searchParams }: PageProps) {
                           </a>
                         </td>
                         <td className="px-4 py-3 text-slate-600">{orgName}</td>
-                        <td className="px-4 py-3 text-slate-600">{pathwayLabel}</td>
+                        <td className="px-4 py-3">
+                          <PathwayEditor
+                            userId={profile.id}
+                            currentPathway={profile.pathway ?? null}
+                            currentAbility={profile.ability_level ?? null}
+                          />
+                        </td>
                         <td className="px-4 py-3">
                           <span
                             className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${

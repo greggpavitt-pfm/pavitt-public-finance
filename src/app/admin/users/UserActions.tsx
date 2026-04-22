@@ -4,7 +4,7 @@
 // action runs, without needing useActionState (there's no form here).
 
 import { useTransition } from "react"
-import { approveUser, suspendUser } from "@/app/admin/actions"
+import { approveUser, suspendUser, reinstateUser } from "@/app/admin/actions"
 
 interface Props {
   userId: string
@@ -30,6 +30,14 @@ export default function UserActions({ userId, currentStatus }: Props) {
     })
   }
 
+  function handleReinstate() {
+    if (!confirm("Reinstate this user? They will regain access immediately.")) return
+    startTransition(async () => {
+      const result = await reinstateUser(userId)
+      if (result.error) alert(`Error: ${result.error}`)
+    })
+  }
+
   return (
     <div className="flex gap-2">
       {currentStatus !== "approved" && (
@@ -41,6 +49,15 @@ export default function UserActions({ userId, currentStatus }: Props) {
           {isPending ? "…" : "Approve"}
         </button>
       )}
+      {currentStatus === "suspended" && (
+        <button
+          onClick={handleReinstate}
+          disabled={isPending}
+          className="rounded bg-ppf-sky px-3 py-1 text-xs font-semibold text-white transition-colors hover:bg-ppf-blue disabled:opacity-50"
+        >
+          {isPending ? "…" : "Reinstate"}
+        </button>
+      )}
       {currentStatus !== "suspended" && (
         <button
           onClick={handleSuspend}
@@ -49,9 +66,6 @@ export default function UserActions({ userId, currentStatus }: Props) {
         >
           {isPending ? "…" : "Suspend"}
         </button>
-      )}
-      {currentStatus === "suspended" && (
-        <span className="text-xs text-slate-400">Suspended</span>
       )}
     </div>
   )

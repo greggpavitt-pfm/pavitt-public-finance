@@ -69,14 +69,12 @@ export default function BioSection() {
             ))}
           </div>
 
-          {/* Pull-quote — placeholder attribution, replace before shipping */}
           <blockquote className="mt-10 rounded-md border-l-4 border-ppf-sky bg-ppf-pale px-5 py-4">
             <p className="text-[17px] font-medium leading-[1.55] tracking-[-0.005em] text-ink-900">
-              &ldquo;Gregg has the rare ability to mobilise fast, run the policy
-              dialogue, and leave a Ministry measurably stronger than he found it.&rdquo;
+              &ldquo;Gregg was the consummate professional consultant on my team&hellip;His advice was measured, clearly expressed and possessed both longer-term strategic vision for what could be possible and the short-term operational steps to be implemented immediately.&rdquo;
             </p>
             <footer className="mt-2 font-mono text-[11px] uppercase tracking-[0.08em] text-ink-500">
-              Programme Director &middot; EuropeAid PFM Facility
+              Project Director &middot; FCDO
             </footer>
           </blockquote>
 

@@ -71,6 +71,40 @@ export async function approveUser(userId: string): Promise<{ error?: string }> {
 }
 
 // ---------------------------------------------------------------------------
+// Reinstate a suspended user
+// ---------------------------------------------------------------------------
+// Sets account_status back to 'approved'. Records who reinstated and when
+// by reusing the approved_by / approved_at columns.
+
+export async function reinstateUser(userId: string): Promise<{ error?: string }> {
+  try {
+    const { user } = await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    const { error } = await serviceClient
+      .from("profiles")
+      .update({
+        account_status: "approved",
+        approved_by:    user.id,
+        approved_at:    new Date().toISOString(),
+      })
+      .eq("id", userId)
+
+    if (error) {
+      console.error("reinstateUser: update failed", { userId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin")
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("reinstateUser: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Suspend a user
 // ---------------------------------------------------------------------------
 // Sets account_status = 'suspended'. Middleware will sign them out on next request.
@@ -152,6 +186,134 @@ export async function createOrg(
     return { success: true }
   } catch (e) {
     console.error("createOrg: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Admin role management (super_admin only)
+// ---------------------------------------------------------------------------
+
+export type AdminRow = {
+  id: string
+  role: "super_admin" | "org_admin"
+  org_id: string | null
+  org_name: string | null
+  full_name: string
+  email: string
+  created_at: string
+}
+
+export async function listAdmins(): Promise<{ admins: AdminRow[]; error?: string }> {
+  try {
+    const { adminRow } = await requireAdmin()
+    if (adminRow.role !== "super_admin") {
+      return { admins: [], error: "Super admin access required." }
+    }
+
+    const serviceClient = await createServiceClient()
+
+    const { data: rows, error } = await serviceClient
+      .from("admin_users")
+      .select("id, role, org_id, created_at, organisations ( name )")
+      .order("created_at", { ascending: true })
+
+    if (error) return { admins: [], error: error.message }
+
+    const { data: { users: authUsers } } = await serviceClient.auth.admin.listUsers({ perPage: 1000 })
+    const emailById = new Map(authUsers.map((u) => [u.id, u.email ?? ""]))
+
+    const { data: profiles } = await serviceClient
+      .from("profiles")
+      .select("id, full_name")
+      .in("id", (rows ?? []).map((r) => r.id))
+
+    const nameById = new Map((profiles ?? []).map((p) => [p.id, p.full_name]))
+
+    const admins: AdminRow[] = (rows ?? []).map((r) => ({
+      id: r.id,
+      role: r.role as "super_admin" | "org_admin",
+      org_id: r.org_id,
+      org_name: r.organisations && !Array.isArray(r.organisations)
+        ? (r.organisations as { name: string }).name
+        : null,
+      full_name: nameById.get(r.id) ?? "Unknown",
+      email: emailById.get(r.id) ?? "—",
+      created_at: r.created_at,
+    }))
+
+    return { admins }
+  } catch (e) {
+    return { admins: [], error: (e as Error).message }
+  }
+}
+
+export async function grantAdminRole(
+  prevState: { error?: string; success?: boolean },
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    const { adminRow } = await requireAdmin()
+    if (adminRow.role !== "super_admin") {
+      return { error: "Super admin access required." }
+    }
+
+    const userId = (formData.get("user_id") as string | null)?.trim() ?? ""
+    const role   = (formData.get("role")    as string | null)?.trim() ?? ""
+    const orgId  = (formData.get("org_id")  as string | null)?.trim() || null
+
+    if (!userId || !role) return { error: "User and role are required." }
+    if (!["super_admin", "org_admin"].includes(role)) return { error: "Invalid role." }
+    if (role === "org_admin" && !orgId) return { error: "Org admin requires an organisation." }
+
+    const serviceClient = await createServiceClient()
+
+    // Verify the target user exists and is approved
+    const { data: profile } = await serviceClient
+      .from("profiles")
+      .select("id, account_status")
+      .eq("id", userId)
+      .single()
+
+    if (!profile) return { error: "User not found." }
+    if (profile.account_status !== "approved") {
+      return { error: "User must be approved before granting admin access." }
+    }
+
+    const { error } = await serviceClient
+      .from("admin_users")
+      .upsert({ id: userId, role, org_id: role === "super_admin" ? null : orgId }, { onConflict: "id" })
+
+    if (error) return { error: error.message }
+
+    revalidatePath("/admin/admin-users")
+    return { success: true }
+  } catch (e) {
+    return { error: (e as Error).message }
+  }
+}
+
+export async function revokeAdminRole(targetUserId: string): Promise<{ error?: string }> {
+  try {
+    const { adminRow, user } = await requireAdmin()
+    if (adminRow.role !== "super_admin") {
+      return { error: "Super admin access required." }
+    }
+    if (targetUserId === user.id) {
+      return { error: "Cannot revoke your own admin access." }
+    }
+
+    const serviceClient = await createServiceClient()
+    const { error } = await serviceClient
+      .from("admin_users")
+      .delete()
+      .eq("id", targetUserId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath("/admin/admin-users")
+    return {}
+  } catch (e) {
     return { error: (e as Error).message }
   }
 }
@@ -310,6 +472,41 @@ export async function assignUserSubgroup(
 }
 
 // ---------------------------------------------------------------------------
+// Update a user's pathway and ability level (admin only)
+// ---------------------------------------------------------------------------
+// Allows an admin to correct or change a user's training track after onboarding.
+
+export async function updateUserPathway(
+  userId: string,
+  pathway: string,
+  abilityLevel: string | null
+): Promise<{ error?: string }> {
+  try {
+    await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    const { error } = await serviceClient
+      .from("profiles")
+      .update({
+        pathway,
+        ability_level: pathway === "accrual" ? abilityLevel : null,
+      })
+      .eq("id", userId)
+
+    if (error) {
+      console.error("updateUserPathway: update failed", { userId, pathway, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("updateUserPathway: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Reassign a user to a different organisation (super_admin only)
 // ---------------------------------------------------------------------------
 // Clears subgroup_id at the same time — the old subgroup is no longer valid.
@@ -356,6 +553,8 @@ export type ResultRow = {
   module_title: string
   org_id: string | null
   org_name: string | null
+  subgroup_id: string | null
+  subgroup_name: string | null
   score: number
   passed: boolean
   submitted_at: string
@@ -368,8 +567,9 @@ export type ResultRow = {
 // Org admins see only their own org. Super admins can pass any orgId,
 // or null to get all results (use getMasterResults for that).
 
-export async function getOrgResults(orgId?: string): Promise<{
+export async function getOrgResults(orgId?: string, subgroupId?: string): Promise<{
   rows: ResultRow[]
+  subgroups: { id: string; name: string }[]
   error?: string
 }> {
   try {
@@ -380,10 +580,10 @@ export async function getOrgResults(orgId?: string): Promise<{
     // org_admin is always scoped to their own org
     const targetOrgId = adminRow.role === "org_admin" ? adminRow.org_id : (orgId ?? null)
 
-    // Fetch profiles (limited to org scope)
+    // Fetch profiles (limited to org scope), including subgroup_id
     let profileQuery = serviceClient
       .from("profiles")
-      .select("id, full_name, org_id")
+      .select("id, full_name, org_id, subgroup_id")
 
     if (targetOrgId) {
       profileQuery = profileQuery.eq("org_id", targetOrgId)
@@ -392,12 +592,33 @@ export async function getOrgResults(orgId?: string): Promise<{
     const { data: profiles, error: profileError } = await profileQuery
     if (profileError) {
       console.error("getOrgResults: profile fetch failed", { targetOrgId, error: profileError })
-      return { rows: [], error: profileError.message }
+      return { rows: [], subgroups: [], error: profileError.message }
     }
 
-    if (!profiles || profiles.length === 0) return { rows: [] }
+    if (!profiles || profiles.length === 0) return { rows: [], subgroups: [] }
 
-    const userIds = profiles.map((p) => p.id)
+    // Fetch all subgroups for this org (used for dropdown + name lookup)
+    let subgroupQuery = serviceClient
+      .from("org_subgroups")
+      .select("id, name")
+      .order("name")
+
+    if (targetOrgId) {
+      subgroupQuery = subgroupQuery.eq("org_id", targetOrgId)
+    }
+
+    const { data: subgroupRows } = await subgroupQuery
+    const subgroups = subgroupRows ?? []
+    const subgroupMap = new Map(subgroups.map((s) => [s.id, s.name]))
+
+    // Apply subgroup filter to profiles if requested
+    const filteredProfiles = subgroupId
+      ? profiles.filter((p) => p.subgroup_id === subgroupId)
+      : profiles
+
+    if (filteredProfiles.length === 0) return { rows: [], subgroups }
+
+    const userIds = filteredProfiles.map((p) => p.id)
 
     // Fetch assessment results for those users
     const { data: results, error: resultError } = await serviceClient
@@ -408,9 +629,9 @@ export async function getOrgResults(orgId?: string): Promise<{
 
     if (resultError) {
       console.error("getOrgResults: results fetch failed", { targetOrgId, error: resultError })
-      return { rows: [], error: resultError.message }
+      return { rows: [], subgroups, error: resultError.message }
     }
-    if (!results || results.length === 0) return { rows: [] }
+    if (!results || results.length === 0) return { rows: [], subgroups }
 
     // Fetch module titles
     const moduleIds = [...new Set(results.map((r) => r.module_id))]
@@ -420,13 +641,13 @@ export async function getOrgResults(orgId?: string): Promise<{
       .in("id", moduleIds)
 
     // Fetch org names
-    const orgIds = [...new Set(profiles.map((p) => p.org_id).filter(Boolean))]
+    const orgIds = [...new Set(filteredProfiles.map((p) => p.org_id).filter(Boolean))]
     const { data: orgs } = await serviceClient
       .from("organisations")
       .select("id, name")
       .in("id", orgIds as string[])
 
-    const profileMap  = new Map(profiles.map((p) => [p.id, p]))
+    const profileMap  = new Map(filteredProfiles.map((p) => [p.id, p]))
     const moduleMap   = new Map((modules ?? []).map((m) => [m.id, m.title]))
     const orgMap      = new Map((orgs ?? []).map((o) => [o.id, o.name]))
 
@@ -440,6 +661,8 @@ export async function getOrgResults(orgId?: string): Promise<{
         module_title:   moduleMap.get(r.module_id) ?? r.module_id,
         org_id:         profile?.org_id ?? null,
         org_name:       profile?.org_id ? (orgMap.get(profile.org_id) ?? null) : null,
+        subgroup_id:    profile?.subgroup_id ?? null,
+        subgroup_name:  profile?.subgroup_id ? (subgroupMap.get(profile.subgroup_id) ?? null) : null,
         score:          r.score,
         passed:         r.passed,
         submitted_at:   r.submitted_at,
@@ -447,10 +670,10 @@ export async function getOrgResults(orgId?: string): Promise<{
       }
     })
 
-    return { rows }
+    return { rows, subgroups }
   } catch (e) {
     console.error("getOrgResults: unexpected error", e)
-    return { rows: [], error: (e as Error).message }
+    return { rows: [], subgroups: [], error: (e as Error).message }
   }
 }
 
@@ -460,19 +683,20 @@ export async function getOrgResults(orgId?: string): Promise<{
 
 export async function getMasterResults(): Promise<{
   rows: ResultRow[]
+  subgroups: { id: string; name: string }[]
   error?: string
 }> {
   try {
     const { adminRow } = await requireAdmin()
     if (adminRow.role !== "super_admin") {
-      return { rows: [], error: "Super admin access required" }
+      return { rows: [], subgroups: [], error: "Super admin access required" }
     }
 
     // Reuse getOrgResults with no org filter
     return getOrgResults(undefined)
   } catch (e) {
     console.error("getMasterResults: unexpected error", e)
-    return { rows: [], error: (e as Error).message }
+    return { rows: [], subgroups: [], error: (e as Error).message }
   }
 }
 

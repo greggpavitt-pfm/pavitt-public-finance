@@ -3,8 +3,8 @@
 // Org admins see results for their own organisation's participants only.
 // Super admins see the same view but can also access the master report.
 //
-// Columns: Student | Module | Score | Pass/Fail | Date taken | Attempt
-// Features: Print button, Export CSV button
+// Columns: Student | Subgroup | Module | Score | Pass/Fail | Date taken | Attempt
+// Features: Subgroup filter, Print button, Export CSV button
 
 import type { Metadata } from "next"
 import Link from "next/link"
@@ -15,12 +15,17 @@ import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import ExportButton from "./ExportButton"
 import PrintButton from "../../training/[moduleId]/results/PrintButton"
+import SubgroupFilter from "./SubgroupFilter"
 
 export const metadata: Metadata = {
   title: "Results Report — Admin",
 }
 
-export default async function AdminResultsPage() {
+interface Props {
+  searchParams: Promise<{ subgroup?: string }>
+}
+
+export default async function AdminResultsPage({ searchParams }: Props) {
   // --- Auth + role check ---
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -34,8 +39,16 @@ export default async function AdminResultsPage() {
 
   if (!adminRow) redirect("/training")
 
+  const { subgroup: subgroupParam } = await searchParams
+  const selectedSubgroupId = subgroupParam ?? null
+
   // Fetch results scoped to this admin's org (or all for super admin calling this page)
-  const { rows, error } = await getOrgResults(adminRow.org_id ?? undefined)
+  const { rows, subgroups, error } = await getOrgResults(
+    adminRow.org_id ?? undefined,
+    selectedSubgroupId ?? undefined,
+  )
+
+  const hasSubgroups = subgroups.length > 0
 
   const printedAt = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
@@ -66,15 +79,24 @@ export default async function AdminResultsPage() {
                   ? "All organisations"
                   : "Your organisation's participants"}
                 {" "}&mdash; {rows.length} result{rows.length !== 1 ? "s" : ""}
+                {selectedSubgroupId && subgroups.find((s) => s.id === selectedSubgroupId) && (
+                  <span className="ml-1 text-ppf-sky">
+                    ({subgroups.find((s) => s.id === selectedSubgroupId)!.name})
+                  </span>
+                )}
               </p>
             </div>
 
             {/* Action buttons */}
-            <div className="flex gap-2 print:hidden">
+            <div className="flex flex-wrap gap-2 print:hidden">
+              {hasSubgroups && (
+                <SubgroupFilter subgroups={subgroups} selectedId={selectedSubgroupId} />
+              )}
               <ExportButton
                 rows={rows}
                 filename={`ipsas-results-${new Date().toISOString().slice(0, 10)}.csv`}
                 includeOrg={adminRow.role === "super_admin"}
+                includeSubgroup={hasSubgroups}
               />
               <PrintButton />
               {adminRow.role === "super_admin" && (
@@ -98,7 +120,11 @@ export default async function AdminResultsPage() {
           {/* Empty state */}
           {!error && rows.length === 0 && (
             <div className="rounded-lg border border-ppf-sky/20 bg-white p-10 text-center">
-              <p className="text-slate-400">No assessment results yet. Results will appear here once participants complete modules.</p>
+              <p className="text-slate-400">
+                {selectedSubgroupId
+                  ? "No results for this subgroup yet."
+                  : "No assessment results yet. Results will appear here once participants complete modules."}
+              </p>
             </div>
           )}
 
@@ -110,6 +136,9 @@ export default async function AdminResultsPage() {
                   <thead className="border-b border-slate-100 bg-slate-50">
                     <tr>
                       <th className="px-4 py-3 text-left font-semibold text-slate-600">Student</th>
+                      {hasSubgroups && (
+                        <th className="px-4 py-3 text-left font-semibold text-slate-600">Subgroup</th>
+                      )}
                       <th className="px-4 py-3 text-left font-semibold text-slate-600">Module</th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-600">Score</th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-600">Result</th>
@@ -121,6 +150,11 @@ export default async function AdminResultsPage() {
                     {rows.map((row) => (
                       <tr key={row.id} className="hover:bg-slate-50">
                         <td className="px-4 py-3 font-medium text-ppf-navy">{row.full_name}</td>
+                        {hasSubgroups && (
+                          <td className="px-4 py-3 text-slate-500">
+                            {row.subgroup_name ?? <span className="text-slate-300 italic">—</span>}
+                          </td>
+                        )}
                         <td className="px-4 py-3 text-slate-600 max-w-xs">
                           <span className="line-clamp-2">{row.module_title}</span>
                         </td>

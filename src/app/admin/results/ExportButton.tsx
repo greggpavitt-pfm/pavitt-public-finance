@@ -8,14 +8,16 @@ interface Props {
   rows: ResultRow[]
   filename: string
   includeOrg?: boolean
+  includeSubgroup?: boolean
 }
 
-export default function ExportButton({ rows, filename, includeOrg = false }: Props) {
+export default function ExportButton({ rows, filename, includeOrg = false, includeSubgroup = false }: Props) {
   function handleExport() {
     // Build CSV header
     const headers = [
       "Student name",
       ...(includeOrg ? ["Organisation"] : []),
+      ...(includeSubgroup ? ["Subgroup"] : []),
       "Module",
       "Score (%)",
       "Pass/fail",
@@ -27,6 +29,7 @@ export default function ExportButton({ rows, filename, includeOrg = false }: Pro
     const csvRows = rows.map((r) => [
       `"${r.full_name.replace(/"/g, '""')}"`,
       ...(includeOrg ? [`"${(r.org_name ?? "").replace(/"/g, '""')}"`] : []),
+      ...(includeSubgroup ? [`"${(r.subgroup_name ?? "").replace(/"/g, '""')}"`] : []),
       `"${r.module_title.replace(/"/g, '""')}"`,
       r.score,
       r.passed ? "Pass" : "Fail",

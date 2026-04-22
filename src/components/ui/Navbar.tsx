@@ -66,7 +66,7 @@ export default function Navbar() {
           : "bg-transparent border-b border-transparent",
       ].join(" ")}
     >
-      <div className="mx-auto flex h-[60px] max-w-[1240px] items-center justify-between px-6 md:px-12">
+      <div className="mx-auto flex h-[96px] max-w-[1240px] items-center justify-between px-6 md:px-12">
         {/* Brand */}
         <Link
           href="/"
@@ -81,7 +81,7 @@ export default function Navbar() {
             width={80}
             height={80}
             priority
-            className="h-7 w-auto"
+            className="h-[84px] w-auto"
           />
           <span>{siteConfig.companyName}</span>
         </Link>

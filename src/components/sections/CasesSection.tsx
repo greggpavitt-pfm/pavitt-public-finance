@@ -24,11 +24,11 @@ type CaseStudy = {
 const CASES: CaseStudy[] = [
   {
     id: "fsm",
-    tag: "FSM · Pacific",
-    years: "2021–2024",
-    title: "Rolling out accrual-basis IPSAS reporting",
-    desc: "Embedded Team Leader at the FSM national government — designed the chart of accounts migration and trained 48 finance staff across four state treasuries.",
-    image: images.hero,
+    tag: "Solomon Islands · Pacific",
+    years: "2024–Present",
+    title: "Creating and Deploying IPSAS based Reporting System",
+    desc: "Developing custom IPSAS reporting system. Modifying secondary chart of accounts, automating power pivot production system for multi-year reporting of governmental, donor, and special purpose funds.",
+    image: images.ipsasAcctg,
     metrics: [
       { label: "IPSAS Coverage", value: "94%", pos: true },
       { label: "Staff Trained", value: "48" },
@@ -40,7 +40,7 @@ const CASES: CaseStudy[] = [
     years: "2018–2021",
     title: "Domestic revenue mobilisation diagnostic",
     desc: "Led a multi-country PEFA-style assessment for EuropeAid covering tax policy, administration capacity, and taxpayer compliance across three SSA jurisdictions.",
-    image: images.about,
+    image: images.drm,
     metrics: [
       { label: "Revenue Gap Closed", value: "+2.3pp", pos: true },
       { label: "Countries", value: "3" },
@@ -50,8 +50,8 @@ const CASES: CaseStudy[] = [
     id: "ifmis",
     tag: "FSM · Pacific",
     years: "2021–2024",
-    title: "IFMIS design & operationalisation",
-    desc: "Developing custom IPSAS reporting system. Modifying secondary chart of accounts, automating power pivot production system for multi-year reporting of governmental, donor, and special purpose funds.",
+    title: "IFMIS design and operationalisation",
+    desc: "Design and procure a resilient IFMIS to modernize public financial management, ensure GAAP compliance, and maximize transparency across island operations. Coordinated for individual island states and national government.",
     image: images.ifmis,
     metrics: [
       { label: "Go-Live On Time", value: "Yes", pos: true },

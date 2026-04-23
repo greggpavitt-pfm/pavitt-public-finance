@@ -128,6 +128,9 @@ export default async function TrainingPage() {
       <main className="min-h-screen bg-ppf-light px-6 py-16 md:px-16">
         <div className="mx-auto max-w-3xl">
           {/* Header */}
+          <p className="mb-1 text-xs font-semibold uppercase tracking-widest text-ppf-sky">
+            IPSAS Training
+          </p>
           <h1 className="mb-1 text-3xl font-bold text-ppf-navy">
             Welcome back{profile.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}
           </h1>

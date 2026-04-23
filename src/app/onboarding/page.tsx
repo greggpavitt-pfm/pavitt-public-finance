@@ -25,18 +25,24 @@ export default async function OnboardingPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("pathway, ability_level, account_status, onboarding_complete")
+    .select("pathway, ability_level, account_status, onboarding_complete, product_access")
     .eq("id", user.id)
     .single()
-
-  // If they've already finished onboarding, send them straight to training
-  if (profile?.onboarding_complete) {
-    redirect("/training")
-  }
 
   // If not yet approved, send them to the pending page
   if (!profile || profile.account_status !== "approved") {
     redirect("/pending")
+  }
+
+  // Advisor-only users don't need training onboarding — their context is set
+  // inside the advisor via ContextPanel. Mark them complete and send them there.
+  if (profile.product_access === "advisor") {
+    redirect("/advisor")
+  }
+
+  // If they've already finished onboarding, send them straight to training
+  if (profile.onboarding_complete) {
+    redirect("/training")
   }
 
   return (

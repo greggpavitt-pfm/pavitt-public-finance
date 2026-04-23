@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 const features = [
   {
-    title: "Student Training",
+    title: "IPSAS Training",
     description:
       "Interactive practice questions covering all International Public Sector Accounting Standards. Log in, work through training modules at your own pace, and track your progress over time.",
     icon: (

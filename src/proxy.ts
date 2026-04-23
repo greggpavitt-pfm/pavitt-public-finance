@@ -91,32 +91,26 @@ export async function proxy(request: NextRequest) {
   }
 
   // --- Protect /advisor/* ---
-  // Same rules as /training: must be logged in + approved + onboarding complete
+  // Requires login + approved account. Does NOT require onboarding_complete —
+  // practitioners set their context inside the advisor via ContextPanel.
   if (pathname.startsWith('/advisor')) {
     if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      // Unauthenticated practitioners should land on the practitioner sign-in page
+      return NextResponse.redirect(new URL('/practitioner-login', request.url))
     }
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('account_status, onboarding_complete')
+      .select('account_status')
       .eq('id', user.id)
       .single()
 
-    if (!profile) {
-      return NextResponse.redirect(new URL('/onboarding', request.url))
-    }
-
-    if (profile.account_status === 'pending') {
+    if (!profile || profile.account_status === 'pending') {
       return NextResponse.redirect(new URL('/pending', request.url))
     }
 
     if (profile.account_status === 'suspended') {
-      return NextResponse.redirect(new URL('/login?reason=suspended', request.url))
-    }
-
-    if (!profile.onboarding_complete) {
-      return NextResponse.redirect(new URL('/onboarding', request.url))
+      return NextResponse.redirect(new URL('/practitioner-login?reason=suspended', request.url))
     }
   }
 

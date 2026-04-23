@@ -43,3 +43,5 @@ next-env.d.ts
 # playwright test output (screenshots and recordings — not source code)
 *.png
 *.yml
+# allow site images in public/ (exception to *.png above)
+!public/**/*.png

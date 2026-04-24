@@ -39,7 +39,48 @@ export default function HeroSection() {
   ]
 
   return (
-    <section className="relative overflow-hidden bg-ppf-navy pt-[140px] text-white">
+    <>
+      {/* ── MOBILE HERO (< 768px) ── */}
+      <div className="md:hidden bg-ppf-navy text-white">
+        {/* Compact row: avatar + name/title */}
+        <div className="flex items-center gap-4 px-5 pt-20 pb-4">
+          <div className="h-14 w-14 shrink-0 rounded-full bg-ppf-sky flex items-center justify-center text-white font-bold text-lg">
+            GP
+          </div>
+          <div>
+            <p className="text-base font-bold leading-tight">Gregg Pavitt</p>
+            <p className="text-xs text-blue-300">International PFM Expert</p>
+            <p className="text-xs text-blue-200 mt-0.5">Sub-Saharan Africa · South Asia · Pacific</p>
+          </div>
+        </div>
+
+        {/* Stat strip */}
+        <div className="flex justify-around bg-ppf-navy-deep px-4 py-3 border-t border-white/10">
+          {stats.map((s) => (
+            <div key={s.label} className="text-center">
+              <div className="text-base font-bold text-white tabular-nums">
+                {s.value}{s.suffix ?? ""}
+              </div>
+              <div className="text-[10px] uppercase tracking-wide text-white/55 font-mono">
+                {s.label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <div className="px-5 py-4">
+          <a
+            href="/#contact"
+            className="block w-full rounded-md bg-ppf-sky py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-ppf-sky-hover"
+          >
+            Get in Touch
+          </a>
+        </div>
+      </div>
+
+      {/* ── DESKTOP HERO (≥ 768px) ── */}
+      <section className="relative overflow-hidden bg-ppf-navy pt-[140px] text-white hidden md:block">
       {/* Radial glow backdrop */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -193,5 +234,6 @@ export default function HeroSection() {
 
       <span className="sr-only">{siteConfig.tagline}</span>
     </section>
+    </>
   )
 }

@@ -1,8 +1,10 @@
 "use client"
-// Authenticated navigation bar for /training and /advisor routes
-// Shows user name, Training link, Advisor link, and logout button
+// Authenticated navigation bar for /training and /advisor routes.
+// Desktop (≥768px): horizontal logo + links + user menu.
+// Mobile (<768px): single row with hamburger toggle dropdown.
 
 import Link from "next/link"
+import { useState } from "react"
 import { logoutUser } from "@/app/auth/actions"
 
 interface AuthNavbarProps {
@@ -11,59 +13,84 @@ interface AuthNavbarProps {
 }
 
 export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
+  const [menuOpen, setMenuOpen] = useState(false)
+
   const handleLogout = async () => {
     await logoutUser()
   }
 
-  return (
-    <nav className="flex h-14 items-center justify-between bg-ppf-navy/95 px-6 md:px-16 border-b border-blue-900">
-      {/* Logo + Brand */}
-      <Link href="/training" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-        <span className="text-lg font-bold tracking-tight text-white">PFM IPSAS</span>
-      </Link>
+  const linkClass = (path: string) =>
+    `text-sm font-medium transition-colors ${
+      currentPath?.startsWith(path) ? "text-white" : "text-blue-200 hover:text-white"
+    }`
 
-      {/* Nav Links + User Menu */}
-      <div className="flex items-center gap-6">
-        {/* Training and Advisor Links */}
-        <ul className="flex gap-4">
-          <li>
+  return (
+    <nav className="border-b border-blue-900 bg-ppf-navy/95">
+      {/* ── DESKTOP (≥ 768px) ── */}
+      <div className="hidden md:flex h-14 items-center justify-between px-16">
+        <Link href="/training" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <span className="text-lg font-bold tracking-tight text-white">PFM IPSAS</span>
+        </Link>
+        <div className="flex items-center gap-6">
+          <ul className="flex gap-4">
+            <li><Link href="/training" className={linkClass("/training")}>Training</Link></li>
+            <li><Link href="/advisor" className={linkClass("/advisor")}>Advisor</Link></li>
+          </ul>
+          <div className="flex items-center gap-3 pl-3 border-l border-blue-800">
+            {userName && <span className="text-sm text-blue-200">{userName}</span>}
+            <button
+              onClick={handleLogout}
+              className="text-sm font-medium text-blue-200 hover:text-white transition-colors"
+            >
+              Log Out
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ── MOBILE (< 768px) ── */}
+      <div className="md:hidden">
+        <div className="flex h-14 items-center justify-between px-4">
+          <Link href="/training" className="text-base font-bold tracking-tight text-white">
+            PFM IPSAS
+          </Link>
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            className="text-white text-2xl leading-none px-1"
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>
+        </div>
+
+        {/* Dropdown */}
+        {menuOpen && (
+          <div className="border-t border-blue-900 bg-ppf-navy px-4 pb-4 flex flex-col gap-3">
             <Link
               href="/training"
-              className={`text-sm font-medium transition-colors ${
-                currentPath?.startsWith("/training")
-                  ? "text-white"
-                  : "text-blue-200 hover:text-white"
-              }`}
+              onClick={() => setMenuOpen(false)}
+              className={`pt-3 text-sm font-semibold ${currentPath?.startsWith("/training") ? "text-white" : "text-blue-200"}`}
             >
               Training
             </Link>
-          </li>
-          <li>
             <Link
               href="/advisor"
-              className={`text-sm font-medium transition-colors ${
-                currentPath?.startsWith("/advisor")
-                  ? "text-white"
-                  : "text-blue-200 hover:text-white"
-              }`}
+              onClick={() => setMenuOpen(false)}
+              className={`text-sm font-semibold ${currentPath?.startsWith("/advisor") ? "text-white" : "text-blue-200"}`}
             >
               Advisor
             </Link>
-          </li>
-        </ul>
-
-        {/* User Name + Logout */}
-        <div className="flex items-center gap-3 pl-3 border-l border-blue-800">
-          {userName && (
-            <span className="text-sm text-blue-200">{userName}</span>
-          )}
-          <button
-            onClick={handleLogout}
-            className="text-sm font-medium text-blue-200 hover:text-white transition-colors"
-          >
-            Log Out
-          </button>
-        </div>
+            <div className="border-t border-blue-900 pt-3 flex items-center justify-between">
+              {userName && <span className="text-sm text-blue-300">{userName}</span>}
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium text-blue-200 hover:text-white transition-colors"
+              >
+                Log Out
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   )

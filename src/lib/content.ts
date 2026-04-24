@@ -208,5 +208,6 @@ export const images = {
   ifmis: "/images/photo-ifmis.jpg",
   drm: "/images/photo-drm.png",
   drmAfrica: "/images/photo-drm-africa.jpg",
+  ssaAccounting: "/images/photo-ssa-accounting.jpg",
   ipsasAcctg: "/images/photo-ipsas-acctg.png",
 } as const

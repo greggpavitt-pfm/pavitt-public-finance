@@ -515,6 +515,39 @@ export async function autoSubmitStaleSessions(): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Get flashcards for a module (for the dedicated flashcard study page)
+// ---------------------------------------------------------------------------
+// Uses service_role to read correct_answer — blocked from authenticated role by
+// column-level REVOKE. Safe here because the flashcard page intentionally shows
+// answers (it is a study tool, not a graded test).
+
+export async function getFlashcards(moduleId: string): Promise<{
+  flashcards: Array<{
+    id: string
+    question_text: string
+    correct_answer: string
+    explanation: string | null
+    sequence_number: number
+  }>
+  error?: string
+}> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { flashcards: [], error: "Not authenticated" }
+
+  const serviceClient = await createServiceClient()
+  const { data, error } = await serviceClient
+    .from("questions")
+    .select("id, question_text, correct_answer, explanation, sequence_number")
+    .eq("module_id", moduleId)
+    .eq("question_type", "flashcard")
+    .order("sequence_number", { ascending: true })
+
+  if (error) return { flashcards: [], error: error.message }
+  return { flashcards: data ?? [] }
+}
+
+// ---------------------------------------------------------------------------
 // Mark a module complete (legacy — kept for compatibility)
 // ---------------------------------------------------------------------------
 // New code should call submitSession() instead. This is retained so that any

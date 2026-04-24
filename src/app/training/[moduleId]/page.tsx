@@ -1,7 +1,6 @@
-// /training/[moduleId] — single module view.
-// Fetches the module metadata and all questions (WITHOUT correct_answer — that
-// column is blocked by RLS for the authenticated role). Renders the interactive
-// ModuleViewer client component.
+// /training/[moduleId] — module choice hub.
+// Shows two options: Study Flashcards (/flashcards) and Take the Test (/test).
+// Each option is only shown if that question type exists in the module.
 
 import type { Metadata } from "next"
 import Link from "next/link"
@@ -9,9 +8,7 @@ import { redirect, notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import AuthNavbar from "@/components/ui/AuthNavbar"
 import Footer from "@/components/ui/Footer"
-import ModuleViewer from "./ModuleViewer"
 
-// Next.js calls generateMetadata with the same params as the page
 export async function generateMetadata({
   params,
 }: {
@@ -37,30 +34,27 @@ interface PageProps {
 export default async function ModulePage({ params }: PageProps) {
   const { moduleId } = await params
 
-  // --- Auth check ---
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect("/login")
 
-  // --- Fetch module (RLS ensures approved users only see their pathway's content) ---
   const { data: module } = await supabase
     .from("modules")
-    .select("id, title, description, content_md, standards, sequence_number, pathway, difficulty")
+    .select("id, title, description, standards, sequence_number, pathway, difficulty")
     .eq("id", moduleId)
     .single()
 
   if (!module) notFound()
 
-  // --- Fetch questions (correct_answer is REVOKED — it will not appear in results) ---
-  // The question_text for flashcards is the "front"; the correct_answer is the "back"
-  // and is only revealed via the checkAnswer() server action.
-  const { data: questions } = await supabase
+  // Count each question type — one lightweight query, no correct_answer needed
+  const { data: questionTypes } = await supabase
     .from("questions")
-    .select("id, question_type, question_text, options, explanation, sequence_number")
+    .select("question_type")
     .eq("module_id", moduleId)
-    .order("sequence_number", { ascending: true })
 
-  // Check if this module is already complete for this user
+  const mcqCount = (questionTypes ?? []).filter(q => q.question_type === "mcq").length
+  const flashcardCount = (questionTypes ?? []).filter(q => q.question_type === "flashcard").length
+
   const { data: progressRow } = await supabase
     .from("progress")
     .select("status")
@@ -91,7 +85,6 @@ export default async function ModulePage({ params }: PageProps) {
               <p className="mb-3 text-slate-500">{module.description}</p>
             )}
 
-            {/* Standards tags */}
             {module.standards && (module.standards as string[]).length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {(module.standards as string[]).map((s: string) => (
@@ -113,16 +106,72 @@ export default async function ModulePage({ params }: PageProps) {
                 <path fillRule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.857-9.809a.75.75 0 0 0-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 1 0-1.06 1.061l2.5 2.5a.75.75 0 0 0 1.137-.089l4-5.5Z" clipRule="evenodd" />
               </svg>
               <span className="text-sm font-medium text-green-800">
-                You&apos;ve completed this module. You can review it again below.
+                You&apos;ve completed this module. You can still study the flashcards below.
               </span>
             </div>
           )}
 
-          {/* Interactive question viewer */}
-          <ModuleViewer
-            moduleId={module.id}
-            questions={questions ?? []}
-          />
+          {/* Option cards */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Flashcards option */}
+            {flashcardCount > 0 && (
+              <div className="rounded-lg border border-ppf-sky/20 bg-white p-6 shadow-sm">
+                <div className="mb-3 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-ppf-sky">
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                  </svg>
+                  <h2 className="font-semibold text-ppf-navy">Study Flashcards</h2>
+                </div>
+                <p className="mb-4 text-sm text-slate-500">
+                  Browse key terms and concepts at your own pace. Print them as cut-out index cards.
+                </p>
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="rounded-full bg-ppf-pale px-2.5 py-0.5 text-xs font-medium text-ppf-sky">
+                    {flashcardCount} card{flashcardCount !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                <Link
+                  href={`/training/${moduleId}/flashcards`}
+                  className="inline-block rounded-md bg-ppf-sky px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue"
+                >
+                  Study now →
+                </Link>
+              </div>
+            )}
+
+            {/* Test option */}
+            {mcqCount > 0 && (
+              <div className="rounded-lg border border-ppf-sky/20 bg-white p-6 shadow-sm">
+                <div className="mb-3 flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-ppf-sky">
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                  </svg>
+                  <h2 className="font-semibold text-ppf-navy">Take the Test</h2>
+                </div>
+                <p className="mb-4 text-sm text-slate-500">
+                  Answer multiple-choice questions and receive a scored result. Pass mark: 70%.
+                </p>
+                <div className="mb-4 flex items-center gap-2">
+                  <span className="rounded-full bg-ppf-pale px-2.5 py-0.5 text-xs font-medium text-ppf-sky">
+                    {mcqCount} question{mcqCount !== 1 ? "s" : ""}
+                  </span>
+                  {isAlreadyComplete && (
+                    <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                      Completed
+                    </span>
+                  )}
+                </div>
+                <Link
+                  href={`/training/${moduleId}/test`}
+                  className="inline-block rounded-md bg-ppf-sky px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue"
+                >
+                  Start test →
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </main>
       <Footer />

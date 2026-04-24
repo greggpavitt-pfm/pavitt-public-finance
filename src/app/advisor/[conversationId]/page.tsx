@@ -4,6 +4,8 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import MessageThread from "@/components/advisor/MessageThread"
 import TransactionInput from "@/components/advisor/TransactionInput"
+import DocumentAttachment from "@/components/advisor/DocumentAttachment"
+import { getConversationDocuments } from "@/app/advisor/actions"
 
 interface AdvisorConversationPageProps {
   params: Promise<{
@@ -33,6 +35,9 @@ export default async function AdvisorConversationPage(
     redirect("/advisor")
   }
 
+  // Fetch PDF documents attached to this conversation (if any)
+  const { documents } = await getConversationDocuments(conversationId)
+
   // Fetch all messages in this conversation
   const { data: messages } = await supabase
     .from("advisor_messages")
@@ -57,6 +62,20 @@ export default async function AdvisorConversationPage(
         <p className="mt-1 text-sm text-gray-600">
           Mode: {conversation.output_mode === "quick_treatment" ? "Quick Treatment" : conversation.output_mode}
         </p>
+
+        {/* Attached PDF documents */}
+        {documents && documents.length > 0 && (
+          <div className="mt-4">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              Attached Documents
+            </p>
+            <div className="space-y-2">
+              {documents.map((doc) => (
+                <DocumentAttachment key={doc.id} document={doc} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Message Thread */}

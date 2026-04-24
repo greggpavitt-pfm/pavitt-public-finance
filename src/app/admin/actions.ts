@@ -530,6 +530,14 @@ export type Subgroup = {
   name: string
   sub_jurisdiction: string | null
   created_at: string
+  reviewer_1_id: string | null
+  reviewer_2_id: string | null
+}
+
+export type OrgUser = {
+  id: string
+  full_name: string
+  org_id: string
 }
 
 // ---------------------------------------------------------------------------
@@ -899,6 +907,112 @@ export async function getMasterResults(): Promise<{
   } catch (e) {
     console.error("getMasterResults: unexpected error", e)
     return { rows: [], subgroups: [], error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Assign / remove a reviewer for an org or subgroup
+// ---------------------------------------------------------------------------
+// Admins assign up to 2 reviewer users per org and per subgroup. Reviewers
+// are regular training users who can see their unit's scores without admin access.
+
+export async function assignOrgReviewer(
+  orgId: string,
+  slot: 1 | 2,
+  userId: string | null
+): Promise<{ error?: string }> {
+  try {
+    const { adminRow } = await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    // org_admin can only manage their own org
+    if (adminRow.role === "org_admin" && adminRow.org_id !== orgId) {
+      return { error: "Not authorised to manage reviewers for this organisation." }
+    }
+
+    // Validate the user belongs to this org (if assigning, not clearing)
+    if (userId) {
+      const { data: profile } = await serviceClient
+        .from("profiles")
+        .select("org_id")
+        .eq("id", userId)
+        .single()
+
+      if (!profile || profile.org_id !== orgId) {
+        return { error: "Selected user does not belong to this organisation." }
+      }
+    }
+
+    const col = slot === 1 ? "reviewer_1_id" : "reviewer_2_id"
+    const { error } = await serviceClient
+      .from("organisations")
+      .update({ [col]: userId } as Record<string, unknown>)
+      .eq("id", orgId)
+
+    if (error) {
+      console.error("assignOrgReviewer: update failed", { orgId, slot, userId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/orgs")
+    return {}
+  } catch (e) {
+    console.error("assignOrgReviewer: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+export async function assignSubgroupReviewer(
+  subgroupId: string,
+  slot: 1 | 2,
+  userId: string | null
+): Promise<{ error?: string }> {
+  try {
+    const { adminRow } = await requireAdmin()
+    const serviceClient = await createServiceClient()
+
+    // Fetch the subgroup to get its org_id for the access check
+    const { data: sg } = await serviceClient
+      .from("org_subgroups")
+      .select("org_id")
+      .eq("id", subgroupId)
+      .single()
+
+    if (!sg) return { error: "Subgroup not found." }
+
+    if (adminRow.role === "org_admin" && adminRow.org_id !== sg.org_id) {
+      return { error: "Not authorised to manage reviewers for this subgroup." }
+    }
+
+    // Validate the user belongs to this org (if assigning, not clearing)
+    if (userId) {
+      const { data: profile } = await serviceClient
+        .from("profiles")
+        .select("org_id")
+        .eq("id", userId)
+        .single()
+
+      if (!profile || profile.org_id !== sg.org_id) {
+        return { error: "Selected user does not belong to this organisation." }
+      }
+    }
+
+    const col = slot === 1 ? "reviewer_1_id" : "reviewer_2_id"
+    const { error } = await serviceClient
+      .from("org_subgroups")
+      .update({ [col]: userId } as Record<string, unknown>)
+      .eq("id", subgroupId)
+
+    if (error) {
+      console.error("assignSubgroupReviewer: update failed", { subgroupId, slot, userId, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/orgs")
+    return {}
+  } catch (e) {
+    console.error("assignSubgroupReviewer: unexpected error", e)
+    return { error: (e as Error).message }
   }
 }
 

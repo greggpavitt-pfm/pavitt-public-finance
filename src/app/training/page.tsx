@@ -4,12 +4,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
-import { createServiceClient } from "@/lib/supabase/server"
+import { createClient, createServiceClient } from "@/lib/supabase/server"
 import AuthNavbar from "@/components/ui/AuthNavbar"
 import Footer from "@/components/ui/Footer"
 import { logoutUser } from "@/app/auth/actions"
 import { autoSubmitStaleSessions } from "@/app/training/actions"
+import { getReviewerScope } from "@/app/training/reviewer-actions"
 import CertificatePanel from "@/components/CertificatePanel"
 import type { ResultSummary } from "@/components/CertificatePanel"
 
@@ -34,6 +34,9 @@ export default async function TrainingPage() {
   // Auto-submit any sessions abandoned for > 24 hours so they don't sit
   // in_progress indefinitely. Runs silently — errors are logged server-side.
   await autoSubmitStaleSessions()
+
+  // Check if this user is a reviewer for any org or subgroup
+  const reviewerScope = await getReviewerScope()
 
   const orgData =
     profile.organisations && !Array.isArray(profile.organisations)
@@ -162,6 +165,22 @@ export default async function TrainingPage() {
                 Complete the IPSAS Foundation modules first, then work through the{" "}
                 {jurisdiction === "SIG" ? "Solomon Islands Context" : jurisdiction} modules.
               </p>
+            </div>
+          )}
+
+          {/* Reviewer button — shown only to users assigned as org/subgroup reviewer */}
+          {reviewerScope && (
+            <div className="mb-8">
+              <Link
+                href="/training/review"
+                className="inline-flex items-center gap-2 rounded-md bg-ppf-sky px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                  <path d="M10 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+                  <path fillRule="evenodd" d="M.664 10.59a1.651 1.651 0 0 1 0-1.186A10.004 10.004 0 0 1 10 3c4.257 0 7.893 2.66 9.336 6.41.147.381.146.804 0 1.186A10.004 10.004 0 0 1 10 17c-4.257 0-7.893-2.66-9.336-6.41ZM14 10a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z" clipRule="evenodd" />
+                </svg>
+                View group results
+              </Link>
             </div>
           )}
 

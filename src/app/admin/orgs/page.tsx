@@ -9,8 +9,9 @@ import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import CreateOrgForm from "./CreateOrgForm"
 import SubgroupPanel from "./SubgroupPanel"
+import OrgReviewerPanel from "./OrgReviewerPanel"
 import IpsasOrgsTable from "./IpsasOrgsTable"
-import { getIpsasOrgsAndSubgroups, type Subgroup } from "@/app/admin/actions"
+import { getIpsasOrgsAndSubgroups, type Subgroup, type OrgUser } from "@/app/admin/actions"
 
 export const metadata: Metadata = {
   title: "Organisations — Admin",
@@ -37,25 +38,21 @@ export default async function OrgsPage({ searchParams }: PageProps) {
 
   if (!adminRow) redirect("/training")
 
-  // Org admin can only see their own org; they also shouldn't be creating new orgs.
-  // We still show the page but hide the create form.
   const isSuperAdmin = adminRow.role === "super_admin"
 
-  // --- Fetch orgs (service client to bypass RLS column restriction on licence_key) ---
+  // --- Fetch orgs ---
   const serviceClient = await createServiceClient()
 
   const { data: orgs, error } = await serviceClient
     .from("organisations")
-    .select("id, name, country, jurisdiction_code, licence_key, licence_status, max_users, created_at")
+    .select("id, name, country, jurisdiction_code, licence_key, licence_status, max_users, created_at, reviewer_1_id, reviewer_2_id")
     .order("created_at", { ascending: false })
 
-  // Per-org user counts — fetched as a second query and joined in JS
-  // (Supabase doesn't support COUNT in embedded relations without a view)
+  // Per-org user counts
   const { data: userCounts } = await serviceClient
     .from("profiles")
     .select("org_id")
 
-  // Build a map: org_id → count
   const countMap: Record<string, number> = {}
   if (userCounts) {
     for (const row of userCounts) {
@@ -65,10 +62,10 @@ export default async function OrgsPage({ searchParams }: PageProps) {
     }
   }
 
-  // Fetch all subgroups and group them by org_id for the panels
+  // Fetch all subgroups (with reviewer fields) and group by org_id
   const { data: allSubgroups } = await serviceClient
     .from("org_subgroups")
-    .select("id, org_id, name, sub_jurisdiction, created_at")
+    .select("id, org_id, name, sub_jurisdiction, created_at, reviewer_1_id, reviewer_2_id")
     .order("name")
 
   const subgroupsByOrg = new Map<string, Subgroup[]>()
@@ -76,6 +73,22 @@ export default async function OrgsPage({ searchParams }: PageProps) {
     const existing = subgroupsByOrg.get(sg.org_id) ?? []
     existing.push(sg as Subgroup)
     subgroupsByOrg.set(sg.org_id, existing)
+  }
+
+  // Fetch approved users per org for reviewer dropdowns
+  const { data: allOrgUsers } = await serviceClient
+    .from("profiles")
+    .select("id, full_name, org_id")
+    .eq("account_status", "approved")
+    .order("full_name")
+
+  const orgUsersMap = new Map<string, OrgUser[]>()
+  for (const u of allOrgUsers ?? []) {
+    if (u.org_id) {
+      const existing = orgUsersMap.get(u.org_id) ?? []
+      existing.push(u as OrgUser)
+      orgUsersMap.set(u.org_id, existing)
+    }
   }
 
   // Fetch IPSAS data only if regulation tab is selected
@@ -97,7 +110,6 @@ export default async function OrgsPage({ searchParams }: PageProps) {
     suspended: "bg-red-100 text-red-700",
   }
 
-  // Tab link component (inline)
   const TabLink = ({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) => (
     <Link
       href={href}
@@ -168,12 +180,13 @@ export default async function OrgsPage({ searchParams }: PageProps) {
                         <th className="px-4 py-3">Users</th>
                         <th className="px-4 py-3">Max</th>
                         <th className="px-4 py-3">Subgroups</th>
+                        <th className="px-4 py-3">Reviewers</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {orgs.map((org) => {
                         const orgSubgroups = subgroupsByOrg.get(org.id) ?? []
-                        // org_admin can manage subgroups only for their own org
+                        const orgUsers = orgUsersMap.get(org.id) ?? []
                         const canManageSubgroups =
                           isSuperAdmin || adminRow.org_id === org.id
 
@@ -210,7 +223,17 @@ export default async function OrgsPage({ searchParams }: PageProps) {
                               <SubgroupPanel
                                 orgId={org.id}
                                 subgroups={orgSubgroups}
+                                orgUsers={orgUsers}
                                 canCreate={canManageSubgroups}
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <OrgReviewerPanel
+                                orgId={org.id}
+                                reviewer1Id={org.reviewer_1_id ?? null}
+                                reviewer2Id={org.reviewer_2_id ?? null}
+                                orgUsers={orgUsers}
+                                canManage={canManageSubgroups}
                               />
                             </td>
                           </tr>

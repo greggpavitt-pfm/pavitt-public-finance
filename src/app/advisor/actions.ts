@@ -1,13 +1,14 @@
 "use server"
 // Advisor server actions — Phase 2 IPSAS Practitioner Q&A system
 //
-// saveContext      — upsert user's context settings (jurisdiction, entity type, etc.)
-// createConversation — start a new multi-turn Q&A conversation
-// sendMessage      — process user message, call Anthropic SDK with tool-use,
-//                     return structured LLM response with citations
-// getConversation  — fetch full conversation thread + messages
-// listConversations — fetch user's conversation list
-// archiveConversation — mark conversation as archived
+// saveContext             — upsert user's context settings (jurisdiction, entity type, etc.)
+// createConversation      — start a new multi-turn Q&A conversation
+// sendMessage             — process user message, call OpenRouter LLM, return structured response
+// getConversation         — fetch full conversation thread + messages
+// listConversations       — fetch user's conversation list
+// archiveConversation     — mark conversation as archived
+// getConversationDocuments — fetch PDF attachments for a conversation (with signed URLs)
+// deleteDocument          — remove a PDF attachment from storage and DB
 
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { readFileSync } from "fs"
@@ -555,12 +556,16 @@ export async function sendMessage(
   // If clarifying answers are provided, find the last user message and update it
   // with the answers (don't create a new user message)
   let userMsg: { id: string } | null = null
+  // userContentForLLM: what gets sent as the final user turn to the LLM
+  // questionForCacheLookup: the original user question for RAG cache matching
+  let userContentForLLM = userMessage
+  let questionForCacheLookup = userMessage
 
   if (clarifyingAnswers && Object.keys(clarifyingAnswers).length > 0) {
-    // Find the last user message in this conversation
+    // Fetch last user message — include content so we can use it for cache lookup
     const { data: lastUserMsg } = await serviceClient
       .from("advisor_messages")
-      .select("id")
+      .select("id, content")
       .eq("conversation_id", conversationId)
       .eq("role", "user")
       .order("created_at", { ascending: false })
@@ -575,6 +580,33 @@ export async function sendMessage(
         .eq("id", lastUserMsg.id)
 
       userMsg = lastUserMsg
+      questionForCacheLookup = (lastUserMsg as { id: string; content: string }).content ?? ""
+
+      // Fetch the last assistant message to get the clarifying question texts
+      const { data: lastAssistantMsg } = await serviceClient
+        .from("advisor_messages")
+        .select("clarifying_questions")
+        .eq("conversation_id", conversationId)
+        .eq("role", "assistant")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single()
+
+      const clarifyingQs = lastAssistantMsg?.clarifying_questions as Array<{
+        id: string; text: string; options: string[]
+      }> | null
+
+      if (clarifyingQs) {
+        const formatted = clarifyingQs
+          .map((q) => `Q: ${q.text}\nA: ${clarifyingAnswers[q.id] ?? "(no answer)"}`)
+          .join("\n\n")
+        userContentForLLM = `My answers to your clarifying questions:\n\n${formatted}\n\nPlease now provide a complete IPSAS treatment.`
+      } else {
+        const formatted = Object.entries(clarifyingAnswers)
+          .map(([id, answer]) => `${id}: ${answer}`)
+          .join("\n")
+        userContentForLLM = `My answers to your clarifying questions:\n${formatted}\n\nPlease now provide a complete IPSAS treatment.`
+      }
     }
   } else if (userMessage.trim()) {
     // Save new user message
@@ -624,7 +656,7 @@ export async function sendMessage(
   // The cache holds pre-retrieved ChromaDB chunks for each IPSAS standard and topic cluster.
   // A cache hit replaces the live ChromaDB search — one fast Supabase read instead.
   const { context: cachedContext, cacheHit, matchedKeys } = await loadCachedContext(
-    userMessage,
+    questionForCacheLookup,
     context.reporting_basis,
     serviceClient
   )
@@ -640,7 +672,19 @@ export async function sendMessage(
   // 'live-search-fallback' means no cache match was found for this question.
   const topicsMatched = cacheHit ? matchedKeys : ["live-search-fallback"]
 
-  const systemPrompt = buildSystemPrompt(context, conversation.output_mode, referenceContent)
+  // Load extracted text from any PDFs the user uploaded for this conversation.
+  // Only documents with status='ready' have usable extracted text.
+  const { data: attachedDocs } = await serviceClient
+    .from("advisor_documents")
+    .select("original_filename, extracted_text, extracted_char_count")
+    .eq("conversation_id", conversationId)
+    .eq("status", "ready")
+
+  const documentContext = attachedDocs && attachedDocs.length > 0
+    ? buildDocumentContext(attachedDocs)
+    : null
+
+  const systemPrompt = buildSystemPrompt(context, conversation.output_mode, referenceContent, documentContext)
 
   // Look up which model to use for logic & drafting (admin-configurable)
   const modelId = await getModelForTask("logic_and_drafting")
@@ -670,7 +714,7 @@ export async function sendMessage(
         messages: [
           { role: "system", content: systemPrompt },
           ...conversationHistory,
-          { role: "user", content: userMessage },
+          { role: "user", content: userContentForLLM },
         ],
         // OpenAI-compatible tool use (function calling)
         tools: [
@@ -962,6 +1006,144 @@ export async function archiveConversation(conversationId: string): Promise<{
 }
 
 // ---------------------------------------------------------------------------
+// Get PDF documents attached to a conversation (with signed download URLs)
+// ---------------------------------------------------------------------------
+
+export async function getConversationDocuments(conversationId: string): Promise<{
+  documents: Array<{
+    id: string
+    original_filename: string
+    file_size_bytes: number
+    extracted_char_count: number | null
+    status: string
+    created_at: string
+    signedUrl: string | null
+  }>
+  error?: string
+}> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { documents: [], error: "Not authenticated" }
+
+  // Verify the conversation belongs to this user before returning documents
+  const { data: conversation } = await supabase
+    .from("advisor_conversations")
+    .select("id")
+    .eq("id", conversationId)
+    .eq("user_id", user.id)
+    .single()
+
+  if (!conversation) return { documents: [], error: "Conversation not found" }
+
+  const serviceClient = await createServiceClient()
+
+  const { data: docs, error } = await serviceClient
+    .from("advisor_documents")
+    .select("id, original_filename, file_size_bytes, extracted_char_count, status, storage_path, created_at")
+    .eq("conversation_id", conversationId)
+    .order("created_at", { ascending: true })
+
+  if (error) {
+    console.error("getConversationDocuments: query failed", { conversationId, error })
+    return { documents: [], error: error.message }
+  }
+
+  // Generate a signed URL for each document (valid for 1 hour)
+  const documents = await Promise.all(
+    (docs ?? []).map(async (doc) => {
+      const { data: urlData } = await serviceClient
+        .storage
+        .from("advisor-documents")
+        .createSignedUrl(doc.storage_path, 3600)
+
+      return {
+        id: doc.id,
+        original_filename: doc.original_filename,
+        file_size_bytes: doc.file_size_bytes,
+        extracted_char_count: doc.extracted_char_count,
+        status: doc.status,
+        created_at: doc.created_at,
+        signedUrl: urlData?.signedUrl ?? null,
+      }
+    })
+  )
+
+  return { documents }
+}
+
+// ---------------------------------------------------------------------------
+// Delete a PDF document — removes from storage and DB
+// ---------------------------------------------------------------------------
+
+export async function deleteDocument(documentId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: "Not authenticated" }
+
+  const serviceClient = await createServiceClient()
+
+  // Fetch the document to verify ownership and get the storage path
+  const { data: doc, error: fetchError } = await serviceClient
+    .from("advisor_documents")
+    .select("id, user_id, storage_path")
+    .eq("id", documentId)
+    .single()
+
+  if (fetchError || !doc) return { error: "Document not found" }
+  if (doc.user_id !== user.id) return { error: "Not authorised" }
+
+  // Delete from Supabase Storage
+  const { error: storageError } = await serviceClient
+    .storage
+    .from("advisor-documents")
+    .remove([doc.storage_path])
+
+  if (storageError) {
+    console.error("deleteDocument: storage remove failed", { documentId, error: storageError })
+    return { error: "Failed to delete file from storage" }
+  }
+
+  // Delete the DB row
+  const { error: dbError } = await serviceClient
+    .from("advisor_documents")
+    .delete()
+    .eq("id", documentId)
+
+  if (dbError) {
+    console.error("deleteDocument: DB delete failed", { documentId, error: dbError })
+    return { error: dbError.message }
+  }
+
+  return {}
+}
+
+// ---------------------------------------------------------------------------
+// Build document context string from attached PDFs (private helper)
+// ---------------------------------------------------------------------------
+
+function buildDocumentContext(
+  documents: Array<{
+    original_filename: string
+    extracted_text: string | null
+    extracted_char_count: number | null
+  }>
+): string | null {
+  const sections = documents
+    .filter((doc) => doc.extracted_text)
+    .map((doc) => `### Document: ${doc.original_filename}\n\n${doc.extracted_text}`)
+
+  if (sections.length === 0) return null
+
+  return [
+    "## User-Uploaded Document(s)",
+    "The user has uploaded the following document(s) for analysis.",
+    "This is their actual source document — prioritise it when answering.",
+    "",
+    ...sections,
+  ].join("\n\n")
+}
+
+// ---------------------------------------------------------------------------
 // Build dynamic system prompt with context injection
 // ---------------------------------------------------------------------------
 
@@ -974,7 +1156,10 @@ function buildSystemPrompt(
     reporting_period: string
   },
   outputMode: string,
-  referenceContent: string
+  referenceContent: string,
+  // Extracted text from user-uploaded PDFs — injected before IPSAS reference knowledge
+  // so the LLM sees the user's actual document first.
+  documentContext: string | null = null
 ): string {
   // Reference content may be either:
   //   (a) Pre-computed cached chunks — already structured as markdown with headers
@@ -992,6 +1177,10 @@ ${referenceContent}
 `
     : ""
 
+  // Document context appears after the user's entity context but before IPSAS reference material.
+  // This gives the LLM the user's actual scenario before presenting the accounting rules.
+  const documentSection = documentContext ? `${documentContext}\n\n---\n\n` : ""
+
   return `You are an IPSAS (International Public Sector Accounting Standards) advisor for public sector practitioners.
 
 ## Your Context
@@ -1001,7 +1190,7 @@ ${referenceContent}
 - Functional Currency: ${context.functional_currency}
 - Reporting Period: ${context.reporting_period || "Not specified"}
 
-${referenceSection}
+${documentSection}${referenceSection}
 
 ## Rules
 1. IPSAS only — never use IFRS or GASB standards

@@ -1,7 +1,7 @@
 "use client"
-// ModuleViewer — handles the interactive flashcard + MCQ experience.
+// ModuleViewer — handles the MCQ graded test experience.
 //
-// Session flow (new):
+// Session flow:
 //   1. On mount, calls startSession() to create or resume a server-side session.
 //      If the module is already completed, a read-only view is shown instead.
 //   2. Each answer is saved server-side via saveAnswer() immediately after
@@ -11,8 +11,9 @@
 //      and returns an attemptId.
 //   4. The component redirects to /training/[moduleId]/results?attempt=[attemptId].
 //
-// Correct answers are never in the initial page HTML — they are only
-// returned by checkAnswer() after the user has already submitted.
+// Correct answers are never in the initial page HTML — only returned by
+// checkAnswer() after the user has already submitted.
+// Flashcards are handled on the dedicated /flashcards page (FlashcardDeck.tsx).
 
 import { useState, useEffect, useTransition } from "react"
 import { useRouter } from "next/navigation"
@@ -60,9 +61,6 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
   // Map of questionId → result (populated when the user answers)
   const [results, setResults] = useState<Record<string, AnswerResult>>({})
 
-  // For flashcards: whether the answer has been revealed
-  const [revealed, setRevealed] = useState(false)
-
   // For MCQs: which option the user has clicked (before server round-trip)
   const [selectedOption, setSelectedOption] = useState<string | null>(null)
 
@@ -72,6 +70,8 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
 
   // General pending state for checkAnswer calls
   const [isChecking, startChecking] = useTransition()
+
+  const mcqQuestions = questions.filter(q => q.question_type === "mcq")
 
   // -------------------------------------------------------------------------
   // Start or resume the session on mount
@@ -112,7 +112,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
 
         // Advance index to the first unanswered question
         const answeredIds = new Set(response.existingAnswers.map((a) => a.question_id))
-        const firstUnansweredIndex = questions.findIndex((q) => !answeredIds.has(q.id))
+        const firstUnansweredIndex = mcqQuestions.findIndex((q) => !answeredIds.has(q.id))
         if (firstUnansweredIndex !== -1) {
           setCurrentIndex(firstUnansweredIndex)
         }
@@ -159,7 +159,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
     )
   }
 
-  if (questions.length === 0) {
+  if (mcqQuestions.length === 0) {
     return (
       <div className="rounded-lg border border-ppf-sky/20 bg-white p-10 text-center text-slate-400">
         No questions found for this module.
@@ -167,7 +167,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
     )
   }
 
-  const currentQuestion = questions[currentIndex]
+  const currentQuestion = mcqQuestions[currentIndex]
   const currentResult = results[currentQuestion.id]
   const isAnswered = !!currentResult
 
@@ -195,38 +195,10 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
     })
   }
 
-  // Flashcard: called when user marks correct/incorrect after revealing
-  function handleFlashcardResult(correct: boolean) {
-    startChecking(async () => {
-      // Fetch the correct answer from the server so we can display it
-      const result = await checkAnswer(
-        currentQuestion.id,
-        correct ? "__self_correct__" : "__self_incorrect__"
-      )
-      const answerResult: AnswerResult = {
-        correct,
-        correctAnswer: result.correctAnswer,
-        explanation: result.explanation,
-      }
-      setResults((prev) => ({ ...prev, [currentQuestion.id]: answerResult }))
-
-      // Persist to server session
-      if (sessionId) {
-        await saveAnswer(
-          sessionId,
-          currentQuestion.id,
-          correct ? "__self_correct__" : "__self_incorrect__",
-          correct
-        )
-      }
-    })
-  }
-
   // Advance to the next question or submit the whole session
   function handleNext() {
-    if (currentIndex < questions.length - 1) {
+    if (currentIndex < mcqQuestions.length - 1) {
       setCurrentIndex(currentIndex + 1)
-      setRevealed(false)
       setSelectedOption(null)
     } else {
       // Last question — submit the session and redirect to results
@@ -256,13 +228,13 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
       {/* Progress */}
       <div className="mb-6">
         <div className="mb-1 flex justify-between text-xs text-slate-400">
-          <span>Question {currentIndex + 1} of {questions.length}</span>
+          <span>Question {currentIndex + 1} of {mcqQuestions.length}</span>
           <span>{answeredCount} answered</span>
         </div>
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
           <div
             className="h-full rounded-full bg-ppf-sky transition-all duration-300"
-            style={{ width: `${(answeredCount / questions.length) * 100}%` }}
+            style={{ width: `${(answeredCount / mcqQuestions.length) * 100}%` }}
           />
         </div>
       </div>
@@ -278,52 +250,6 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
         <p className="mb-6 text-base font-medium text-ppf-navy leading-relaxed whitespace-pre-wrap">
           {currentQuestion.question_text}
         </p>
-
-        {/* ------------------------------------------------------------------ */}
-        {/* Flashcard */}
-        {/* ------------------------------------------------------------------ */}
-        {currentQuestion.question_type === "flashcard" && (
-          <div>
-            {!revealed && !isAnswered && (
-              <button
-                onClick={() => setRevealed(true)}
-                className="w-full rounded-md border-2 border-dashed border-ppf-sky/40 py-8 text-sm font-medium text-ppf-sky transition-colors hover:border-ppf-sky hover:bg-ppf-pale"
-              >
-                Click to reveal answer
-              </button>
-            )}
-
-            {(revealed || isAnswered) && (
-              <div className="rounded-md border border-ppf-sky/20 bg-ppf-pale px-5 py-4 text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
-                {currentResult
-                  ? currentResult.correctAnswer
-                  : <span className="italic text-slate-400">Loading…</span>}
-              </div>
-            )}
-
-            {/* Self-assessment buttons — only shown before the user has answered */}
-            {revealed && !isAnswered && !isChecking && (
-              <div className="mt-4 flex gap-3">
-                <button
-                  onClick={() => handleFlashcardResult(true)}
-                  className="flex-1 rounded-md bg-green-600 py-2 text-sm font-semibold text-white transition-colors hover:bg-green-700"
-                >
-                  Got it ✓
-                </button>
-                <button
-                  onClick={() => handleFlashcardResult(false)}
-                  className="flex-1 rounded-md border border-red-300 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-50"
-                >
-                  Not yet ✗
-                </button>
-              </div>
-            )}
-
-            {isChecking && !isAnswered && (
-              <p className="mt-4 text-center text-sm text-slate-400">Saving…</p>
-            )}
-          </div>
-        )}
 
         {/* ------------------------------------------------------------------ */}
         {/* MCQ */}
@@ -399,7 +325,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
           >
             {isSubmitting
               ? "Submitting…"
-              : currentIndex < questions.length - 1
+              : currentIndex < mcqQuestions.length - 1
               ? "Next question →"
               : "Finish & see results"}
           </button>

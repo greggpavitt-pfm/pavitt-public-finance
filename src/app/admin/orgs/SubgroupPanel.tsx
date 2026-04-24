@@ -4,18 +4,20 @@
 // Handles delete via useTransition, and shows CreateSubgroupForm when open.
 
 import { useState, useTransition } from "react"
-import type { Subgroup } from "@/app/admin/actions"
+import type { Subgroup, OrgUser } from "@/app/admin/actions"
 import { deleteSubgroup } from "@/app/admin/actions"
 import CreateSubgroupForm from "./CreateSubgroupForm"
+import ReviewerSlot from "./ReviewerSlot"
 
 interface Props {
   orgId: string
   subgroups: Subgroup[]
+  orgUsers: OrgUser[]
   // canCreate is true if the current admin is super_admin OR is org_admin for this org
   canCreate: boolean
 }
 
-export default function SubgroupPanel({ orgId, subgroups, canCreate }: Props) {
+export default function SubgroupPanel({ orgId, subgroups, orgUsers, canCreate }: Props) {
   const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [deleteError, setDeleteError] = useState<string | null>(null)
@@ -57,15 +59,49 @@ export default function SubgroupPanel({ orgId, subgroups, canCreate }: Props) {
                 <tr className="border-b border-slate-200 text-left text-slate-500">
                   <th className="pb-1.5 font-semibold">Name</th>
                   <th className="pb-1.5 font-semibold">Sub-jurisdiction</th>
+                  <th className="pb-1.5 font-semibold">Reviewer 1</th>
+                  <th className="pb-1.5 font-semibold">Reviewer 2</th>
                   <th className="pb-1.5" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {subgroups.map((sg) => (
-                  <tr key={sg.id}>
+                  <tr key={sg.id} className="align-top">
                     <td className="py-1.5 pr-4 font-medium text-ppf-navy">{sg.name}</td>
                     <td className="py-1.5 pr-4 font-mono text-slate-500">
                       {sg.sub_jurisdiction ?? <span className="text-slate-300">—</span>}
+                    </td>
+                    <td className="py-1.5 pr-3">
+                      {canCreate ? (
+                        <ReviewerSlot
+                          label=""
+                          slot={1}
+                          currentUserId={sg.reviewer_1_id ?? null}
+                          orgUsers={orgUsers}
+                          targetType="subgroup"
+                          targetId={sg.id}
+                        />
+                      ) : (
+                        <span className="text-slate-500">
+                          {orgUsers.find((u) => u.id === sg.reviewer_1_id)?.full_name ?? <span className="text-slate-300">—</span>}
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-1.5 pr-3">
+                      {canCreate ? (
+                        <ReviewerSlot
+                          label=""
+                          slot={2}
+                          currentUserId={sg.reviewer_2_id ?? null}
+                          orgUsers={orgUsers}
+                          targetType="subgroup"
+                          targetId={sg.id}
+                        />
+                      ) : (
+                        <span className="text-slate-500">
+                          {orgUsers.find((u) => u.id === sg.reviewer_2_id)?.full_name ?? <span className="text-slate-300">—</span>}
+                        </span>
+                      )}
                     </td>
                     <td className="py-1.5 text-right">
                       <button

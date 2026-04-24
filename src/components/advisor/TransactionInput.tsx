@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { sendMessage, createConversation } from "@/app/advisor/actions"
+import { sendMessage } from "@/app/advisor/actions"
 
 interface TransactionInputProps {
   conversationId: string
@@ -12,6 +12,7 @@ interface TransactionInputProps {
 export default function TransactionInput({ conversationId }: TransactionInputProps) {
   const [message, setMessage] = useState("")
   const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const router = useRouter()
 
@@ -26,21 +27,26 @@ export default function TransactionInput({ conversationId }: TransactionInputPro
   const handleSend = async () => {
     if (!message.trim()) return
 
+    setSendError(null)
     setSending(true)
     const result = await sendMessage(conversationId, message)
     setSending(false)
 
     if (!result.error) {
       setMessage("")
-      // Refresh the page to show new message
       router.refresh()
     } else {
-      alert(`Error: ${result.error}`)
+      setSendError(result.error)
     }
   }
 
   return (
     <div className="space-y-3">
+      {sendError && (
+        <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
+          {sendError}
+        </p>
+      )}
       <textarea
         ref={textareaRef}
         value={message}

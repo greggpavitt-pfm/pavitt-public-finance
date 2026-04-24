@@ -7,7 +7,7 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import ContextPanel from "@/components/advisor/ContextPanel"
 import ConversationList from "@/components/advisor/ConversationList"
-import StartConversationButton from "@/components/advisor/StartConversationButton"
+import PdfUploadPanel from "@/components/advisor/PdfUploadPanel"
 
 export default async function AdvisorPage() {
   const supabase = await createClient()
@@ -64,8 +64,8 @@ export default async function AdvisorPage() {
       {/* Context Panel — Set jurisdiction, entity type, reporting basis, currency */}
       <ContextPanel initialContext={context || defaultContext} />
 
-      {/* Start New Conversation Button */}
-      <StartConversationButton />
+      {/* Start New Conversation — with optional PDF upload */}
+      <PdfUploadPanel />
 
       {/* Conversations */}
       <div>

@@ -17,12 +17,14 @@ export default function Home() {
       <Navbar />
       <main>
         <HeroSection />
-        <BioSection />
-        <ExpertiseSection />
-        <RegionsSection />
-        <CasesSection />
-        <ToolkitSection />
-        <DonorsSection />
+        <div className="hidden md:block">
+          <BioSection />
+          <ExpertiseSection />
+          <RegionsSection />
+          <CasesSection />
+          <ToolkitSection />
+          <DonorsSection />
+        </div>
         <ContactSection />
       </main>
       <Footer />

@@ -45,3 +45,6 @@ next-env.d.ts
 *.yml
 # allow site images in public/ (exception to *.png above)
 !public/**/*.png
+
+# Visual brainstorming session files
+.superpowers/

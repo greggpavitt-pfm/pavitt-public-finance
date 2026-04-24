@@ -175,8 +175,8 @@ function parseFlashCards(content: string, moduleId: string): ParsedQuestion[] {
 
   const fcSection = fcSectionMatch[1]
 
-  // Split by card headers (### FC-01, ### FC-02, etc.)
-  const cardBlocks = fcSection.split(/### FC-\d+/).slice(1) // skip text before first card
+  // Split by card headers: handles both "### FC-01" and "### [Basic] FC-01"
+  const cardBlocks = fcSection.split(/### (?:\[[^\]]+\]\s+)?FC-\d+/).slice(1)
 
   for (let i = 0; i < cardBlocks.length; i++) {
     const block = cardBlocks[i].trim()
@@ -216,16 +216,16 @@ function parseFlashCards(content: string, moduleId: string): ParsedQuestion[] {
 function parseMCQs(content: string, moduleId: string): ParsedQuestion[] {
   const questions: ParsedQuestion[] = []
 
-  // Find the Multiple Choice Questions section
+  // Find the Multiple Choice Questions section; stop before True/False or next ## section
   const mcqSectionMatch = content.match(
-    /## Multiple Choice Questions?\s*\n([\s\S]*?)$/
+    /## Multiple Choice Questions?\s*\n([\s\S]*?)(?=\n## True\/False Questions|\n## [A-Z]|$)/
   )
   if (!mcqSectionMatch) return questions
 
   const mcqSection = mcqSectionMatch[1]
 
-  // Split by question headers (### MCQ-01, ### MCQ-02, etc.)
-  const questionBlocks = mcqSection.split(/### MCQ-\d+/).slice(1)
+  // Split by question headers: handles both "### MCQ-01" and "### [Basic] MCQ-01"
+  const questionBlocks = mcqSection.split(/### (?:\[[^\]]+\]\s+)?MCQ-\d+/).slice(1)
 
   for (let i = 0; i < questionBlocks.length; i++) {
     const block = questionBlocks[i].trim()

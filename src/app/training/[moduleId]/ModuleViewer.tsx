@@ -129,7 +129,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
   // -------------------------------------------------------------------------
   if (sessionLoading) {
     return (
-      <div className="rounded-lg border border-ppf-sky/20 bg-white p-10 text-center text-slate-400">
+      <div className="rounded-lg border border-ppf-sky/20 bg-white p-6 md:p-10 text-center text-slate-400">
         Loading session…
       </div>
     )
@@ -137,7 +137,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
 
   if (sessionError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-10 text-center text-red-700">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-6 md:p-10 text-center text-red-700">
         Could not start session: {sessionError}
       </div>
     )
@@ -145,7 +145,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
 
   if (alreadyCompleted) {
     return (
-      <div className="rounded-lg border border-ppf-sky/20 bg-white p-10 text-center">
+      <div className="rounded-lg border border-ppf-sky/20 bg-white p-6 md:p-10 text-center">
         <p className="mb-4 text-slate-600">
           You have already completed this module. Modules can only be attempted once.
         </p>
@@ -161,7 +161,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
 
   if (mcqQuestions.length === 0) {
     return (
-      <div className="rounded-lg border border-ppf-sky/20 bg-white p-10 text-center text-slate-400">
+      <div className="rounded-lg border border-ppf-sky/20 bg-white p-6 md:p-10 text-center text-slate-400">
         No questions found for this module.
       </div>
     )
@@ -240,7 +240,7 @@ export default function ModuleViewer({ moduleId, questions }: Props) {
       </div>
 
       {/* Question card */}
-      <div className="rounded-lg border border-ppf-sky/20 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border border-ppf-sky/20 bg-white p-4 md:p-6 shadow-sm">
         {/* Type badge */}
         <span className="mb-4 inline-block rounded-full bg-ppf-pale px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-ppf-sky">
           {currentQuestion.question_type === "flashcard" ? "Flash card" : "MCQ"}

@@ -103,16 +103,21 @@ export default function HeroSection() {
             <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-white/50">
               Worked with
             </span>
-            <div className="flex flex-wrap items-center gap-[22px]">
+            <div className="flex flex-wrap items-center gap-3">
               {donors.slice(0, 5).map((d) => (
-                <Image
+                <div
                   key={d.id}
-                  src={d.logo}
-                  alt={d.name}
-                  width={90}
-                  height={22}
-                  className="h-[22px] w-auto opacity-70 brightness-0 invert"
-                />
+                  className="flex h-[40px] items-center justify-center rounded bg-white/90 px-3"
+                  title={d.name}
+                >
+                  <Image
+                    src={d.logo}
+                    alt={d.name}
+                    width={100}
+                    height={28}
+                    className="h-[28px] w-auto object-contain"
+                  />
+                </div>
               ))}
             </div>
           </div>

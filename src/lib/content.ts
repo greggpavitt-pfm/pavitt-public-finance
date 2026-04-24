@@ -207,5 +207,6 @@ export const images = {
   logoSvg: "/images/logo.svg",
   ifmis: "/images/photo-ifmis.jpg",
   drm: "/images/photo-drm.png",
+  drmAfrica: "/images/photo-drm-africa.jpg",
   ipsasAcctg: "/images/photo-ipsas-acctg.png",
 } as const

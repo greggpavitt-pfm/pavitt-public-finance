@@ -37,13 +37,13 @@ const CASES: CaseStudy[] = [
   {
     id: "eu-drm",
     tag: "Sub-Saharan Africa",
-    years: "2018–2021",
-    title: "Domestic revenue mobilisation diagnostic",
-    desc: "Led a multi-country PEFA-style assessment for EuropeAid covering tax policy, administration capacity, and taxpayer compliance across three SSA jurisdictions.",
-    image: images.drm,
+    years: "2019–2022",
+    title: "PFM Diagnostic Studies",
+    desc: "Delivered tax reform analysis, fiscal transparency assessments, and local revenue modeling across Mozambique and Malawi — including PEFA reviews, VAT and corporate tax reform, property tax restructuring, and subnational fiscal decentralization for the Millennium Challenge Corporation.",
+    image: images.drmAfrica,
     metrics: [
-      { label: "Revenue Gap Closed", value: "+2.3pp", pos: true },
-      { label: "Countries", value: "3" },
+      { label: "Studies Conducted", value: "7", pos: true },
+      { label: "Countries", value: "2" },
     ],
   },
   {

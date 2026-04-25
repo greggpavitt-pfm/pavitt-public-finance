@@ -16,9 +16,10 @@ import { readFileSync } from "fs"
 import { join } from "path"
 import { retrieveChunks } from "@/lib/advisor/retrieval"
 import { verifyCitation, type CitationVerification } from "@/lib/advisor/citation-verify"
-
-// Re-export for components
-export type { CitationVerification }
+// Components that need the CitationVerification type should import it directly
+// from "@/lib/advisor/citation-verify". A "use server" file cannot re-export
+// types because Next.js builds a Server Actions manifest from the exports and
+// rejects non-async non-function exports.
 
 /**
  * Submit feedback on an assistant message.

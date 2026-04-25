@@ -102,7 +102,7 @@ export default function ToolkitSection() {
                 </button>
               ))}
             </div>
-            <pre className="m-0 p-6 font-mono text-[13px] leading-[1.7] text-white/85">
+            <pre className="m-0 overflow-x-auto p-6 font-mono text-[12px] leading-[1.7] text-white/85 sm:text-[13px]">
               {body.lines.map((line) => (
                 <div key={line.num} className="flex items-baseline gap-3 tabular-nums">
                   <span className="w-[22px] shrink-0 text-right text-white/30">

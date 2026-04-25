@@ -1,5 +1,7 @@
 // Assistant message with citations and metadata
 
+import FeedbackButtons from "./FeedbackButtons"
+
 interface Citation {
   standard: string
   paragraph: string
@@ -11,6 +13,7 @@ interface AssistantMessageProps {
   citations?: Citation[]
   complexity?: string
   standardsCited?: string[]
+  messageId?: string
 }
 
 export default function AssistantMessage({
@@ -18,6 +21,7 @@ export default function AssistantMessage({
   citations,
   complexity,
   standardsCited,
+  messageId,
 }: AssistantMessageProps) {
   const formatContent = (text: string) => {
     return text.split("\n").map((line, i) => {
@@ -109,6 +113,9 @@ export default function AssistantMessage({
             </ul>
           </div>
         )}
+
+        {/* Feedback */}
+        {messageId && <FeedbackButtons messageId={messageId} />}
       </div>
     </div>
   )

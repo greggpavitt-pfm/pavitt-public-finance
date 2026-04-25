@@ -9,10 +9,105 @@
 // archiveConversation     — mark conversation as archived
 // getConversationDocuments — fetch PDF attachments for a conversation (with signed URLs)
 // deleteDocument          — remove a PDF attachment from storage and DB
+// verifyCitationAction    — verify a citation against retrieved source text (footnote popover)
 
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { readFileSync } from "fs"
 import { join } from "path"
+import { retrieveChunks } from "@/lib/advisor/retrieval"
+import { verifyCitation, type CitationVerification } from "@/lib/advisor/citation-verify"
+
+// Re-export for components
+export type { CitationVerification }
+
+/**
+ * Submit feedback on an assistant message.
+ * vote: "up" → rating 5, "down" → rating 1 (matches existing 1-5 schema).
+ * Idempotent — re-submitting overwrites the previous vote/comment.
+ */
+export async function submitMessageFeedback(
+  messageId: string,
+  vote: "up" | "down",
+  comment?: string
+): Promise<{ ok: boolean; error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { ok: false, error: "Not authenticated" }
+
+  // UUID format check — fail fast on bad input
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (!UUID_RE.test(messageId)) {
+    return { ok: false, error: "Invalid message id" }
+  }
+
+  const rating = vote === "up" ? 5 : 1
+  const trimmedComment = comment?.trim().slice(0, 1000) || null
+
+  const serviceClient = await createServiceClient()
+
+  // Verify the message belongs to a conversation owned by this user.
+  // Without this check, any authenticated user could feedback any message.
+  const { data: msg, error: lookupError } = await serviceClient
+    .from("advisor_messages")
+    .select("id, conversation_id, advisor_conversations!inner(user_id)")
+    .eq("id", messageId)
+    .single()
+
+  if (lookupError || !msg) return { ok: false, error: "Message not found" }
+
+  const conv = (msg.advisor_conversations as unknown) as { user_id: string }
+  if (conv.user_id !== user.id) return { ok: false, error: "Not authorised" }
+
+  // Replace any prior feedback from this user on this message
+  await serviceClient
+    .from("advisor_feedback")
+    .delete()
+    .eq("message_id", messageId)
+    .eq("user_id", user.id)
+
+  const { error } = await serviceClient.from("advisor_feedback").insert({
+    message_id: messageId,
+    user_id: user.id,
+    rating,
+    comment: trimmedComment,
+  })
+
+  if (error) {
+    console.error("submitMessageFeedback: insert failed", error)
+    return { ok: false, error: "Failed to save feedback" }
+  }
+
+  return { ok: true }
+}
+
+/**
+ * Server action wrapper around verifyCitation. Called from the citation
+ * popover UI (hover/click on a footnote). Returns the verification verdict,
+ * confidence, and a verbatim snippet from the source chunk.
+ */
+export async function verifyCitationAction(
+  standardId: string,
+  paragraph: string | null,
+  claim: string
+): Promise<CitationVerification> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    return {
+      supports: "no",
+      confidence: 0,
+      snippet: "",
+      source: { standard_id: standardId, page_number: null, source_pdf: null },
+      error: "Not authenticated",
+    }
+  }
+
+  return verifyCitation({
+    standardId,
+    paragraph: paragraph || undefined,
+    claim,
+  })
+}
 
 // ---------------------------------------------------------------------------
 // Type definitions (structured output from LLM tool-use)
@@ -526,14 +621,27 @@ export async function sendMessage(
 
   const serviceClient = await createServiceClient()
 
-  // Fetch profile to get org/subgroup for the usage log and the per-user daily cap.
-  // Falls back to the platform default (100,000) if the profile row is missing.
+  // Fetch profile + org row to resolve the daily cap.
+  // Cap inheritance: profiles.daily_token_limit → organisations.default_daily_token_limit → 100,000.
   const { data: profile } = await serviceClient
     .from("profiles")
-    .select("org_id, subgroup_id, daily_token_limit")
+    .select(
+      "org_id, subgroup_id, daily_token_limit, organisations(default_daily_token_limit)"
+    )
     .eq("id", user.id)
     .single()
-  const dailyCap: number = profile?.daily_token_limit ?? 100000
+
+  // Supabase returns the nested relation as an array, even on a single foreign-key join.
+  const orgRel = profile?.organisations as
+    | { default_daily_token_limit: number | null }
+    | { default_daily_token_limit: number | null }[]
+    | null
+    | undefined
+  const orgRow = Array.isArray(orgRel) ? orgRel[0] : orgRel
+  const dailyCap: number =
+    profile?.daily_token_limit ??
+    orgRow?.default_daily_token_limit ??
+    100000
 
   // Check token limit using the configurable cap
   const tokenCheck = await checkTokenLimit(user.id, dailyCap, serviceClient)
@@ -652,25 +760,57 @@ export async function sendMessage(
     reporting_period: string
   }
 
-  // Try the pre-computed RAG cache first; fall back to static reference files if no match.
-  // The cache holds pre-retrieved ChromaDB chunks for each IPSAS standard and topic cluster.
-  // A cache hit replaces the live ChromaDB search — one fast Supabase read instead.
-  const { context: cachedContext, cacheHit, matchedKeys } = await loadCachedContext(
-    questionForCacheLookup,
-    context.reporting_basis,
-    serviceClient
-  )
-  console.log(`sendMessage: context cache ${cacheHit ? "HIT" : "MISS"}`, {
-    conversationId,
-    matchedKeys,
+  // Retrieval strategy (3-tier fallback):
+  //   1. Vector retrieval via pgvector (real semantic similarity) — preferred
+  //   2. Keyword-match cache (legacy, fast, ~80 entries)
+  //   3. Static reference files bundled with the app
+  //
+  // Each tier is best-effort; a failure quietly falls through. The user always
+  // gets an answer — it just may have weaker grounding when retrieval fails.
+
+  let retrievalContext: string | null = null
+  let retrievalSource: "vector" | "keyword-cache" | "static" = "static"
+  let retrievalKeys: string[] = []
+
+  // Tier 1 — vector retrieval (pgvector + HuggingFace embedding)
+  const vectorResult = await retrieveChunks({
+    question: questionForCacheLookup,
+    reportingBasis: context.reporting_basis,
+    jurisdiction: context.jurisdiction,
+    matchCount: 8,
   })
 
-  // If the cache returned context, use it; otherwise fall back to static reference files
-  const referenceContent = cachedContext ?? loadReferenceContent()
+  if (vectorResult) {
+    retrievalContext = vectorResult.context
+    retrievalSource = "vector"
+    retrievalKeys = vectorResult.matchedKeys
+  } else {
+    // Tier 2 — keyword cache fallback
+    const { context: cachedContext, cacheHit, matchedKeys } = await loadCachedContext(
+      questionForCacheLookup,
+      context.reporting_basis,
+      serviceClient
+    )
+    if (cacheHit && cachedContext) {
+      retrievalContext = cachedContext
+      retrievalSource = "keyword-cache"
+      retrievalKeys = matchedKeys
+    }
+  }
 
-  // Store which cache keys were used — shown in advisor_messages.topics_matched column.
-  // 'live-search-fallback' means no cache match was found for this question.
-  const topicsMatched = cacheHit ? matchedKeys : ["live-search-fallback"]
+  console.log(`sendMessage: retrieval ${retrievalSource}`, {
+    conversationId,
+    keys: retrievalKeys,
+  })
+
+  // Tier 3 — static files if both retrieval tiers missed
+  const referenceContent = retrievalContext ?? loadReferenceContent()
+
+  // Store which keys were used — surfaced in advisor_messages.topics_matched column.
+  const topicsMatched =
+    retrievalKeys.length > 0
+      ? retrievalKeys
+      : [`${retrievalSource}-fallback`]
 
   // Load extracted text from any PDFs the user uploaded for this conversation.
   // Only documents with status='ready' have usable extracted text.
@@ -837,6 +977,7 @@ export async function sendMessage(
           content: "I need to understand your situation better before providing a complete treatment.",
           clarifying_questions: clarQ.questions,
           topics_matched: topicsMatched,
+          retrieval_source: retrievalSource,
         })
         .select("id")
         .single()
@@ -925,6 +1066,7 @@ ${citationsList}
           complexity: treatment.complexity,
           token_count_in: usage.prompt_tokens ?? 0,
           token_count_out: usage.completion_tokens ?? 0,
+          retrieval_source: retrievalSource,
         })
         .select("id")
         .single()

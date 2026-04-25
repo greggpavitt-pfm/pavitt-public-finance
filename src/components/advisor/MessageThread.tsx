@@ -59,6 +59,7 @@ export default function MessageThread({ messages, conversationId }: MessageThrea
           return (
             <AssistantMessage
               key={message.id}
+              messageId={message.id}
               content={message.content}
               citations={message.citations as any}
               complexity={message.complexity}

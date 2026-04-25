@@ -25,23 +25,28 @@ import { createClient } from '@supabase/supabase-js'
 // Path to the ipsas-advisor content directory (relative to this script)
 const CONTENT_DIR = path.resolve(__dirname, '../../../../ipsas-advisor/content')
 
-// Load env vars from .env.local (Next.js convention)
-const envPath = path.resolve(__dirname, '../.env.local')
-const envContent = fs.readFileSync(envPath, 'utf-8')
+// Load env vars: prefer process.env (CI), fall back to .env.local (local dev).
+// In GitHub Actions the secrets are injected as env vars by the workflow.
 const env: Record<string, string> = {}
-for (const line of envContent.split('\n')) {
-  const trimmed = line.trim()
-  if (!trimmed || trimmed.startsWith('#')) continue
-  const eqIndex = trimmed.indexOf('=')
-  if (eqIndex === -1) continue
-  env[trimmed.slice(0, eqIndex)] = trimmed.slice(eqIndex + 1)
+const envPath = path.resolve(__dirname, '../.env.local')
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf-8')
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    const eqIndex = trimmed.indexOf('=')
+    if (eqIndex === -1) continue
+    env[trimmed.slice(0, eqIndex)] = trimmed.slice(eqIndex + 1)
+  }
 }
 
-const supabaseUrl = env['NEXT_PUBLIC_SUPABASE_URL']
-const serviceRoleKey = env['SUPABASE_SERVICE_ROLE_KEY']
+const supabaseUrl =
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? env['NEXT_PUBLIC_SUPABASE_URL']
+const serviceRoleKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? env['SUPABASE_SERVICE_ROLE_KEY']
 
 if (!supabaseUrl || !serviceRoleKey) {
-  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY in .env.local')
+  console.error('Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY (env or .env.local)')
   process.exit(1)
 }
 

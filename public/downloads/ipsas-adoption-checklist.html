@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IPSAS Adoption Checklist for Ministries of Finance — Pavitt Public Finance</title>
+<style>
+  :root {
+    --ink-900: #0b1220;
+    --ink-700: #2d3748;
+    --ink-500: #64748b;
+    --ink-200: #e2e8f0;
+    --ink-50: #f8fafc;
+    --ppf-navy: #0a2342;
+    --ppf-sky: #1f7fcf;
+    --ppf-blue: #0a6ab9;
+    --ppf-pale: #e8f1f8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink-700);
+    line-height: 1.65;
+    margin: 0;
+    background: var(--ink-50);
+  }
+  .page {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+    background: white;
+    box-shadow: 0 0 0 1px var(--ink-200);
+  }
+  header {
+    border-bottom: 2px solid var(--ppf-sky);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+  }
+  .eyebrow {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ppf-blue);
+    margin: 0 0 8px;
+  }
+  h1 {
+    font-size: 28px;
+    line-height: 1.2;
+    color: var(--ink-900);
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .subtitle {
+    margin: 12px 0 0;
+    color: var(--ink-700);
+    font-size: 15px;
+  }
+  h2 {
+    font-size: 20px;
+    color: var(--ink-900);
+    margin: 36px 0 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--ink-200);
+    font-weight: 600;
+  }
+  h2:first-of-type {
+    border-top: none;
+    padding-top: 0;
+    margin-top: 24px;
+  }
+  ol.checklist {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 16px 0;
+  }
+  ol.checklist > li {
+    counter-increment: step;
+    position: relative;
+    padding: 14px 14px 14px 56px;
+    margin-bottom: 8px;
+    background: var(--ink-50);
+    border: 1px solid var(--ink-200);
+    border-left: 4px solid var(--ppf-sky);
+    border-radius: 4px;
+  }
+  ol.checklist > li::before {
+    content: counter(step, decimal-leading-zero);
+    position: absolute;
+    left: 14px;
+    top: 14px;
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ppf-blue);
+    background: var(--ppf-pale);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  ol.checklist > li strong {
+    color: var(--ink-900);
+    display: block;
+    margin-bottom: 4px;
+    font-size: 15px;
+  }
+  ol.checklist > li p {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--ink-700);
+  }
+  ol.checklist ul {
+    margin: 8px 0 0;
+    padding-left: 18px;
+    font-size: 13px;
+    color: var(--ink-700);
+  }
+  ol.checklist ul li { margin: 3px 0; }
+  .footer {
+    margin-top: 48px;
+    padding: 24px;
+    background: var(--ppf-pale);
+    border-radius: 6px;
+    text-align: center;
+    font-size: 13px;
+  }
+  .footer a {
+    color: var(--ppf-blue);
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .footer a:hover { text-decoration: underline; }
+  .meta {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-500);
+  }
+  @media print {
+    body { background: white; }
+    .page { box-shadow: none; padding: 24px; }
+    ol.checklist > li { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <p class="eyebrow">Practitioner Reference</p>
+    <h1>IPSAS Adoption Checklist for Ministries of Finance</h1>
+    <p class="subtitle">A practical 12-point guide to the steps a ministry must complete before going live with accrual IPSAS, with notes on common pitfalls.</p>
+    <div class="meta">
+      <span>Pavitt Public Finance</span>
+      <span>·</span>
+      <span>pfmexpert.net</span>
+      <span>·</span>
+      <span>April 2026</span>
+    </div>
+  </header>
+
+  <h2>Pre-transition (Months -12 to -6)</h2>
+  <ol class="checklist">
+    <li>
+      <strong>Lock the data model</strong>
+      <p>Map your existing chart of accounts to IPSAS line items before any system change. Mid-build remapping forces rework across IFMIS configuration, reports, and training material.</p>
+    </li>
+    <li>
+      <strong>Inventory the standards in scope</strong>
+      <p>First-time adoption uses IPSAS 33 plus the standards effective in your transition year. Watch the IPSAS 46/47/48 cluster for periods on or after 1 January 2026.</p>
+    </li>
+    <li>
+      <strong>Identify the IPSAS 33 exemptions you will use — and the deadlines for closing each one</strong>
+      <p>IPSAS 33 grants temporary relief from full retrospective application. Each exemption has a maximum window. Document the closing date for every exemption claimed.</p>
+    </li>
+    <li>
+      <strong>Capture the opening balance</strong>
+      <p>Decide the measurement basis per asset class: deemed cost, fair value, or historical cost. Document the rationale per class. Audit will ask.</p>
+    </li>
+  </ol>
+
+  <h2>Transition build (Months -6 to 0)</h2>
+  <ol class="checklist" start="5">
+    <li>
+      <strong>Decide your transition disclosures</strong>
+      <p>IPSAS 33 requires a reconciliation from the previous basis to IPSAS for the opening statement of financial position. Plan the format and the level of disaggregation.</p>
+    </li>
+    <li>
+      <strong>Map your IFMIS to the new line items</strong>
+      <p>Including budget line mapping for IPSAS 24 budget-comparison disclosures. Test the mapping with a real prior-period dataset, not synthetic data.</p>
+    </li>
+    <li>
+      <strong>Train preparers and reviewers</strong>
+      <p>Minimum 40 hours per finance officer. Do not rely on three-day workshops alone. Self-paced modules with assessments give a stronger audit trail of competency.</p>
+    </li>
+    <li>
+      <strong>Document accounting policies</strong>
+      <p>A short-form policy manual approved by the CFO. One page per topic is enough. Auditors prefer concise, decision-focused policies over long copy-paste from the standards.</p>
+    </li>
+  </ol>
+
+  <h2>Cut-over (Month 0)</h2>
+  <ol class="checklist" start="9">
+    <li>
+      <strong>Walk through one full reporting cycle in parallel</strong>
+      <p>Old basis and IPSAS side-by-side for at least one quarter. Differences must be explainable line-by-line.</p>
+    </li>
+    <li>
+      <strong>Get audit pre-engagement</strong>
+      <p>Auditor sign-off on opening balances before going live. Do not wait until the year-end audit to surface measurement disagreements.</p>
+    </li>
+    <li>
+      <strong>Set the cut-over date — and the date by which all amendments must be closed</strong>
+      <p>Open issues left unresolved at cut-over almost always require restatement in the first IPSAS-basis statements.</p>
+    </li>
+  </ol>
+
+  <h2>Post-implementation (Months +6 to +12)</h2>
+  <ol class="checklist" start="12">
+    <li>
+      <strong>Plan the post-implementation review</strong>
+      <p>Month 6 and month 12. Track: opening balance adjustments, IFMIS mapping issues, training gaps, audit findings, and disclosure clarifications. Feed lessons into your IPSAS policy manual.</p>
+    </li>
+  </ol>
+
+  <div class="footer">
+    <p style="margin: 0 0 8px; font-weight: 600; color: var(--ink-900);">Need an experienced PFM partner for your IPSAS transition?</p>
+    <p style="margin: 0;">Pavitt Public Finance has supported IPSAS adoption across the Pacific, Sub-Saharan Africa, and South Asia.</p>
+    <p style="margin: 12px 0 0;"><a href="https://pfmexpert.net/#contact">Start a conversation →</a></p>
+  </div>
+</div>
+</body>
+</html>

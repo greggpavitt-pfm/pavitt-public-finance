@@ -16,7 +16,8 @@ const navLinks = [
   { label: "About", href: "/#about" },
   { label: "Expertise", href: "/#expertise" },
   { label: "Regions", href: "/#regions" },
-  { label: "Donors", href: "/#donors" },
+  { label: "Products", href: "/products" },
+  { label: "Insights", href: "/insights" },
   { label: "Contact", href: "/#contact" },
 ]
 
@@ -89,21 +90,28 @@ export default function Navbar() {
         {/* Desktop links */}
         <div className="hidden items-center gap-7 md:flex">
           <ul className="flex gap-7">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  className={[
-                    "text-sm font-medium transition-colors",
-                    solid
-                      ? "text-ink-700 hover:text-ink-900"
-                      : "text-white/85 hover:text-white",
-                  ].join(" ")}
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
+            {navLinks.map((link) => {
+              const isRoute = link.href.startsWith("/") && !link.href.includes("#")
+              const className = [
+                "text-sm font-medium transition-colors",
+                solid
+                  ? "text-ink-700 hover:text-ink-900"
+                  : "text-white/85 hover:text-white",
+              ].join(" ")
+              return (
+                <li key={link.href}>
+                  {isRoute ? (
+                    <Link href={link.href} className={className}>
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a href={link.href} className={className}>
+                      {link.label}
+                    </a>
+                  )}
+                </li>
+              )
+            })}
           </ul>
 
           <Link
@@ -154,17 +162,23 @@ export default function Navbar() {
         ].join(" ")}
       >
         <ul className="px-6 pb-5 pt-2">
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              <a
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="block border-b border-ink-100 py-3 text-base font-medium text-ink-900"
-              >
-                {link.label}
-              </a>
-            </li>
-          ))}
+          {navLinks.map((link) => {
+            const isRoute = link.href.startsWith("/") && !link.href.includes("#")
+            const className = "block border-b border-ink-100 py-3 text-base font-medium text-ink-900"
+            return (
+              <li key={link.href}>
+                {isRoute ? (
+                  <Link href={link.href} onClick={() => setOpen(false)} className={className}>
+                    {link.label}
+                  </Link>
+                ) : (
+                  <a href={link.href} onClick={() => setOpen(false)} className={className}>
+                    {link.label}
+                  </a>
+                )}
+              </li>
+            )
+          })}
           <li className="mt-4 flex flex-col gap-2">
             <Link
               href="/ipsas-training"

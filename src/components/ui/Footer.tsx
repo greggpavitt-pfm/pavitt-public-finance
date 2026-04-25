@@ -16,23 +16,24 @@ const COLS: FooterCol[] = [
       { label: "About",     href: "/#about" },
       { label: "Expertise", href: "/#expertise" },
       { label: "Regions",   href: "/#regions" },
-      { label: "Donors",    href: "/#donors" },
+      { label: "Insights",  href: "/insights" },
       { label: "Contact",   href: "/#contact" },
     ],
   },
   {
-    title: "Toolkit",
+    title: "Products",
     links: [
+      { label: "Overview",        href: "/products" },
       { label: "IPSAS Training",  href: "/ipsas-training" },
       { label: "IPSAS Questions", href: "/ipsas-questions" },
-      { label: "Advisor",         href: "/advisor" },
+      { label: "Practitioner Advisor", href: "/products#advisor" },
     ],
   },
   {
-    title: "Legal",
+    title: "Resources",
     links: [
+      { label: "IPSAS Adoption Checklist", href: "/lead-magnet" },
       { label: "LinkedIn", href: siteConfig.linkedIn, external: true },
-      // /privacy page is not yet published — add when ready
     ],
   },
 ]

@@ -103,6 +103,26 @@ export default async function AdminPage() {
               }
             />
             <NavCard
+              title="Advisor token usage"
+              description="Per-user advisor token consumption (today, 7-day, 30-day) with cap visibility."
+              href="/admin/usage"
+              icon={
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+              }
+            />
+            <NavCard
+              title="Cohort analytics"
+              description="Active learners, average scores, weakest modules, and engagement trends scoped to your organisation."
+              href="/admin/analytics"
+              icon={
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18 9 11.25l4.306 4.306a11.95 11.95 0 0 1 5.814-5.518l2.74-1.22m0 0-5.94-2.281m5.94 2.28-2.28 5.941" />
+                </svg>
+              }
+            />
+            <NavCard
               title="Results report"
               description="View assessment scores, pass rates, and test dates for your organisation's participants."
               href="/admin/results"

@@ -28,18 +28,34 @@ interface AssistantMessageProps {
   structuredResponse?: unknown
 }
 
-// Minimal duck-typing — a structured_response only counts if it has the
-// fields the cards rely on. Avoids rendering broken cards when an older
-// row has a partial payload.
+// Strict duck-typing — a structured_response only counts if every field the
+// cards dereference is present and the right shape. The cards crash on
+// e.g. applicable_standards[0].standard_id, so an empty array must NOT pass.
 function isQuickTreatment(obj: unknown): obj is QuickTreatmentResponse {
   if (!obj || typeof obj !== "object") return false
   const o = obj as Record<string, unknown>
-  return (
-    Array.isArray(o.applicable_standards) &&
-    typeof o.why_applies === "string" &&
-    typeof o.complexity === "string" &&
-    typeof o.recognition_criteria === "string"
-  )
+
+  // Must have at least one applicable standard with the fields the card reads.
+  if (!Array.isArray(o.applicable_standards) || o.applicable_standards.length === 0) {
+    return false
+  }
+  const firstStd = o.applicable_standards[0] as Record<string, unknown> | null
+  if (
+    !firstStd ||
+    typeof firstStd.standard_id !== "string" ||
+    typeof firstStd.title !== "string"
+  ) {
+    return false
+  }
+
+  // Required scalar fields rendered by the cards.
+  if (typeof o.why_applies !== "string" || o.why_applies.length === 0) return false
+  if (typeof o.complexity !== "string") return false
+  if (typeof o.recognition_criteria !== "string") return false
+  if (typeof o.measurement_guidance !== "string") return false
+  if (typeof o.disclosure_requirements !== "string") return false
+
+  return true
 }
 
 export default function AssistantMessage({

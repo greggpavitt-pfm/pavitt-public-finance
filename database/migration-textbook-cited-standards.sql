@@ -18,20 +18,38 @@
 -- Apply order: after migration-pgvector-ipsas-chunks.sql.
 
 -- ---------------------------------------------------------------------------
--- 1. source_tier: integer → numeric(2,1)
+-- 1. source_tier: integer → numeric(2,1)   (idempotent — re-runnable)
 -- ---------------------------------------------------------------------------
 
 -- Drop the old check constraint first; the new one allows fractional tiers.
 alter table public.ipsas_chunks
   drop constraint if exists ipsas_chunks_source_tier_check;
 
-alter table public.ipsas_chunks
-  alter column source_tier type numeric(2,1)
-  using source_tier::numeric(2,1);
+-- Type-change is only applied if column is still integer. Postgres has no
+-- "alter column type if not already X" so we guard via information_schema.
+do $$
+begin
+  if exists (
+    select 1
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'ipsas_chunks'
+      and column_name = 'source_tier'
+      and data_type = 'integer'
+  ) then
+    alter table public.ipsas_chunks
+      alter column source_tier type numeric(2,1)
+      using source_tier::numeric(2,1);
+  end if;
+end $$;
 
 alter table public.ipsas_chunks
   alter column source_tier set default 4.5;
 
+-- Constraint may already exist from a prior run; drop-then-add keeps it
+-- consistent with the current bound definition without erroring.
+alter table public.ipsas_chunks
+  drop constraint if exists ipsas_chunks_source_tier_check;
 alter table public.ipsas_chunks
   add constraint ipsas_chunks_source_tier_check
   check (source_tier between 1.0 and 6.0);

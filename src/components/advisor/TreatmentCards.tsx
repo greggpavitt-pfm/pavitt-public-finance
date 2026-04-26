@@ -403,22 +403,44 @@ function CardHeader({ icon, title }: { icon: string; title: string }) {
 
 // Renders text with **bold** segments and \n line breaks. Avoids pulling in a
 // markdown library for what is mostly plain text from the LLM.
+//
+// Consecutive `- ` lines are grouped into a single <ul> so the markup is
+// valid HTML and screen readers announce the items as a list.
 function RichText({ text }: { text: string }) {
-  return (
-    <div className="mt-2 space-y-2 text-sm text-gray-800">
-      {text.split("\n").map((line, i) => {
-        if (!line.trim()) return null
-        if (line.trim().startsWith("- ")) {
-          return (
-            <li key={i} className="ml-4 list-disc">
-              {renderBold(line.trim().slice(2))}
-            </li>
-          )
-        }
-        return <p key={i}>{renderBold(line)}</p>
-      })}
-    </div>
-  )
+  // Walk lines and emit a flat array of nodes: <p> for prose, <ul> for any
+  // run of one-or-more bullet lines.
+  const nodes: React.ReactNode[] = []
+  let bulletBuffer: string[] = []
+
+  const flushBullets = () => {
+    if (bulletBuffer.length === 0) return
+    const items = bulletBuffer
+    nodes.push(
+      <ul key={`ul-${nodes.length}`} className="ml-4 list-disc space-y-1">
+        {items.map((b, j) => (
+          <li key={j}>{renderBold(b)}</li>
+        ))}
+      </ul>
+    )
+    bulletBuffer = []
+  }
+
+  text.split("\n").forEach((line, i) => {
+    const trimmed = line.trim()
+    if (!trimmed) {
+      flushBullets()
+      return
+    }
+    if (trimmed.startsWith("- ")) {
+      bulletBuffer.push(trimmed.slice(2))
+      return
+    }
+    flushBullets()
+    nodes.push(<p key={`p-${i}`}>{renderBold(line)}</p>)
+  })
+  flushBullets()
+
+  return <div className="mt-2 space-y-2 text-sm text-gray-800">{nodes}</div>
 }
 
 function renderBold(line: string): React.ReactNode {

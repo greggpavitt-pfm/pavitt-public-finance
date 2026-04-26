@@ -23,11 +23,15 @@ export interface RetrievedChunk {
   source_pdf: string | null
   source_url: string | null
   page_number: number | null
+  // Stored as numeric(2,1) in Postgres so half-tiers are valid (e.g. 4.0 for
+  // the Bergmann textbook, 4.5 for other tier-4 guidance). Always a number on
+  // the wire, may be fractional.
   source_tier: number
   pathway: string | null
   jurisdiction_code: string | null
   text: string
   similarity: number
+  cited_standards: string[] | null
 }
 
 export interface RetrievalResult {
@@ -44,6 +48,10 @@ interface RetrievalOptions {
   matchCount?: number
 }
 
+// Tier labels keyed by the floor of source_tier so half-tiers map to the same
+// human-readable bucket. 4.0 (Bergmann textbook) and 4.5 (other ad-hoc
+// guidance) both render as "Accounting Guidance"; the numeric distinction
+// only matters for the rerank, not for the prompt label.
 const TIER_LABEL: Record<number, string> = {
   1: "IPSAS Regulations (highest authority)",
   2: "Downloaded Standards",
@@ -51,6 +59,10 @@ const TIER_LABEL: Record<number, string> = {
   4: "Accounting Guidance",
   5: "Government-Specific",
   6: "Supplementary Resources",
+}
+
+function tierLabelFor(tier: number): string {
+  return TIER_LABEL[Math.floor(tier)] ?? `Tier ${tier}`
 }
 
 /**
@@ -163,7 +175,7 @@ export async function retrieveChunks(
   // Group by standard_id for readability, but preserve rank order.
   const formatted = rpcData
     .map((chunk, idx) => {
-      const tierLabel = TIER_LABEL[chunk.source_tier] ?? `Tier ${chunk.source_tier}`
+      const tierLabel = tierLabelFor(chunk.source_tier)
       const sourceLabel = chunk.standard_id
         ? `${chunk.standard_id}${chunk.page_number ? ` p.${chunk.page_number}` : ""}`
         : chunk.source_pdf || chunk.source_url || "unknown source"

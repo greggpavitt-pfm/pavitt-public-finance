@@ -8,6 +8,7 @@
 import { revalidatePath } from "next/cache"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { createIpsasAdminClient } from "@/lib/supabase/ipsas-admin-client"
+import { logAdminAction } from "@/lib/admin/audit"
 
 // ---------------------------------------------------------------------------
 // Helper — verify the calling user is in admin_users
@@ -60,6 +61,14 @@ export async function approveUser(userId: string): Promise<{ error?: string }> {
       return { error: error.message }
     }
 
+    await logAdminAction({
+      actor: user,
+      action: "approve_user",
+      targetType: "profile",
+      targetId: userId,
+      after: { account_status: "approved" },
+    })
+
     revalidatePath("/admin")
     revalidatePath("/admin/users")
     revalidatePath("/admin/results")
@@ -79,7 +88,7 @@ export async function approveUser(userId: string): Promise<{ error?: string }> {
 
 export async function blacklistUser(userId: string): Promise<{ error?: string }> {
   try {
-    await requireAdmin()
+    const { user } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     const { error } = await serviceClient
@@ -91,6 +100,14 @@ export async function blacklistUser(userId: string): Promise<{ error?: string }>
       console.error("blacklistUser: update failed", { userId, error })
       return { error: error.message }
     }
+
+    await logAdminAction({
+      actor: user,
+      action: "blacklist_user",
+      targetType: "profile",
+      targetId: userId,
+      after: { blacklisted: true, account_status: "suspended" },
+    })
 
     revalidatePath("/admin")
     revalidatePath("/admin/users")
@@ -146,6 +163,20 @@ export async function updateUserApprovals(
       return { error: error.message }
     }
 
+    await logAdminAction({
+      actor: user,
+      action: trainingApproved || practitionerApproved
+        ? "toggle_product_approval"
+        : "revoke_product_approval",
+      targetType: "profile",
+      targetId: userId,
+      before: { account_status: profile?.account_status },
+      after: {
+        training_approved: trainingApproved,
+        practitioner_approved: practitionerApproved,
+      },
+    })
+
     revalidatePath("/admin")
     revalidatePath("/admin/users")
     return {}
@@ -167,7 +198,7 @@ export async function updateUserLimits(
   dailyTokenLimit: number | null = null
 ): Promise<{ error?: string }> {
   try {
-    await requireAdmin()
+    const { user } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     // Bound check on dailyTokenLimit. Practitioner_submission_limit and
@@ -190,6 +221,18 @@ export async function updateUserLimits(
       return { error: error.message }
     }
 
+    await logAdminAction({
+      actor: user,
+      action: "change_limits",
+      targetType: "profile",
+      targetId: userId,
+      after: {
+        training_question_limit: trainingLimit,
+        practitioner_submission_limit: practitionerLimit,
+        daily_token_limit: dailyTokenLimit,
+      },
+    })
+
     revalidatePath("/admin/users")
     return {}
   } catch (e) {
@@ -209,7 +252,7 @@ export async function bulkApproveUsers(userIds: string[]): Promise<{
   approved?: number
 }> {
   try {
-    const { adminRow } = await requireAdmin()
+    const { user, adminRow } = await requireAdmin()
     if (userIds.length === 0) return { approved: 0 }
     if (userIds.length > 500) return { error: "Cannot approve more than 500 users at once" }
 
@@ -233,6 +276,17 @@ export async function bulkApproveUsers(userIds: string[]): Promise<{
       return { error: error.message }
     }
 
+    await logAdminAction({
+      actor: user,
+      action: "bulk_approve",
+      targetType: "bulk",
+      metadata: {
+        requested_ids: userIds,
+        approved_ids: data?.map((r) => r.id) ?? [],
+        approved_count: data?.length ?? 0,
+      },
+    })
+
     revalidatePath("/admin/users")
     return { approved: data?.length ?? 0 }
   } catch (e) {
@@ -247,7 +301,7 @@ export async function bulkApproveUsers(userIds: string[]): Promise<{
 
 export async function renewGuestAccount(userId: string): Promise<{ error?: string }> {
   try {
-    await requireAdmin()
+    const { user } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     const newExpiry = new Date()
@@ -267,6 +321,14 @@ export async function renewGuestAccount(userId: string): Promise<{ error?: strin
       return { error: error.message }
     }
 
+    await logAdminAction({
+      actor: user,
+      action: "renew_guest",
+      targetType: "profile",
+      targetId: userId,
+      after: { guest_expires_at: newExpiry.toISOString() },
+    })
+
     revalidatePath("/admin/users")
     return {}
   } catch (e) {
@@ -283,7 +345,7 @@ export async function renewGuestAccount(userId: string): Promise<{ error?: strin
 
 export async function cancelGuestAccount(userId: string): Promise<{ error?: string }> {
   try {
-    await requireAdmin()
+    const { user } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     const { error } = await serviceClient
@@ -300,6 +362,13 @@ export async function cancelGuestAccount(userId: string): Promise<{ error?: stri
       console.error("cancelGuestAccount: update failed", { userId, error })
       return { error: error.message }
     }
+
+    await logAdminAction({
+      actor: user,
+      action: "cancel_guest",
+      targetType: "profile",
+      targetId: userId,
+    })
 
     revalidatePath("/admin/users")
     return {}
@@ -334,6 +403,13 @@ export async function reinstateUser(userId: string): Promise<{ error?: string }>
       return { error: error.message }
     }
 
+    await logAdminAction({
+      actor: user,
+      action: "reinstate_user",
+      targetType: "profile",
+      targetId: userId,
+    })
+
     revalidatePath("/admin")
     revalidatePath("/admin/users")
     return {}
@@ -350,7 +426,7 @@ export async function reinstateUser(userId: string): Promise<{ error?: string }>
 
 export async function suspendUser(userId: string): Promise<{ error?: string }> {
   try {
-    await requireAdmin()
+    const { user } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     const { error } = await serviceClient
@@ -362,6 +438,13 @@ export async function suspendUser(userId: string): Promise<{ error?: string }> {
       console.error("suspendUser: update failed", { userId, error })
       return { error: error.message }
     }
+
+    await logAdminAction({
+      actor: user,
+      action: "suspend_user",
+      targetType: "profile",
+      targetId: userId,
+    })
 
     revalidatePath("/admin")
     revalidatePath("/admin/users")
@@ -383,7 +466,7 @@ export async function createOrg(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
   try {
-    await requireAdmin()
+    const { user } = await requireAdmin()
 
     const name           = (formData.get("name")             as string | null)?.trim() ?? ""
     const country        = (formData.get("country")          as string | null)?.trim() ?? ""
@@ -413,7 +496,7 @@ export async function createOrg(
     const licenceKey = `PPF-${rand()}-${rand()}`
 
     const serviceClient = await createServiceClient()
-    const { error } = await serviceClient
+    const { data: inserted, error } = await serviceClient
       .from("organisations")
       .insert({
         name,
@@ -425,6 +508,8 @@ export async function createOrg(
         licence_status:    "active",
         max_users:         maxUsers,
       })
+      .select("id")
+      .single()
 
     if (error) {
       // Unique constraint on licence_key — extremely unlikely but handle it
@@ -434,6 +519,14 @@ export async function createOrg(
       console.error("createOrg: insert failed", { name, error })
       return { error: error.message }
     }
+
+    await logAdminAction({
+      actor: user,
+      action: "create_org",
+      targetType: "organisation",
+      targetId: inserted?.id,
+      after: { name, country, accounting_type: accountingType, demo: isDemo },
+    })
 
     revalidatePath("/admin/orgs")
     return { success: true }
@@ -506,7 +599,7 @@ export async function grantAdminRole(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
   try {
-    const { adminRow } = await requireAdmin()
+    const { user, adminRow } = await requireAdmin()
     if (adminRow.role !== "super_admin") {
       return { error: "Super admin access required." }
     }
@@ -539,6 +632,14 @@ export async function grantAdminRole(
 
     if (error) return { error: error.message }
 
+    await logAdminAction({
+      actor: user,
+      action: "grant_admin",
+      targetType: "admin_user",
+      targetId: userId,
+      after: { role, org_id: orgId },
+    })
+
     revalidatePath("/admin/admin-users")
     return { success: true }
   } catch (e) {
@@ -563,6 +664,13 @@ export async function revokeAdminRole(targetUserId: string): Promise<{ error?: s
       .eq("id", targetUserId)
 
     if (error) return { error: error.message }
+
+    await logAdminAction({
+      actor: user,
+      action: "revoke_admin",
+      targetType: "admin_user",
+      targetId: targetUserId,
+    })
 
     revalidatePath("/admin/admin-users")
     return {}
@@ -601,7 +709,7 @@ export async function createSubgroup(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
   try {
-    const { adminRow } = await requireAdmin()
+    const { user, adminRow } = await requireAdmin()
 
     const orgId         = (formData.get("org_id")          as string | null)?.trim() ?? ""
     const name          = (formData.get("name")             as string | null)?.trim() ?? ""
@@ -617,14 +725,24 @@ export async function createSubgroup(
     }
 
     const serviceClient = await createServiceClient()
-    const { error } = await serviceClient
+    const { data: inserted, error } = await serviceClient
       .from("org_subgroups")
       .insert({ org_id: orgId, name, sub_jurisdiction: subJurisdiction })
+      .select("id")
+      .single()
 
     if (error) {
       console.error("createSubgroup: insert failed", { orgId, name, error })
       return { error: error.message }
     }
+
+    await logAdminAction({
+      actor: user,
+      action: "create_subgroup",
+      targetType: "org_subgroup",
+      targetId: inserted?.id,
+      metadata: { org_id: orgId, name },
+    })
 
     revalidatePath("/admin/orgs")
     return { success: true }
@@ -641,7 +759,7 @@ export async function createSubgroup(
 
 export async function deleteSubgroup(subgroupId: string): Promise<{ error?: string }> {
   try {
-    const { adminRow } = await requireAdmin()
+    const { user, adminRow } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     // If org_admin, verify the subgroup belongs to their org
@@ -677,6 +795,13 @@ export async function deleteSubgroup(subgroupId: string): Promise<{ error?: stri
       return { error: error.message }
     }
 
+    await logAdminAction({
+      actor: user,
+      action: "delete_subgroup",
+      targetType: "org_subgroup",
+      targetId: subgroupId,
+    })
+
     revalidatePath("/admin/orgs")
     return {}
   } catch (e) {
@@ -695,7 +820,7 @@ export async function assignUserSubgroup(
   subgroupId: string | null
 ): Promise<{ error?: string }> {
   try {
-    await requireAdmin()
+    const { user } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     // If assigning (not clearing), verify subgroup belongs to the user's org
@@ -724,6 +849,14 @@ export async function assignUserSubgroup(
       return { error: error.message }
     }
 
+    await logAdminAction({
+      actor: user,
+      action: "change_subgroup",
+      targetType: "profile",
+      targetId: userId,
+      after: { subgroup_id: subgroupId },
+    })
+
     revalidatePath("/admin/users")
     return {}
   } catch (e) {
@@ -743,7 +876,7 @@ export async function updateUserPathway(
   abilityLevel: string | null
 ): Promise<{ error?: string }> {
   try {
-    await requireAdmin()
+    const { user } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     const { error } = await serviceClient
@@ -758,6 +891,14 @@ export async function updateUserPathway(
       console.error("updateUserPathway: update failed", { userId, pathway, error })
       return { error: error.message }
     }
+
+    await logAdminAction({
+      actor: user,
+      action: "change_pathway",
+      targetType: "profile",
+      targetId: userId,
+      after: { pathway, ability_level: abilityLevel },
+    })
 
     revalidatePath("/admin/users")
     return {}
@@ -777,7 +918,7 @@ export async function assignUserOrg(
   orgId: string
 ): Promise<{ error?: string }> {
   try {
-    const { adminRow } = await requireAdmin()
+    const { user, adminRow } = await requireAdmin()
 
     if (adminRow.role !== "super_admin") {
       return { error: "Super admin access required to reassign organisations." }
@@ -793,6 +934,14 @@ export async function assignUserOrg(
       console.error("assignUserOrg: update failed", { userId, orgId, error })
       return { error: error.message }
     }
+
+    await logAdminAction({
+      actor: user,
+      action: "change_org",
+      targetType: "profile",
+      targetId: userId,
+      after: { org_id: orgId },
+    })
 
     revalidatePath("/admin/users")
     return {}
@@ -973,7 +1122,7 @@ export async function assignOrgReviewer(
   userId: string | null
 ): Promise<{ error?: string }> {
   try {
-    const { adminRow } = await requireAdmin()
+    const { user, adminRow } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     // org_admin can only manage their own org
@@ -1005,6 +1154,14 @@ export async function assignOrgReviewer(
       return { error: error.message }
     }
 
+    await logAdminAction({
+      actor: user,
+      action: "assign_org_reviewer",
+      targetType: "organisation",
+      targetId: orgId,
+      after: { slot, reviewer_user_id: userId },
+    })
+
     revalidatePath("/admin/orgs")
     return {}
   } catch (e) {
@@ -1019,7 +1176,7 @@ export async function assignSubgroupReviewer(
   userId: string | null
 ): Promise<{ error?: string }> {
   try {
-    const { adminRow } = await requireAdmin()
+    const { user, adminRow } = await requireAdmin()
     const serviceClient = await createServiceClient()
 
     // Fetch the subgroup to get its org_id for the access check
@@ -1058,6 +1215,14 @@ export async function assignSubgroupReviewer(
       console.error("assignSubgroupReviewer: update failed", { subgroupId, slot, userId, error })
       return { error: error.message }
     }
+
+    await logAdminAction({
+      actor: user,
+      action: "assign_subgroup_reviewer",
+      targetType: "org_subgroup",
+      targetId: subgroupId,
+      after: { slot, reviewer_user_id: userId },
+    })
 
     revalidatePath("/admin/orgs")
     return {}

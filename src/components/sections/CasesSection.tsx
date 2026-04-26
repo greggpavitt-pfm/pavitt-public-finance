@@ -28,7 +28,7 @@ const CASES: CaseStudy[] = [
     years: "2024–Present",
     title: "Creating and Deploying IPSAS based Reporting System",
     desc: "Developing custom IPSAS reporting system. Modifying secondary chart of accounts, automating power pivot production system for multi-year reporting of governmental, donor, and special purpose funds.",
-    image: images.ipsasAcctg,
+    image: images.ipsasPpf,
     metrics: [
       { label: "IPSAS Coverage", value: "94%", pos: true },
       { label: "Staff Trained", value: "48" },
@@ -40,7 +40,7 @@ const CASES: CaseStudy[] = [
     years: "2019–2022",
     title: "PFM Diagnostic Studies",
     desc: "Delivered tax reform analysis, fiscal transparency assessments, and local revenue modeling across Mozambique and Malawi — including PEFA reviews, VAT and corporate tax reform, property tax restructuring, and subnational fiscal decentralization for the Millennium Challenge Corporation.",
-    image: images.ssaAccounting,
+    image: images.checklist,
     metrics: [
       { label: "Studies Conducted", value: "7", pos: true },
       { label: "Countries", value: "2" },

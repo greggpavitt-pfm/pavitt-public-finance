@@ -15,6 +15,9 @@ interface Message {
   complexity?: string
   clarifying_questions?: Record<string, unknown>
   clarifying_answers?: Record<string, unknown>
+  // jsonb column — full IPSASResponse payload when present.
+  // Null for older messages generated before the structured-response migration.
+  structured_response?: unknown
   created_at: string
 }
 
@@ -40,14 +43,24 @@ export default function MessageThread({ messages, conversationId }: MessageThrea
         if (message.role === "user") {
           return message.content ? <UserMessage key={message.id} content={message.content} /> : null
         } else if (message.role === "assistant") {
-          // Check if this is a clarifying questions response
-          if (message.clarifying_questions && !message.clarifying_answers) {
+          // Check if this is an unanswered clarifying-questions response.
+          // Both columns are jsonb arrays defaulting to []. Empty array is
+          // truthy in JS, so use length checks rather than truthiness or the
+          // unanswered branch fires for every assistant message.
+          const cqArr = Array.isArray(message.clarifying_questions)
+            ? (message.clarifying_questions as unknown[])
+            : []
+          const caArr = Array.isArray(message.clarifying_answers)
+            ? (message.clarifying_answers as unknown[])
+            : []
+          const hasUnansweredClarifying = cqArr.length > 0 && caArr.length === 0
+          if (hasUnansweredClarifying) {
             return (
               <div key={message.id}>
                 {message.content && <AssistantMessage content={message.content} />}
                 {conversationId && (
                   <ClarifyingQuestions
-                    questions={message.clarifying_questions as any}
+                    questions={cqArr as any}
                     conversationId={conversationId}
                   />
                 )}
@@ -64,6 +77,7 @@ export default function MessageThread({ messages, conversationId }: MessageThrea
               citations={message.citations as any}
               complexity={message.complexity}
               standardsCited={message.standards_cited}
+              structuredResponse={message.structured_response}
             />
           )
         }

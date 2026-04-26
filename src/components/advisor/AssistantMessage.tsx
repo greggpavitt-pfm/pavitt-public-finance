@@ -1,6 +1,16 @@
-// Assistant message with citations and metadata
+// Assistant message with citations and metadata.
+//
+// Two render paths:
+//   1. structured_response present → card-based renderer (TreatmentCards)
+//   2. legacy/markdown fallback → original chat-bubble formatter below
+//
+// Path 1 is the preferred output for any new message generated after the
+// structured-response migration. Path 2 stays so historical conversations
+// (pre-migration) keep rendering.
 
 import FeedbackButtons from "./FeedbackButtons"
+import TreatmentCards from "./TreatmentCards"
+import type { QuickTreatmentResponse } from "@/app/advisor/actions"
 
 interface Citation {
   standard: string
@@ -14,6 +24,22 @@ interface AssistantMessageProps {
   complexity?: string
   standardsCited?: string[]
   messageId?: string
+  // jsonb from Supabase — typed as unknown so we narrow before passing on.
+  structuredResponse?: unknown
+}
+
+// Minimal duck-typing — a structured_response only counts if it has the
+// fields the cards rely on. Avoids rendering broken cards when an older
+// row has a partial payload.
+function isQuickTreatment(obj: unknown): obj is QuickTreatmentResponse {
+  if (!obj || typeof obj !== "object") return false
+  const o = obj as Record<string, unknown>
+  return (
+    Array.isArray(o.applicable_standards) &&
+    typeof o.why_applies === "string" &&
+    typeof o.complexity === "string" &&
+    typeof o.recognition_criteria === "string"
+  )
 }
 
 export default function AssistantMessage({
@@ -22,7 +48,20 @@ export default function AssistantMessage({
   complexity,
   standardsCited,
   messageId,
+  structuredResponse,
 }: AssistantMessageProps) {
+  // Preferred path: structured cards
+  if (isQuickTreatment(structuredResponse)) {
+    return (
+      <div className="flex justify-start">
+        <div className="w-full max-w-4xl">
+          <TreatmentCards treatment={structuredResponse} />
+          {messageId && <FeedbackButtons messageId={messageId} />}
+        </div>
+      </div>
+    )
+  }
+  // Legacy path: markdown chat bubble (kept verbatim from prior version)
   const formatContent = (text: string) => {
     return text.split("\n").map((line, i) => {
       // Handle headings

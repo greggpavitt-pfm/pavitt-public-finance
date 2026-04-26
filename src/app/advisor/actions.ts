@@ -120,8 +120,30 @@ export interface Citation {
   text: string
 }
 
+// One row of a journal entry. The LLM returns these as structured rows so the
+// UI renders them in a real <table> instead of relying on markdown formatting.
+export interface JournalEntryRow {
+  account: string
+  debit?: string  // String not number — preserves currency formatting (e.g. "USD 50,000")
+  credit?: string
+}
+
+// A grouped journal entry block — has a heading (e.g. "Upon receipt of goods")
+// and the rows that go under it. One transaction can produce multiple blocks
+// (e.g. recognition entry + payment entry).
+export interface JournalEntryBlock {
+  heading: string
+  rows: JournalEntryRow[]
+}
+
 export interface QuickTreatmentResponse {
   applicable_standards: Array<{
+    standard_id: string
+    title: string
+  }>
+  // Standards that are relevant context but not the primary basis for the
+  // treatment (rendered as "Also relevant: ..." line under the primary).
+  also_relevant_standards?: Array<{
     standard_id: string
     title: string
   }>
@@ -130,7 +152,20 @@ export interface QuickTreatmentResponse {
   recognition_criteria: string
   measurement_guidance: string
   disclosure_requirements: string
+  // Legacy free-text journal entry. Kept for backward compatibility with
+  // older messages; new responses populate journal_entries instead.
   journal_entry?: string
+  // Structured journal entries — preferred over journal_entry.
+  journal_entries?: JournalEntryBlock[]
+  // Practical notes the practitioner should be aware of (e.g. documentation
+  // requirements, reconciliation steps). Bullet-list rendered in a card.
+  practical_notes?: string[]
+  // Common mistakes practitioners make on this transaction type.
+  // Rendered with a red-dot prefix to flag risk.
+  common_errors?: string[]
+  // Judgmental areas where the practitioner has to make a call (e.g. timing
+  // of control transfer, classification of an item).
+  key_judgments?: string[]
   related_topics: string[]
   citations: Citation[]
 }
@@ -850,8 +885,11 @@ export async function sendMessage(
       body: JSON.stringify({
         model: modelId,
         max_tokens: 2048,
-        // Enable OpenRouter response caching to reduce cost on repeated queries
-        plugins: { caching: true },
+        // OpenRouter caching plugin disabled — both the legacy
+        // `{ caching: true }` and the array form `[{ id: "cache" }]` were
+        // rejected by the current API. Cost impact is negligible without it
+        // for now; revisit when OpenRouter docs clarify the current schema.
+        // plugins: [{ id: "cache" }],
         messages: [
           { role: "system", content: systemPrompt },
           ...conversationHistory,
@@ -869,6 +907,19 @@ export async function sendMessage(
                 properties: {
                   applicable_standards: {
                     type: "array",
+                    description: "Primary IPSAS standard(s) governing this transaction. Usually 1, sometimes 2.",
+                    items: {
+                      type: "object",
+                      properties: {
+                        standard_id: { type: "string" },
+                        title: { type: "string" },
+                      },
+                      required: ["standard_id", "title"],
+                    },
+                  },
+                  also_relevant_standards: {
+                    type: "array",
+                    description: "Secondary standards that touch this transaction but are not the primary basis (e.g. control-transfer principles when the primary is a recognition standard). Omit if none.",
                     items: {
                       type: "object",
                       properties: {
@@ -886,7 +937,44 @@ export async function sendMessage(
                   recognition_criteria: { type: "string" },
                   measurement_guidance: { type: "string" },
                   disclosure_requirements: { type: "string" },
-                  journal_entry: { type: "string" },
+                  journal_entries: {
+                    type: "array",
+                    description: "Structured journal entries grouped by event (e.g. one block 'Upon receipt of goods', another 'Upon payment'). Each block contains rows with account, debit, credit. Use this instead of journal_entry whenever entries are warranted. Use string amounts to preserve currency formatting (e.g. 'USD 50,000').",
+                    items: {
+                      type: "object",
+                      properties: {
+                        heading: { type: "string" },
+                        rows: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              account: { type: "string" },
+                              debit: { type: "string" },
+                              credit: { type: "string" },
+                            },
+                            required: ["account"],
+                          },
+                        },
+                      },
+                      required: ["heading", "rows"],
+                    },
+                  },
+                  practical_notes: {
+                    type: "array",
+                    description: "Practical pointers for the practitioner: documentation, reconciliation, internal controls. 2-5 bullets.",
+                    items: { type: "string" },
+                  },
+                  common_errors: {
+                    type: "array",
+                    description: "Mistakes practitioners commonly make on this transaction. 2-4 bullets, each phrased as the error itself (not the fix).",
+                    items: { type: "string" },
+                  },
+                  key_judgments: {
+                    type: "array",
+                    description: "Judgmental areas where the practitioner must decide based on facts and circumstances (e.g. timing of control transfer, classification of an asset). 2-4 bullets.",
+                    items: { type: "string" },
+                  },
                   related_topics: { type: "array", items: { type: "string" } },
                   citations: {
                     type: "array",
@@ -1023,14 +1111,42 @@ export async function sendMessage(
         .map((s) => `- ${s.standard_id}: ${s.title}`)
         .join("\n")
 
+      const alsoRelevantList = (treatment.also_relevant_standards ?? [])
+        .map((s) => `${s.standard_id}: ${s.title}`)
+        .join("; ")
+
       const citationsList = treatment.citations
         .map((c) => `- **${c.standard} ${c.paragraph}**: ${c.text}`)
+        .join("\n")
+
+      // Render structured journal entries to markdown (used for the fallback
+      // `content` column). The new card UI consumes `structured_response`
+      // directly and ignores this string.
+      const journalEntriesMd = (treatment.journal_entries ?? [])
+        .map((block) => {
+          const rows = block.rows
+            .map((r) => `| ${r.account} | ${r.debit ?? ""} | ${r.credit ?? ""} |`)
+            .join("\n")
+          return `**${block.heading}**\n\n| Account | Debit | Credit |\n|---|---|---|\n${rows}`
+        })
+        .join("\n\n")
+
+      const practicalNotesMd = (treatment.practical_notes ?? [])
+        .map((n) => `- ${n}`)
+        .join("\n")
+
+      const commonErrorsMd = (treatment.common_errors ?? [])
+        .map((e) => `- ${e}`)
+        .join("\n")
+
+      const keyJudgmentsMd = (treatment.key_judgments ?? [])
+        .map((j) => `- ${j}`)
         .join("\n")
 
       const responseContent = `
 ## Applicable Standards
 ${standardsList}
-
+${alsoRelevantList ? `\n*Also relevant: ${alsoRelevantList}*\n` : ""}
 ## Why This Applies
 ${treatment.why_applies}
 
@@ -1045,8 +1161,10 @@ ${treatment.measurement_guidance}
 ## Disclosure Requirements
 ${treatment.disclosure_requirements}
 
-${treatment.journal_entry ? `## Journal Entry\n${treatment.journal_entry}\n` : ""}
-
+${journalEntriesMd ? `## Journal Entries\n${journalEntriesMd}\n` : (treatment.journal_entry ? `## Journal Entry\n${treatment.journal_entry}\n` : "")}
+${practicalNotesMd ? `## Practical Notes\n${practicalNotesMd}\n` : ""}
+${commonErrorsMd ? `## Common Errors\n${commonErrorsMd}\n` : ""}
+${keyJudgmentsMd ? `## Key Judgments\n${keyJudgmentsMd}\n` : ""}
 ## Related Topics
 ${treatment.related_topics.map((t) => `- ${t}`).join("\n")}
 
@@ -1068,6 +1186,9 @@ ${citationsList}
           token_count_in: usage.prompt_tokens ?? 0,
           token_count_out: usage.completion_tokens ?? 0,
           retrieval_source: retrievalSource,
+          // Full structured payload for the card renderer. The markdown in
+          // `content` stays as a fallback for legacy clients and exports.
+          structured_response: treatment,
         })
         .select("id")
         .single()
@@ -1356,14 +1477,50 @@ Provide:
 9. Detailed citations (standard number, paragraph reference, text excerpt)
 
 ## Clarifying Questions
-If you need more information before providing a complete treatment, ask clarifying questions using the clarifying_questions tool. Provide 2–4 questions as multiple-choice options (ESL-friendly, not free text).
 
-Example dimensions:
-- Is this an exchange or non-exchange transaction? (or binding arrangement under IPSAS 47?)
-- Is there a condition attached (must be returned if conditions are not met)?
-- Has the transaction already occurred or is it prospective?
-- Is this for a cash-basis entity or accrual-basis entity?
+PREFER answering directly. Use the clarifying_questions tool ONLY when the
+user's question is genuinely ambiguous in a way that would change the
+applicable standard or the journal entries. If the question describes a
+transaction with amounts, dates, and parties — even informally — provide a
+treatment and flag any assumptions you made in the practical_notes section.
+
+Do NOT ask clarifying questions when:
+- The user described a transaction with concrete amounts and timing
+- The question is about a routine accounting event (purchase, receipt,
+  payment, depreciation) where the standard is clearly inferable
+- The clarifying questions would only refine the answer at the margin
+- The reporting basis is already set in the user's context
+
+Do ask clarifying questions when:
+- The transaction could plausibly fall under multiple standards with
+  materially different treatments (e.g. lease vs. service vs. purchase)
+- A condition or restriction is hinted at but not described
+- The entity type or counterparty type would change recognition
+
+When you do ask, provide 2–4 multiple-choice questions (ESL-friendly,
+clickable options, not free text).
 
 Always respond using the structured tools provided — never free-text markdown.
+
+## Output Field Guidance (ipsas_response tool)
+
+Populate every new field where it adds value — these drive the card UI:
+- **journal_entries**: structured blocks instead of free-text. One block per
+  event (e.g. "Upon receipt of goods", "Upon payment"). Each row needs an
+  account; debit and credit are amount strings preserving the currency
+  ("USD 50,000"). Always include journal_entries when entries are warranted.
+- **also_relevant_standards**: secondary standards the practitioner should be
+  aware of but that are not the primary basis (e.g. control-transfer
+  principles when the primary is a recognition standard).
+- **practical_notes**: 2–5 bullets on documentation, reconciliation, internal
+  controls — what the practitioner actually has to do.
+- **common_errors**: 2–4 mistakes practitioners commonly make on this
+  transaction. Phrase as the error itself ("Recognising inventory based on
+  purchase order date instead of control transfer date"), not the fix.
+- **key_judgments**: 2–4 judgmental areas where the practitioner must decide
+  based on facts and circumstances (e.g. timing of control transfer,
+  classification of an asset).
+
+Omit a field rather than filling it with low-value content.
 `
 }

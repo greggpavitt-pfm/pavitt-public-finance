@@ -42,7 +42,7 @@ export default async function AdvisorConversationPage(
   const { data: messages } = await supabase
     .from("advisor_messages")
     .select(
-      "id, role, content, citations, topics_matched, standards_cited, complexity, clarifying_questions, clarifying_answers, created_at"
+      "id, role, content, citations, topics_matched, standards_cited, complexity, clarifying_questions, clarifying_answers, structured_response, created_at"
     )
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: true })

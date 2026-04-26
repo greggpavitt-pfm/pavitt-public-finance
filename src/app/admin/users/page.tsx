@@ -12,6 +12,7 @@ import SubgroupAssign from "./SubgroupAssign"
 import PathwayEditor from "./PathwayEditor"
 import ProductApprovals from "./ProductApprovals"
 import UsageLimits from "./UsageLimits"
+import BulkApproveBar from "./BulkApproveBar"
 
 export const metadata: Metadata = {
   title: "User Management — Admin",
@@ -59,6 +60,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
       blacklisted,
       training_question_limit,
       practitioner_submission_limit,
+      daily_token_limit,
       created_at,
       organisations ( name, default_training_question_limit, default_practitioner_submission_limit ),
       org_subgroups ( name, default_training_question_limit, default_practitioner_submission_limit )
@@ -131,10 +133,21 @@ export default async function UsersPage({ searchParams }: PageProps) {
               No users found.
             </div>
           ) : (
+            <>
+            <BulkApproveBar />
+            <div className="mb-3 flex justify-end">
+              <Link
+                href="/admin/users/invite"
+                className="rounded-md border border-ppf-sky/30 bg-white px-3 py-1.5 text-xs font-semibold text-ppf-navy hover:bg-ppf-pale"
+              >
+                + Invite users (CSV)
+              </Link>
+            </div>
             <div className="overflow-x-auto rounded-lg border border-ppf-sky/20 bg-white shadow-sm">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    <th className="px-2 py-3 w-8"></th>
                     <th className="px-4 py-3">Name</th>
                     <th className="px-4 py-3">Email</th>
                     <th className="px-4 py-3">Organisation</th>
@@ -190,6 +203,11 @@ export default async function UsersPage({ searchParams }: PageProps) {
                       ? `Default (${effectivePractitionerDefault})`
                       : "Default"
 
+                    // No org-level fallback for daily token limit yet — the
+                    // platform default (100000) lives in the daily_token_limit
+                    // column default. Show that as the placeholder hint.
+                    const dailyTokenPlaceholder = "Default (100000)"
+
                     const orgSubgroups = profile.org_id
                       ? (subgroupsByOrg.get(profile.org_id) ?? [])
                       : []
@@ -202,8 +220,21 @@ export default async function UsersPage({ searchParams }: PageProps) {
                         })
                       : null
 
+                    const isPending = profile.account_status === "pending" && !profile.blacklisted
+
                     return (
                       <tr key={profile.id} className="hover:bg-slate-50 align-top">
+                        <td className="px-2 py-3">
+                          {isPending && (
+                            <input
+                              type="checkbox"
+                              data-bulk-approve-pending="true"
+                              data-user-id={profile.id}
+                              aria-label={`Select ${profile.full_name} for bulk approve`}
+                              className="h-4 w-4 cursor-pointer rounded border-slate-300 text-ppf-sky focus:ring-ppf-sky"
+                            />
+                          )}
+                        </td>
                         <td className="px-4 py-3 font-medium text-ppf-navy">
                           {profile.full_name}
                           {profile.job_title && (
@@ -256,8 +287,10 @@ export default async function UsersPage({ searchParams }: PageProps) {
                             userId={profile.id}
                             trainingLimit={profile.training_question_limit ?? null}
                             practitionerLimit={profile.practitioner_submission_limit ?? null}
+                            dailyTokenLimit={profile.daily_token_limit ?? null}
                             trainingPlaceholder={trainingPlaceholder}
                             practitionerPlaceholder={practitionerPlaceholder}
+                            dailyTokenPlaceholder={dailyTokenPlaceholder}
                           />
                         </td>
                         <td className="px-4 py-3 text-slate-500">{joinedDate}</td>
@@ -282,6 +315,7 @@ export default async function UsersPage({ searchParams }: PageProps) {
                 </tbody>
               </table>
             </div>
+            </>
           )}
         </div>
       </main>

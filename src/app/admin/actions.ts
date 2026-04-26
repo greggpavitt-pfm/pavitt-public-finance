@@ -163,17 +163,25 @@ export async function updateUserApprovals(
 export async function updateUserLimits(
   userId: string,
   trainingLimit: number | null,
-  practitionerLimit: number | null
+  practitionerLimit: number | null,
+  dailyTokenLimit: number | null = null
 ): Promise<{ error?: string }> {
   try {
     await requireAdmin()
     const serviceClient = await createServiceClient()
+
+    // Bound check on dailyTokenLimit. Practitioner_submission_limit and
+    // training_question_limit have similar implicit bounds via their inputs.
+    if (dailyTokenLimit != null && (dailyTokenLimit < 0 || dailyTokenLimit > 1_000_000)) {
+      return { error: "Daily token limit must be between 0 and 1,000,000" }
+    }
 
     const { error } = await serviceClient
       .from("profiles")
       .update({
         training_question_limit:      trainingLimit,
         practitioner_submission_limit: practitionerLimit,
+        daily_token_limit:             dailyTokenLimit,
       })
       .eq("id", userId)
 
@@ -186,6 +194,49 @@ export async function updateUserLimits(
     return {}
   } catch (e) {
     console.error("updateUserLimits: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Bulk approve — flips account_status='approved' for many users in one call
+// ---------------------------------------------------------------------------
+// Does NOT auto-grant Training/Practitioner toggles — operator picks those
+// after bulk approve. Scoped to caller's org if they are an org_admin.
+
+export async function bulkApproveUsers(userIds: string[]): Promise<{
+  error?: string
+  approved?: number
+}> {
+  try {
+    const { adminRow } = await requireAdmin()
+    if (userIds.length === 0) return { approved: 0 }
+    if (userIds.length > 500) return { error: "Cannot approve more than 500 users at once" }
+
+    const serviceClient = await createServiceClient()
+
+    // Restrict to caller's org if org_admin. Avoids cross-org approve.
+    let updateQuery = serviceClient
+      .from("profiles")
+      .update({ account_status: "approved" })
+      .in("id", userIds)
+      .eq("account_status", "pending")  // never resurrect blacklisted/suspended
+
+    if (adminRow.role === "org_admin" && adminRow.org_id) {
+      updateQuery = updateQuery.eq("org_id", adminRow.org_id)
+    }
+
+    const { data, error } = await updateQuery.select("id")
+
+    if (error) {
+      console.error("bulkApproveUsers: update failed", { userIds, error })
+      return { error: error.message }
+    }
+
+    revalidatePath("/admin/users")
+    return { approved: data?.length ?? 0 }
+  } catch (e) {
+    console.error("bulkApproveUsers: unexpected error", e)
     return { error: (e as Error).message }
   }
 }

@@ -1,6 +1,7 @@
 // next.config.ts
 // Deploying to Vercel — no output: 'export' flag.
 // This keeps Server Actions available for the contact form in Phase 4.
+import path from "node:path"
 import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
@@ -9,7 +10,14 @@ const nextConfig: NextConfig = {
   // Turbopack is the default bundler in Next.js 16.
   // pdf-parse is imported dynamically inside the upload route handler to avoid
   // build-time issues — no special bundler config is needed here.
-  turbopack: {},
+  //
+  // turbopack.root pins the workspace root to this app directory. Without it,
+  // Next.js walks up until it finds a lockfile and may pick the wrong one
+  // (a stray pnpm-lock.yaml or package-lock.json a few levels up under the
+  // shared Dropbox folder), which surfaces as a noisy warning at dev start.
+  turbopack: {
+    root: path.resolve(__dirname),
+  },
 }
 
 export default nextConfig

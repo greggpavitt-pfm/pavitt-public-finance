@@ -24,13 +24,18 @@ export default async function AdvisorLayout({
 
   return (
     <div className="flex h-screen flex-col bg-gray-50">
-      {/* Top Navigation */}
-      <AuthNavbar userName={profile?.full_name || "User"} currentPath="/advisor" />
+      {/* Top Navigation — hidden on print so the saved PDF starts with the
+          conversation header, not the app chrome. */}
+      <div className="no-print">
+        <AuthNavbar userName={profile?.full_name || "User"} currentPath="/advisor" />
+      </div>
 
       {/* Main Content Area — Sidebar + Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar — Conversation List + Output Mode Selector */}
-        <AdvisorSidebar />
+        <div className="no-print">
+          <AdvisorSidebar />
+        </div>
 
         {/* Main Content */}
         <main className="flex-1 overflow-auto bg-white">

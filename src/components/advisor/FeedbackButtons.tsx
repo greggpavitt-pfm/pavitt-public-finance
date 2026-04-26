@@ -44,7 +44,7 @@ export default function FeedbackButtons({ messageId, initialVote = null }: Props
   }
 
   return (
-    <div className="mt-4 border-t border-slate-200 pt-3">
+    <div className="no-print mt-4 border-t border-slate-200 pt-3">
       <div className="flex items-center gap-3">
         <span className="text-xs text-slate-500">Was this helpful?</span>
         <button

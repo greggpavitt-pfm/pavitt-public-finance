@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server"
 import MessageThread from "@/components/advisor/MessageThread"
 import TransactionInput from "@/components/advisor/TransactionInput"
 import DocumentAttachment from "@/components/advisor/DocumentAttachment"
+import PrintButton from "@/components/advisor/PrintButton"
 import { getConversationDocuments } from "@/app/advisor/actions"
 
 interface AdvisorConversationPageProps {
@@ -58,10 +59,17 @@ export default async function AdvisorConversationPage(
     <div className="flex h-full flex-col">
       {/* Header */}
       <div className="border-b border-gray-200 bg-gray-50 px-8 py-6">
-        <h1 className="text-2xl font-bold text-gray-900">{conversation.title}</h1>
-        <p className="mt-1 text-sm text-gray-600">
-          Mode: {conversation.output_mode === "quick_treatment" ? "Quick Treatment" : conversation.output_mode}
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-gray-900">{conversation.title}</h1>
+            <p className="mt-1 text-sm text-gray-600">
+              Mode: {conversation.output_mode === "quick_treatment" ? "Quick Treatment" : conversation.output_mode}
+            </p>
+          </div>
+          <div className="shrink-0">
+            <PrintButton />
+          </div>
+        </div>
 
         {/* Attached PDF documents */}
         {documents && documents.length > 0 && (
@@ -78,14 +86,26 @@ export default async function AdvisorConversationPage(
         )}
       </div>
 
+      {/* Print-only header strip — not visible on screen, appears at top of
+          the printed PDF so the user has a date-stamped reference. */}
+      <div className="print-only border-b border-gray-300 px-8 py-3 text-xs text-gray-700">
+        <div className="flex justify-between">
+          <span>
+            <strong>IPSAS Advisor — </strong>
+            {conversation.title}
+          </span>
+          <span>Printed {new Date().toISOString().slice(0, 10)}</span>
+        </div>
+      </div>
+
       {/* Message Thread */}
       <div className="flex-1 overflow-auto">
         <MessageThread messages={messages || []} conversationId={conversationId} />
       </div>
 
-      {/* Input Area — hidden while clarifying questions are pending */}
+      {/* Input Area — hidden while clarifying questions are pending and on print */}
       {!hasPendingClarifyingQuestions && (
-        <div className="border-t border-gray-200 bg-white px-8 py-6">
+        <div className="no-print border-t border-gray-200 bg-white px-8 py-6">
           <TransactionInput conversationId={conversationId} />
         </div>
       )}

@@ -189,3 +189,63 @@ body {
   50%      { box-shadow: 0 0 0 6px rgba(74,222,128,0.05); }
 }
 .ppf-pulse { animation: ppf-pulse 2.2s infinite; }
+
+/* ---------- Print styles -------------------------------------------------
+   Used by the advisor "Print / Save as PDF" button on a treatment thread.
+   Goal: keep the treatment cards + user question, drop everything else
+   (top nav, sidebar, input bar, feedback buttons, action buttons) so the
+   browser's native print dialog produces a clean, archive-ready PDF.
+
+   Pattern: opt-in via class names rather than blanket-hiding by tag, so
+   non-print pages aren't affected and we don't have to maintain a giant
+   selector list as the UI grows.
+
+   Add `print:hidden` (Tailwind class — uses media query under the hood) on
+   any element that should not appear, and `print-only` on elements that
+   should appear ONLY when printing (e.g. the print header strip).
+   ----------------------------------------------------------------------- */
+
+.print-only { display: none; }
+
+@media print {
+  /* Reset page chrome — full bleed, no shadows, no background tints. */
+  @page {
+    size: A4;
+    margin: 14mm 12mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Show print-only elements (e.g. the printable header) */
+  .print-only { display: block !important; }
+
+  /* Stop scroll containers from clipping the printed content. The advisor
+     layout uses overflow-hidden / overflow-auto on several wrappers; that
+     causes only the first page of the conversation to print otherwise. */
+  .overflow-hidden,
+  .overflow-auto {
+    overflow: visible !important;
+  }
+  html, body, main {
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Avoid splitting a single card across pages where possible. */
+  .rounded-lg,
+  table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Drop interactive UI noise. `no-print` is a generic escape hatch any
+     component can opt into without depending on Tailwind's print: variant. */
+  .no-print {
+    display: none !important;
+  }
+}

@@ -126,6 +126,12 @@ export default function Navbar() {
           >
             IPSAS Questions
           </Link>
+          <Link
+            href="/request-demo"
+            className="rounded-md border border-ppf-sky px-3.5 py-1.5 text-sm font-medium text-ppf-sky transition-colors hover:bg-ppf-sky hover:text-white"
+          >
+            Request demo
+          </Link>
         </div>
 
         {/* Mobile: hamburger */}
@@ -193,6 +199,13 @@ export default function Navbar() {
               className="rounded-md bg-[#2A8FE0] px-4 py-2.5 text-center text-sm font-medium text-white"
             >
               IPSAS Questions
+            </Link>
+            <Link
+              href="/request-demo"
+              onClick={() => setOpen(false)}
+              className="rounded-md border border-ppf-sky px-4 py-2.5 text-center text-sm font-medium text-ppf-sky"
+            >
+              Request demo
             </Link>
           </li>
         </ul>

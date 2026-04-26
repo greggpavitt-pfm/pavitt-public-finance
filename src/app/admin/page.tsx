@@ -36,6 +36,7 @@ export default async function AdminPage() {
     { count: pendingCount },
     { count: approvedCount },
     { count: orgCount },
+    { count: pendingDemoCount },
   ] = await Promise.all([
     serviceClient
       .from("profiles")
@@ -48,6 +49,10 @@ export default async function AdminPage() {
     serviceClient
       .from("organisations")
       .select("id", { count: "exact", head: true }),
+    serviceClient
+      .from("org_requests")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
   ])
 
   return (
@@ -61,12 +66,18 @@ export default async function AdminPage() {
           </p>
 
           {/* Summary cards */}
-          <div className="mb-10 grid gap-4 sm:grid-cols-3">
+          <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard
               label="Pending approvals"
               value={pendingCount ?? 0}
               urgent={!!(pendingCount && pendingCount > 0)}
               href="/admin/users?filter=pending"
+            />
+            <StatCard
+              label="Pending demo requests"
+              value={pendingDemoCount ?? 0}
+              urgent={!!(pendingDemoCount && pendingDemoCount > 0)}
+              href="/admin/org-requests"
             />
             <StatCard
               label="Active users"
@@ -156,6 +167,16 @@ export default async function AdminPage() {
                 }
               />
             )}
+            <NavCard
+              title="Demo requests"
+              description="Review and approve trial-org requests submitted via the public /request-demo form."
+              href="/admin/org-requests"
+              icon={
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                </svg>
+              }
+            />
             <NavCard
               title="Audit log"
               description="Append-only record of every admin action: approvals, suspensions, reviewer assignments, role grants. Required for compliance and procurement."

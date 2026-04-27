@@ -15,7 +15,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 import { sendEmail } from "@/lib/flashcard-email/resend"
 
-const FROM_ADDRESS = "Pavitt Public Finance <noreply@pfmexpert.net>"
+const FROM_ADDRESS = "Pavitt Public Finance <noreply@contact.pfmexpert.net>"
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pfmexpert.net"
 const CRON_NAME = "trial-expiry"
 

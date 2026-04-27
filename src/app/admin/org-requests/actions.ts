@@ -27,7 +27,10 @@ import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { logAdminAction } from "@/lib/admin/audit"
 import { sendEmail } from "@/lib/flashcard-email/resend"
 
-const FROM_ADDRESS = "Pavitt Public Finance <noreply@pfmexpert.net>"
+// Resend-verified sender. Domain `contact.pfmexpert.net` is the verified
+// subdomain in Resend; the apex pfmexpert.net is NOT verified, so sending
+// from noreply@pfmexpert.net returns a 403 validation_error.
+const FROM_ADDRESS = "Pavitt Public Finance <noreply@contact.pfmexpert.net>"
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pfmexpert.net"
 const TRIAL_DAYS = 14
 

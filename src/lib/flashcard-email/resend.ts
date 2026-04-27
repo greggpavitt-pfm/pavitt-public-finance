@@ -10,7 +10,7 @@ const RESEND_URL = "https://api.resend.com/emails"
 
 export interface SendEmailParams {
   to: string
-  from: string  // e.g. "Pavitt Public Finance <noreply@pfmexpert.net>"
+  from: string  // e.g. "Pavitt Public Finance <noreply@contact.pfmexpert.net>"
   subject: string
   html: string
   text: string

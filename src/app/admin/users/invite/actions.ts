@@ -27,7 +27,8 @@ export interface InviteResult {
   errors: string[]
 }
 
-const FROM_ADDRESS = "Pavitt Public Finance <noreply@pfmexpert.net>"
+// Resend-verified sender — see note in org-requests/actions.ts.
+const FROM_ADDRESS = "Pavitt Public Finance <noreply@contact.pfmexpert.net>"
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pfmexpert.net"
 
 // Loose check — Supabase auth will reject anything truly malformed at create.

@@ -17,7 +17,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js"
 import { sendEmail } from "@/lib/flashcard-email/resend"
 import { renderMonthlyOrgReport, type MonthlyOrgReportInput } from "@/lib/email/templates/monthly-org-report"
 
-const FROM_ADDRESS = "Pavitt Public Finance <noreply@pfmexpert.net>"
+const FROM_ADDRESS = "Pavitt Public Finance <noreply@contact.pfmexpert.net>"
 const CRON_NAME = "monthly-org-report"
 
 export const runtime = "nodejs"

@@ -20,7 +20,7 @@ import { sendEmail } from "@/lib/flashcard-email/resend"
 
 const DEFAULT_HOUR_UTC = 9
 const CARDS_PER_EMAIL = 3
-const FROM_ADDRESS = "Pavitt Public Finance <noreply@pfmexpert.net>"
+const FROM_ADDRESS = "Pavitt Public Finance <noreply@contact.pfmexpert.net>"
 
 // Force Node.js runtime — Resend fetch + Supabase service client both fine on edge,
 // but we want crypto + larger memory for batch processing.

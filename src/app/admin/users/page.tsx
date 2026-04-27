@@ -297,11 +297,13 @@ export default async function UsersPage({ searchParams }: PageProps) {
                         <td className="px-4 py-3">
                           <UserActions
                             userId={profile.id}
+                            userEmail={emailByUserId.get(profile.id) ?? ""}
                             currentStatus={
                               profile.account_status as "pending" | "approved" | "suspended"
                             }
                             accountType={(profile.account_type as "guest" | "standard") ?? "standard"}
                             blacklisted={profile.blacklisted ?? false}
+                            isSuperAdmin={adminRow.role === "super_admin"}
                           />
                           <SubgroupAssign
                             userId={profile.id}

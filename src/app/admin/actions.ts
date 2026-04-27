@@ -1364,3 +1364,151 @@ export async function deleteIpsasSubgroup(subgroupId: string): Promise<{ error?:
     return { error: (e as Error).message }
   }
 }
+
+// ---------------------------------------------------------------------------
+// DANGER ZONE — Permanent user deletion (super_admin only)
+// ---------------------------------------------------------------------------
+// Hard-deletes a user from auth.users + profiles + admin_users + clears any
+// org_requests references. Intended for test artefacts and accidents only.
+//
+// Refuses if the user has historical data that would break referential
+// meaning (module sessions, assessment results, advisor conversations, or
+// any audit log entries where they are the actor). For real users with
+// history, use Blacklist instead — that preserves the audit trail.
+//
+// Refuses on self-delete and on deletion of any super_admin (foot-shoot
+// guard). UI requires the operator to type the target email to confirm.
+
+export interface DeleteUserResult {
+  error?: string
+  blockers?: string[]   // populated when refusing due to historical data
+}
+
+export async function deleteUserPermanently(
+  userId: string,
+  confirmEmail: string,
+): Promise<DeleteUserResult> {
+  try {
+    const { user, adminRow } = await requireAdmin()
+    if (adminRow.role !== "super_admin") {
+      return { error: "Super admin access required." }
+    }
+    if (userId === user.id) {
+      return { error: "Cannot delete yourself." }
+    }
+
+    const serviceClient = await createServiceClient()
+
+    // Resolve the auth user + email so we can verify the typed confirmation.
+    const { data: authData, error: authErr } =
+      await serviceClient.auth.admin.getUserById(userId)
+    if (authErr || !authData?.user) {
+      return { error: authErr?.message ?? "Auth user not found." }
+    }
+    const targetEmail = (authData.user.email ?? "").toLowerCase()
+    if (!targetEmail) {
+      return { error: "Target user has no email on record — cannot confirm." }
+    }
+    if (confirmEmail.trim().toLowerCase() !== targetEmail) {
+      return { error: "Typed email does not match the target user." }
+    }
+
+    // Refuse if target is a super_admin (admin role check).
+    const { data: targetAdmin } = await serviceClient
+      .from("admin_users")
+      .select("role")
+      .eq("id", userId)
+      .maybeSingle()
+    if (targetAdmin?.role === "super_admin") {
+      return { error: "Cannot delete a super_admin. Revoke admin role first." }
+    }
+
+    // Fetch profile snapshot for the audit log BEFORE deletion.
+    const { data: profileSnap } = await serviceClient
+      .from("profiles")
+      .select("id, full_name, org_id, account_status, account_type, blacklisted, created_at")
+      .eq("id", userId)
+      .maybeSingle()
+
+    // History check — count rows in tables that hold meaningful user history.
+    // Each is a small targeted count query so we can list which one(s) blocked.
+    const blockers: string[] = []
+
+    const tablesToCheck: Array<{ table: string; column: string; label: string }> = [
+      { table: "module_sessions",       column: "user_id",  label: "module sessions" },
+      { table: "assessment_results",    column: "user_id",  label: "assessment results" },
+      { table: "advisor_conversations", column: "user_id",  label: "advisor conversations" },
+      { table: "admin_audit_log",       column: "actor_id", label: "audit log entries (as actor)" },
+    ]
+    for (const { table, column, label } of tablesToCheck) {
+      const { count, error: countErr } = await serviceClient
+        .from(table)
+        .select("*", { count: "exact", head: true })
+        .eq(column, userId)
+      if (countErr) {
+        // If a table doesn't exist (e.g. advisor not yet seeded), skip it.
+        if (/relation .* does not exist/i.test(countErr.message)) continue
+        return { error: `History check failed on ${table}: ${countErr.message}` }
+      }
+      if ((count ?? 0) > 0) blockers.push(`${count} ${label}`)
+    }
+
+    if (blockers.length > 0) {
+      return {
+        error: "User has historical data — use Blacklist instead of Delete.",
+        blockers,
+      }
+    }
+
+    // Audit log BEFORE deletion (so target_id still resolves and FK is satisfied).
+    await logAdminAction({
+      actor: user,
+      action: "delete_user",
+      targetType: "profile",
+      targetId: userId,
+      before: profileSnap ?? { email: targetEmail },
+      metadata: { email: targetEmail },
+    })
+
+    // Cascade order: clear org_requests reviewer/approver refs, then
+    // admin_users, then profiles, then auth.users.
+    // (org_requests.reviewed_by FK to profiles would cascade via SET NULL
+    //  if defined that way — but we null it explicitly to be safe across
+    //  schemas that may differ.)
+    await serviceClient
+      .from("org_requests")
+      .update({ reviewed_by: null })
+      .eq("reviewed_by", userId)
+
+    const { error: adminDelErr } = await serviceClient
+      .from("admin_users")
+      .delete()
+      .eq("id", userId)
+    if (adminDelErr) {
+      console.warn("deleteUserPermanently: admin_users delete failed", { userId, adminDelErr })
+      // Non-fatal — continue.
+    }
+
+    const { error: profileDelErr } = await serviceClient
+      .from("profiles")
+      .delete()
+      .eq("id", userId)
+    if (profileDelErr) {
+      console.error("deleteUserPermanently: profile delete failed", { userId, profileDelErr })
+      return { error: profileDelErr.message }
+    }
+
+    const { error: authDelErr } = await serviceClient.auth.admin.deleteUser(userId)
+    if (authDelErr) {
+      console.error("deleteUserPermanently: auth delete failed", { userId, authDelErr })
+      return { error: authDelErr.message }
+    }
+
+    revalidatePath("/admin")
+    revalidatePath("/admin/users")
+    return {}
+  } catch (e) {
+    console.error("deleteUserPermanently: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}

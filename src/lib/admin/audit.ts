@@ -10,7 +10,7 @@
 //
 // Action keys (stable strings — once chosen, do not rename without a
 // migration to update existing rows):
-//   approve_user, suspend_user, reinstate_user, blacklist_user
+//   approve_user, suspend_user, reinstate_user, blacklist_user, delete_user
 //   renew_guest, cancel_guest
 //   change_pathway, change_limits, change_subgroup, change_org
 //   toggle_training_approval, toggle_practitioner_approval

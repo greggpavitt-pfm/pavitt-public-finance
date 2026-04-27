@@ -8,9 +8,18 @@
 //                           Only use this for privileged operations like:
 //                           - approving/rejecting users (admin actions)
 //                           - scoring assessments (reading correct_answer)
+//                           - anonymous inserts into admin-RLS tables (e.g. /request-demo)
 //                           Never expose this client to the browser.
+//
+// IMPORTANT: createServiceClient() uses the plain @supabase/supabase-js client
+// rather than @supabase/ssr's createServerClient. The SSR variant is cookie-aware
+// and constructs a per-request JWT context — even when handed the service-role
+// key, the SSR client did NOT cleanly bypass RLS for anon (no-cookie) requests
+// such as the public /request-demo submit. The plain client with the service-
+// role key bypasses RLS unconditionally, which is what callers expect.
 
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 // Standard server client — respects RLS, safe to use for all normal reads
@@ -42,27 +51,19 @@ export async function createClient() {
 }
 
 // Privileged server client — bypasses RLS.
-// Use only in Server Actions for operations like answer checking or admin approvals.
+// Use only in Server Actions / Route Handlers for operations like answer
+// checking, admin approvals, or anonymous writes to admin-RLS tables.
+//
+// async preserved for call-site compatibility (every existing consumer awaits it).
 export async function createServiceClient() {
-  const cookieStore = await cookies()
-
-  return createServerClient(
+  return createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,  // Never expose this to the browser
     {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll()
-        },
-        setAll(cookiesToSet) {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            )
-          } catch {
-            // Same as above — safe to ignore in Server Components
-          }
-        },
+      auth: {
+        // No session persistence — server-side, single-shot calls.
+        persistSession: false,
+        autoRefreshToken: false,
       },
     }
   )

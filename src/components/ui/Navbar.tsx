@@ -82,6 +82,7 @@ export default function Navbar() {
             width={80}
             height={80}
             priority
+            unoptimized
             className="h-[84px] w-auto"
           />
           <span>{siteConfig.companyName}</span>

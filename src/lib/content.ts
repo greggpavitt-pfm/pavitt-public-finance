@@ -201,7 +201,7 @@ export const images = {
   // About: professional headshot (gregg.jpg normalized, or placeholder)
   about: "/images/photo-about.jpg",
   // Logos — sourced from PFS Branding kit
-  logoTransparent: "/images/logo-transparent.png",
+  logoTransparent: "/images/logo-transparent.svg",
   logoTransparentSvg: "/images/logo-transparent.svg",
   logoOriginalSvg: "/images/logo-original.svg",
   logoSvg: "/images/logo.svg",

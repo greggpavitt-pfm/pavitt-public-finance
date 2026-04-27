@@ -55,6 +55,7 @@ export default function Footer() {
                 alt="PPF"
                 width={80}
                 height={80}
+                unoptimized
                 className="h-8 w-auto opacity-95"
               />
               <div>

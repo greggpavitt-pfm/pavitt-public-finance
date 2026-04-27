@@ -91,10 +91,18 @@ export async function registerUser(
   // Beta testers: resolvedOrgId remains null, pathway comes from form
 
   // --- Create the auth user ---
+  // emailRedirectTo locks the confirmation link target to our /auth/callback route.
+  // Without this, Supabase falls back to the dashboard "Site URL" — if that drifts
+  // (or /auth/callback isn't on the Redirect URLs allowlist) users land on a
+  // Supabase "Internal Server Error" page after clicking the email confirm link.
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pfmexpert.net"
   const supabase = await createClient()
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      emailRedirectTo: `${SITE_URL}/auth/callback`,
+    },
   })
 
   if (signUpError) {

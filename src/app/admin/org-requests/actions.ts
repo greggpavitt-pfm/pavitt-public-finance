@@ -123,11 +123,17 @@ export async function approveOrgRequest(
       return { error: "Could not resolve user id for contact email" }
     }
 
-    // Generate magic link for first sign-in (works for both new + existing accounts)
+    // Generate magic link for first sign-in (works for both new + existing accounts).
+    // redirectTo pins the post-verify destination to our /auth/callback route so the
+    // session cookie gets set before the user lands anywhere protected. Otherwise
+    // Supabase falls back to the dashboard Site URL and may emit a 500 page.
     const linkType = createErr ? "magiclink" : "invite"
     const { data: linkData } = await serviceClient.auth.admin.generateLink({
       type: linkType,
       email,
+      options: {
+        redirectTo: `${SITE_URL}/auth/callback`,
+      },
     })
     inviteUrl = linkData?.properties?.action_link ?? `${SITE_URL}/login`
 

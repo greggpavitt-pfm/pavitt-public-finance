@@ -155,9 +155,15 @@ export async function inviteByCsv(
       }
 
       // Generate a magic link the user clicks to set their password.
+      // redirectTo pins the post-verify hop to /auth/callback so the session cookie
+      // is set server-side before redirect. Without it Supabase uses the dashboard
+      // Site URL and can land users on its own 500 page.
       const { data: linkData } = await serviceClient.auth.admin.generateLink({
         type: "invite",
         email: row.email,
+        options: {
+          redirectTo: `${SITE_URL}/auth/callback`,
+        },
       })
       const inviteUrl = linkData?.properties?.action_link ?? `${SITE_URL}/login`
 

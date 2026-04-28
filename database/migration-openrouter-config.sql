@@ -89,7 +89,9 @@ create index if not exists ipsas_reg_effective_date on ipsas_regulation_metadata
 -- Use this in RAG retrieval queries instead of filtering manually each time
 -- ============================================================================
 
-create or replace view ipsas_effective_regulations as
+create or replace view ipsas_effective_regulations
+with (security_invoker = true)
+as
 select *
 from ipsas_regulation_metadata
 where status = 'current'

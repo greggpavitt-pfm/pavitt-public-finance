@@ -67,7 +67,8 @@ export async function registerUser(
       .from("organisations")
       .select("id, accounting_type, jurisdiction_code, demo")
       .eq("id", orgIdRaw)
-      .in("licence_status", ["beta", "active"])
+      // Accept registration for any active plan; reject expired/suspended.
+      .not("plan_type", "in", "(expired,suspended)")
       .single()
 
     if (orgError || !org) {

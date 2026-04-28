@@ -23,7 +23,8 @@ export default async function RegisterPage() {
   const { data: orgs } = await serviceClient
     .from("organisations")
     .select("id, name, country, accounting_type, demo")
-    .in("licence_status", ["beta", "active"])
+    // Show every org that still accepts registration; hide expired/suspended.
+    .not("plan_type", "in", "(expired,suspended)")
     .order("name")
 
   return (

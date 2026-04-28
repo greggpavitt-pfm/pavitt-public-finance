@@ -31,8 +31,24 @@ create table organisations (
   -- demo orgs auto-approve new registrations (no admin review step)
   demo               boolean     not null default false,
   licence_key        text        unique not null,
-  licence_status     text        not null default 'beta'
-                     check (licence_status in ('beta', 'active', 'expired', 'suspended')),
+  -- License plan. Replaces the legacy licence_status + trial_status pair.
+  --   beta       — free 14-day pilot, trial_expires_at set
+  --   individual — per-seat per-month, single seat (Stripe self-signup)
+  --   team       — per-seat per-year, org licence (Stripe)
+  --   enterprise — custom; admin sets manually, manual invoice
+  --   expired    — trial or paid sub ended; users suspended
+  --   suspended  — admin-suspended
+  plan_type          text        not null default 'beta'
+                     check (plan_type in ('beta','individual','team','enterprise','expired','suspended')),
+  -- Billing cadence. 'none' for beta/enterprise/expired/suspended.
+  billing_period     text        not null default 'none'
+                     check (billing_period in ('monthly','yearly','none')),
+  -- Stripe linkage (populated by Phase 2 webhook; null in Phase 1)
+  stripe_customer_id      text,
+  stripe_subscription_id  text,
+  current_period_end      timestamptz,
+  -- Beta trial expiry (set when plan_type='beta')
+  trial_expires_at   timestamptz,
   licence_expires_at timestamptz,          -- null = no expiry (e.g. perpetual beta)
   max_users          integer,              -- null = unlimited seats
   created_at         timestamptz default now()
@@ -449,10 +465,10 @@ create index on org_subgroups (org_id);
 --   update organisations set accounting_type = 'custom' where jurisdiction_code = 'SIG';
 --
 --   -- Seed the two demo orgs (run once)
---   insert into organisations (name, country, accounting_type, jurisdiction_code, licence_key, licence_status, demo)
+--   insert into organisations (name, country, accounting_type, jurisdiction_code, licence_key, plan_type, billing_period, demo)
 --   values
---     ('Demo — Cash Basis',  'Demo', 'cash-basis', null, 'PPF-DEMO-CASH-0001', 'active', true),
---     ('Demo — Accrual',     'Demo', 'accrual',    null, 'PPF-DEMO-ACCR-0001', 'active', true)
+--     ('Demo — Cash Basis',  'Demo', 'cash-basis', null, 'PPF-DEMO-CASH-0001', 'enterprise', 'none', true),
+--     ('Demo — Accrual',     'Demo', 'accrual',    null, 'PPF-DEMO-ACCR-0001', 'enterprise', 'none', true)
 --   on conflict (licence_key) do nothing;
 --
 -- =============================================================================
@@ -467,13 +483,14 @@ create index on org_subgroups (org_id);
 --
 -- Then create the first organisation manually:
 --
---   insert into organisations (name, country, jurisdiction_code, accounting_type, licence_key, licence_status)
+--   insert into organisations (name, country, jurisdiction_code, accounting_type, licence_key, plan_type, billing_period)
 --   values (
 --     'Ministry of Finance — Solomon Islands',
 --     'Solomon Islands',
 --     'SIG',
 --     'custom',
 --     'PPF-SIG-2025-BETA',   -- change this to something harder to guess
---     'beta'
+--     'beta',
+--     'none'
 --   );
 -- =============================================================================

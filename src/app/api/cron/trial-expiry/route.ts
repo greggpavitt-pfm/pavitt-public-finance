@@ -1,7 +1,7 @@
 // Trial expiry cron — runs daily at 08:00 UTC.
 //
-// For every organisation with trial_status='active':
-//   - days_left <= 0  -> flip trial_status='expired', suspend its users,
+// For every organisation with plan_type='beta':
+//   - days_left <= 0  -> flip plan_type='expired', suspend its users,
 //                        send "trial expired" email to org_admin contacts
 //   - days_left == 1  -> send T-1 warning email
 //   - days_left == 3  -> send T-3 warning email
@@ -58,7 +58,7 @@ export async function GET(req: NextRequest) {
   const { data: orgs, error: orgErr } = await supabase
     .from("organisations")
     .select("id, name, trial_expires_at")
-    .eq("trial_status", "active")
+    .eq("plan_type", "beta")
 
   if (orgErr) {
     return NextResponse.json({ error: orgErr.message }, { status: 500 })
@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
         // Flip to expired + suspend members
         const { error: orgUpdateErr } = await supabase
           .from("organisations")
-          .update({ trial_status: "expired" })
+          .update({ plan_type: "expired" })
           .eq("id", org.id)
         if (orgUpdateErr) throw orgUpdateErr
 

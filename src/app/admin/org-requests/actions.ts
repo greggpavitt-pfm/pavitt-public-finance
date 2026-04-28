@@ -4,8 +4,8 @@
 // approveOrgRequest:
 //   1. Require admin caller
 //   2. Re-read the request, ensure status='pending' (idempotent guard)
-//   3. Create organisations row: demo=true, trial_status='active',
-//      trial_expires_at = now()+14 days, licence generated
+//   3. Create organisations row: demo=true, plan_type='beta',
+//      billing_period='none', trial_expires_at = now()+14 days, licence generated
 //   4. Create auth user for the contact (or attach to existing if email already
 //      registered — graceful upgrade from prior account)
 //   5. Insert profiles row: account_status='approved', both product toggles true,
@@ -84,8 +84,8 @@ export async function approveOrgRequest(
         accounting_type:    accountingType,
         demo:               true,
         licence_key:        licenceKey,
-        licence_status:     "active",
-        trial_status:       "active",
+        plan_type:          "beta",
+        billing_period:     "none",
         trial_expires_at:   trialExpires,
         max_users:          50,  // trial cap; admin can lift after conversion
       })

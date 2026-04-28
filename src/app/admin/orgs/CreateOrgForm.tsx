@@ -16,6 +16,14 @@ const ACCOUNTING_TYPE_LABELS: Record<string, string> = {
   "custom":     "Custom — Solomon Islands (SIG, cash-basis overlay)",
 }
 
+// Plan type options. Mirrors the CHECK constraint on organisations.plan_type.
+const PLAN_TYPE_LABELS: Record<string, string> = {
+  enterprise: "Enterprise — manual invoice (default)",
+  beta:       "Beta — 14-day trial",
+  team:       "Team — per-seat per-year (Stripe, Phase 2)",
+  individual: "Individual — per-seat per-month (Stripe, Phase 2)",
+}
+
 export default function CreateOrgForm() {
   const [state, formAction, isPending] = useActionState(createOrg, initialState)
   const [accountingType, setAccountingType] = useState("accrual")
@@ -120,6 +128,26 @@ export default function CreateOrgForm() {
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="plan_type" className="mb-1.5 block text-sm font-medium text-slate-700">
+            Plan type <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="plan_type"
+            name="plan_type"
+            required
+            defaultValue="enterprise"
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
+          >
+            {Object.entries(PLAN_TYPE_LABELS).map(([val, label]) => (
+              <option key={val} value={val}>{label}</option>
+            ))}
+          </select>
+          <p className="mt-1 text-xs text-slate-400">
+            Stripe-billed plans (Individual / Team) are wired in Phase 2.
+          </p>
+        </div>
+
         <div>
           <label htmlFor="max_users" className="mb-1.5 block text-sm font-medium text-slate-700">
             Max users

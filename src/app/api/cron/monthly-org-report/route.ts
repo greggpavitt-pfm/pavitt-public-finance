@@ -84,7 +84,8 @@ export async function GET(req: NextRequest) {
   let orgQuery = supabase
     .from("organisations")
     .select("id, name, monthly_token_quota")
-    .neq("licence_status", "expired")
+    // Skip expired/suspended orgs — they shouldn't generate reports.
+    .not("plan_type", "in", "(expired,suspended)")
   if (orgFilter) orgQuery = orgQuery.eq("id", orgFilter)
   const { data: orgs, error: orgErr } = await orgQuery
   if (orgErr) return NextResponse.json({ error: orgErr.message }, { status: 500 })

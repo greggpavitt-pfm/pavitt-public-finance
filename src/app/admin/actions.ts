@@ -457,6 +457,67 @@ export async function suspendUser(userId: string): Promise<{ error?: string }> {
 }
 
 // ---------------------------------------------------------------------------
+// Update an organisation's plan_type (admin)
+// ---------------------------------------------------------------------------
+// Used to switch enterprise/team/individual/beta/expired/suspended manually.
+// Stripe-driven plan changes go through the Phase 2 webhook, not this action.
+
+export async function updateOrgPlan(
+  orgId: string,
+  planType: string
+): Promise<{ error?: string }> {
+  try {
+    const { user } = await requireAdmin()
+
+    const PLAN_BILLING: Record<string, "monthly" | "yearly" | "none"> = {
+      beta: "none",
+      individual: "monthly",
+      team: "yearly",
+      enterprise: "none",
+      expired: "none",
+      suspended: "none",
+    }
+    if (!(planType in PLAN_BILLING)) {
+      return { error: "Invalid plan type." }
+    }
+
+    const serviceClient = await createServiceClient()
+    const updates: Record<string, unknown> = {
+      plan_type:      planType,
+      billing_period: PLAN_BILLING[planType],
+    }
+    // When flipping to beta, restart the 14-day window so admin can extend trials.
+    if (planType === "beta") {
+      updates.trial_expires_at = new Date(Date.now() + 14 * 86400 * 1000).toISOString()
+    }
+
+    const { error } = await serviceClient
+      .from("organisations")
+      .update(updates)
+      .eq("id", orgId)
+
+    if (error) {
+      console.error("updateOrgPlan: failed", { orgId, planType, error })
+      return { error: error.message }
+    }
+
+    await logAdminAction({
+      actor: user,
+      action: "update_org_plan",
+      targetType: "organisation",
+      targetId: orgId,
+      after: { plan_type: planType },
+    })
+
+    revalidatePath("/admin/orgs")
+    return {}
+  } catch (e) {
+    console.error("updateOrgPlan: unexpected error", e)
+    return { error: (e as Error).message }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Create an organisation
 // ---------------------------------------------------------------------------
 // Called from /admin/orgs. Generates a random licence key if one isn't supplied.
@@ -471,9 +532,24 @@ export async function createOrg(
     const name           = (formData.get("name")             as string | null)?.trim() ?? ""
     const country        = (formData.get("country")          as string | null)?.trim() ?? ""
     const accountingType = (formData.get("accounting_type")  as string | null)?.trim() || "accrual"
+    const planType       = (formData.get("plan_type")        as string | null)?.trim() || "enterprise"
     const maxUsersRaw    = formData.get("max_users") as string | null
     const maxUsers       = maxUsersRaw ? parseInt(maxUsersRaw, 10) : null
     const isDemo         = formData.get("demo") === "true"
+
+    // Plan type defines billing cadence. Beta + enterprise have no Stripe billing.
+    const PLAN_BILLING: Record<string, "monthly" | "yearly" | "none"> = {
+      beta: "none",
+      individual: "monthly",
+      team: "yearly",
+      enterprise: "none",
+      expired: "none",
+      suspended: "none",
+    }
+    if (!(planType in PLAN_BILLING)) {
+      return { error: "Invalid plan type." }
+    }
+    const billingPeriod = PLAN_BILLING[planType]
 
     // jurisdiction_code only applies to custom accounting type
     const jurisdictionCode = accountingType === "custom"
@@ -505,7 +581,12 @@ export async function createOrg(
         jurisdiction_code: jurisdictionCode,
         demo:              isDemo,
         licence_key:       licenceKey,
-        licence_status:    "active",
+        plan_type:         planType,
+        billing_period:    billingPeriod,
+        // Beta orgs created manually here get a 14-day window from creation
+        trial_expires_at:  planType === "beta"
+          ? new Date(Date.now() + 14 * 86400 * 1000).toISOString()
+          : null,
         max_users:         maxUsers,
       })
       .select("id")

@@ -11,6 +11,7 @@ import CreateOrgForm from "./CreateOrgForm"
 import SubgroupPanel from "./SubgroupPanel"
 import OrgReviewerPanel from "./OrgReviewerPanel"
 import IpsasOrgsTable from "./IpsasOrgsTable"
+import PlanTypeSelect from "./PlanTypeSelect"
 import { getIpsasOrgsAndSubgroups, type Subgroup, type OrgUser } from "@/app/admin/actions"
 
 export const metadata: Metadata = {
@@ -45,7 +46,7 @@ export default async function OrgsPage({ searchParams }: PageProps) {
 
   const { data: orgs, error } = await serviceClient
     .from("organisations")
-    .select("id, name, country, jurisdiction_code, licence_key, licence_status, max_users, created_at, reviewer_1_id, reviewer_2_id")
+    .select("id, name, country, jurisdiction_code, licence_key, plan_type, max_users, created_at, reviewer_1_id, reviewer_2_id")
     .order("created_at", { ascending: false })
 
   // Per-org user counts
@@ -103,11 +104,14 @@ export default async function OrgsPage({ searchParams }: PageProps) {
     ipsasError = ipsasResult.error ?? null
   }
 
+  // plan_type → badge styling. Replaces legacy licence_status palette.
   const statusBadge: Record<string, string> = {
-    beta:      "bg-blue-100 text-blue-700",
-    active:    "bg-green-100 text-green-700",
-    expired:   "bg-slate-100 text-slate-500",
-    suspended: "bg-red-100 text-red-700",
+    beta:       "bg-blue-100 text-blue-700",
+    individual: "bg-purple-100 text-purple-700",
+    team:       "bg-green-100 text-green-700",
+    enterprise: "bg-amber-100 text-amber-700",
+    expired:    "bg-slate-100 text-slate-500",
+    suspended:  "bg-red-100 text-red-700",
   }
 
   const TabLink = ({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) => (
@@ -206,12 +210,18 @@ export default async function OrgsPage({ searchParams }: PageProps) {
                             </td>
                             <td className="px-4 py-3">
                               <span
-                                className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
-                                  statusBadge[org.licence_status] ?? "bg-slate-100 text-slate-600"
+                                className={`mb-1.5 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize ${
+                                  statusBadge[org.plan_type] ?? "bg-slate-100 text-slate-600"
                                 }`}
                               >
-                                {org.licence_status}
+                                {org.plan_type}
                               </span>
+                              {isSuperAdmin && (
+                                <PlanTypeSelect
+                                  orgId={org.id}
+                                  currentPlan={org.plan_type}
+                                />
+                              )}
                             </td>
                             <td className="px-4 py-3 text-slate-600">
                               {countMap[org.id] ?? 0}

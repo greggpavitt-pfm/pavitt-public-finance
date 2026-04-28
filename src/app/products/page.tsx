@@ -51,12 +51,17 @@ const PRODUCTS: Product[] = [
     pricing: [
       {
         tier: "Beta",
-        headline: "Free for pilot orgs",
-        detail: "3-month pilot with full feature access. Contact for licence key.",
+        headline: "Free 14-day pilot",
+        detail: "Full feature access for ministries evaluating the platform. Up to 50 seats.",
       },
       {
-        tier: "Standard",
-        headline: "Per-seat, per-year",
+        tier: "Individual",
+        headline: "$X / seat / month",
+        detail: "Single seat for individual students or accountants. Cancel anytime. Self-signup via Stripe.",
+      },
+      {
+        tier: "Team",
+        headline: "$Y / seat / year",
         detail: "Org licence with configurable seat limits and subgroup structure.",
       },
       {
@@ -176,7 +181,16 @@ export default function ProductsPage() {
                 <h3 className="mt-8 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-500">
                   Licensing
                 </h3>
-                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                <div
+                  className={[
+                    "mt-3 grid gap-3",
+                    // Responsive: 1 column on mobile, 2 on small tablets, then expand to N on desktop.
+                    // Tailwind doesn't allow dynamic class names so we branch on tier count.
+                    p.pricing.length === 4
+                      ? "sm:grid-cols-2 lg:grid-cols-4"
+                      : "sm:grid-cols-3",
+                  ].join(" ")}
+                >
                   {p.pricing.map((tier) => (
                     <div
                       key={tier.tier}
@@ -246,7 +260,7 @@ export default function ProductsPage() {
                 Pilot programme is open.
               </h3>
               <p className="max-w-[52ch] text-[14px] leading-[1.6] text-ink-700">
-                Eligible ministries get a 3-month pilot with full access to both
+                Eligible ministries get a 14-day pilot with full access to both
                 products. Send a brief and Gregg will respond within two working days.
               </p>
               <Link

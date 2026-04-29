@@ -4,11 +4,13 @@
 
 import { useActionState } from "react"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { captureLead, type LeadMagnetState } from "./actions"
 
 const initialState: LeadMagnetState = { status: "idle", message: "" }
 
 export default function LeadMagnetForm() {
+  const t = useTranslations("LeadMagnet.form")
   const [state, formAction, isPending] = useActionState(captureLead, initialState)
 
   if (state.status === "success" && state.downloadUrl) {
@@ -23,7 +25,7 @@ export default function LeadMagnetForm() {
           rel="noopener noreferrer"
           className="mt-3 inline-flex items-center gap-2 rounded-md bg-ppf-sky px-4 py-2 text-sm font-semibold text-white shadow-crisp-sm transition-colors hover:bg-ppf-sky-hover"
         >
-          Download the checklist
+          {t("downloadButton")}
           <span aria-hidden>↓</span>
         </Link>
       </div>
@@ -36,7 +38,7 @@ export default function LeadMagnetForm() {
 
       <div>
         <label htmlFor="lead-email" className="sr-only">
-          Email address
+          {t("emailSrLabel")}
         </label>
         <input
           id="lead-email"
@@ -44,7 +46,7 @@ export default function LeadMagnetForm() {
           name="email"
           required
           autoComplete="email"
-          placeholder="you@ministry.gov"
+          placeholder={t("emailPlaceholder")}
           className="w-full rounded-md border border-ink-200 bg-white px-3 py-2.5 text-sm text-ink-900 placeholder:text-ink-400 focus:border-ppf-sky focus:outline-none focus:ring-2 focus:ring-ppf-sky/30"
         />
       </div>
@@ -57,8 +59,7 @@ export default function LeadMagnetForm() {
           className="mt-0.5 h-4 w-4 shrink-0 rounded border-ink-300 text-ppf-sky focus:ring-ppf-sky/30"
         />
         <span>
-          Send me the checklist and (occasional) IPSAS practice notes. I can
-          unsubscribe any time.
+          {t("consent")}
         </span>
       </label>
 
@@ -73,7 +74,7 @@ export default function LeadMagnetForm() {
         disabled={isPending}
         className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-ppf-sky px-4 py-2.5 text-sm font-semibold text-white shadow-crisp-sm transition-colors hover:bg-ppf-sky-hover disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isPending ? "Sending…" : "Send me the checklist"}
+        {isPending ? t("sending") : t("submitButton")}
         {!isPending && <span aria-hidden>→</span>}
       </button>
     </form>

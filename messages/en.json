@@ -292,5 +292,84 @@
       "missingFields": "Please fill in all fields.",
       "unavailable": "Contact form is temporarily unavailable. Please try again later."
     }
+  },
+  "RequestDemo": {
+    "metaTitle": "Request a demo — Pavitt Public Finance",
+    "metaDescription": "Try the Pavitt Public Finance IPSAS training and practitioner advisor platform free for 14 days. Set up your trial in one business day.",
+    "headline": "Request a 14-day trial",
+    "lead": "Free trial of the IPSAS training modules and the practitioner advisor for your team. We'll set up your organisation, send sign-in details to you, and you can invite colleagues from inside the admin panel.",
+    "whatYouGet": "What you get",
+    "benefits": {
+      "fullAccess": "Full access to all training pathways (Cash-basis IPSAS, Accrual IPSAS, custom jurisdictions)",
+      "advisor": "Practitioner advisor — natural-language IPSAS Q&A with citation verification",
+      "seats": "Up to 50 user seats during the trial",
+      "admin": "Admin panel — approve users, assign subgroups, monitor usage"
+    },
+    "noCard": "No credit card required. Trial expires automatically after 14 days unless you choose to convert.",
+    "form": {
+      "orgNameLabel": "Organisation name *",
+      "countryLabel": "Country *",
+      "yourNameLabel": "Your name *",
+      "workEmailLabel": "Work email *",
+      "yourRoleLabel": "Your role",
+      "yourRolePlaceholder": "e.g. Director of Treasury",
+      "expectedUsersLabel": "Expected users (1–10000)",
+      "accountingFrameworkLabel": "Accounting framework",
+      "accountingSelectPlaceholder": "— Select —",
+      "accountingCashBasis": "Cash-basis IPSAS",
+      "accountingAccrual": "Accrual IPSAS",
+      "accountingCustom": "Custom jurisdiction",
+      "websiteHoneypotLabel": "Website (leave blank)",
+      "submitting": "Submitting…",
+      "submitButton": "Request trial",
+      "responseNote": "We respond within one business day (Australia / Pacific time)."
+    },
+    "success": {
+      "trialNote": "You'll receive a sign-in email once your trial organisation is set up."
+    }
+  },
+  "LeadMagnet": {
+    "metaTitle": "Free download — IPSAS Adoption Checklist for MoF",
+    "metaDescription": "A practical 12-point checklist covering the steps a Ministry of Finance must complete before going live with accrual IPSAS. Free download.",
+    "eyebrow": "Free download",
+    "headline": "IPSAS Adoption Checklist for Ministries of Finance",
+    "lead": "A 12-point checklist covering the steps you must complete before going live with accrual IPSAS. Drawn from engagements across the Pacific and Sub-Saharan Africa.",
+    "whatIsInChecklist": "What is in the checklist",
+    "checklist": {
+      "item1": "Lock the data model — chart of accounts mapped to IPSAS line items before any system change.",
+      "item2": "Inventory the standards in scope — first-time adoption uses IPSAS 33 plus the standards effective in your transition year.",
+      "item3": "Identify exemptions you will use under IPSAS 33 — and the deadlines for closing each one.",
+      "item4": "Capture the opening balance — measurement basis decided per asset class.",
+      "item5": "Decide your transition disclosures — reconciliation from previous basis to IPSAS.",
+      "item6": "Map your IFMIS to the new line items — including budget line mapping (IPSAS 24).",
+      "item7": "Train preparers and reviewers — minimum 40 hours per finance officer.",
+      "item8": "Document accounting policies — short-form policy manual approved by the CFO.",
+      "item9": "Walk through one full reporting cycle in parallel — old basis and IPSAS side-by-side.",
+      "item10": "Get audit pre-engagement — auditor sign-off on opening balances before going live.",
+      "item11": "Set the cut-over date — and the date by which all amendments must be closed.",
+      "item12": "Plan the post-implementation review — month 6 and month 12."
+    },
+    "form": {
+      "downloadEyebrow": "Get the download",
+      "downloadHeadline": "Send me the checklist",
+      "downloadLead": "Enter your email below. The download link appears immediately on this page. No follow-up unless you opt in.",
+      "emailSrLabel": "Email address",
+      "emailPlaceholder": "you@ministry.gov",
+      "consent": "Send me the checklist and (occasional) IPSAS practice notes. I can unsubscribe any time.",
+      "sending": "Sending…",
+      "submitButton": "Send me the checklist",
+      "downloadButton": "Download the checklist",
+      "privacyNote": "We use your email to send the download and, if you opt in, occasional practice notes. You can unsubscribe at any time. We never share or sell email addresses."
+    }
+  },
+  "Insights": {
+    "metaTitle": "Insights — IPSAS practice notes",
+    "metaDescription": "Short practical notes on IPSAS standards, cash-basis adoption, PFM reform, and IFMIS design — written for ministry finance staff.",
+    "eyebrow": "Insights",
+    "headline": "Practice notes on IPSAS, PFM, and IFMIS design.",
+    "lead": "Short, concrete guidance for ministry finance staff — written from field engagements across the Pacific, Africa, and South Asia.",
+    "minRead": "min read",
+    "readPost": "Read the post",
+    "noPosts": "No posts yet."
   }
 }

@@ -292,5 +292,84 @@
       "missingFields": "Veuillez remplir tous les champs.",
       "unavailable": "Le formulaire de contact est temporairement indisponible. Veuillez réessayer ultérieurement."
     }
+  },
+  "RequestDemo": {
+    "metaTitle": "Demander une démonstration — Pavitt Public Finance",
+    "metaDescription": "Essayez gratuitement pendant 14 jours la plateforme de formation IPSAS et de conseil pour praticiens de Pavitt Public Finance. Configurez votre essai en un jour ouvrable.",
+    "headline": "Demandez un essai de 14 jours",
+    "lead": "Essai gratuit des modules de formation IPSAS et du conseiller pour praticiens pour votre équipe. Nous configurerons votre organisation, vous enverrons les informations de connexion, et vous pourrez inviter des collègues depuis le panneau d'administration.",
+    "whatYouGet": "Ce que vous obtenez",
+    "benefits": {
+      "fullAccess": "Accès complet à tous les parcours de formation (IPSAS de trésorerie, IPSAS d'engagement, juridictions personnalisées)",
+      "advisor": "Conseiller pour praticiens — questions-réponses IPSAS en langage naturel avec vérification des citations",
+      "seats": "Jusqu'à 50 utilisateurs pendant l'essai",
+      "admin": "Panneau d'administration — approuvez les utilisateurs, attribuez des sous-groupes, surveillez l'utilisation"
+    },
+    "noCard": "Aucune carte de crédit requise. L'essai expire automatiquement après 14 jours sauf si vous choisissez de le convertir.",
+    "form": {
+      "orgNameLabel": "Nom de l'organisation *",
+      "countryLabel": "Pays *",
+      "yourNameLabel": "Votre nom *",
+      "workEmailLabel": "Email professionnel *",
+      "yourRoleLabel": "Votre rôle",
+      "yourRolePlaceholder": "par exemple, Directeur du Trésor",
+      "expectedUsersLabel": "Utilisateurs attendus (1–10000)",
+      "accountingFrameworkLabel": "Cadre comptable",
+      "accountingSelectPlaceholder": "— Sélectionner —",
+      "accountingCashBasis": "IPSAS de trésorerie",
+      "accountingAccrual": "IPSAS d’engagement",
+      "accountingCustom": "Juridiction personnalisée",
+      "websiteHoneypotLabel": "Site web (laisser vide)",
+      "submitting": "Envoi en cours…",
+      "submitButton": "Demander un essai",
+      "responseNote": "Nous répondons sous un jour ouvrable (heure Australie / Pacifique)."
+    },
+    "success": {
+      "trialNote": "Vous recevrez un e-mail de connexion une fois que votre organisation d'essai sera configurée."
+    }
+  },
+  "LeadMagnet": {
+    "metaTitle": "Téléchargement gratuit — Liste de contrôle pour l’adoption des IPSAS par le ministère des Finances",
+    "metaDescription": "Une liste de contrôle pratique en 12 points couvrant les étapes qu’un ministère des Finances doit compléter avant de passer aux IPSAS d’engagement. Téléchargement gratuit.",
+    "eyebrow": "Téléchargement gratuit",
+    "headline": "Liste de contrôle pour l'adoption des IPSAS par les ministères des Finances",
+    "lead": "Une liste de contrôle en 12 points couvrant les étapes à compléter avant de passer aux IPSAS en comptabilité d'exercice. Basée sur des missions dans le Pacifique et en Afrique subsaharienne.",
+    "whatIsInChecklist": "Contenu de la liste de contrôle",
+    "checklist": {
+      "item1": "Verrouillez le modèle de données — plan comptable aligné sur les postes des IPSAS avant tout changement de système.",
+      "item2": "Inventoriez les normes concernées — l'adoption initiale utilise les IPSAS 33 ainsi que les normes en vigueur l'année de transition.",
+      "item3": "Identifiez les exemptions que vous utiliserez selon les IPSAS 33 — et les échéances pour lever chacune d'elles.",
+      "item4": "Capturez le bilan d'ouverture — base de mesure décidée par catégorie d'actifs.",
+      "item5": "Déterminez vos informations à divulguer lors de la transition — réconciliation entre l'ancien référentiel et les IPSAS.",
+      "item6": "Mappez votre IFMIS aux nouveaux postes — y compris le mapping des lignes budgétaires (IPSAS 24).",
+      "item7": "Formez les préparateurs et les réviseurs — minimum 40 heures par agent financier.",
+      "item8": "Documentez les politiques comptables — manuel de politiques succinct approuvé par le directeur financier.",
+      "item9": "Réalisez un cycle complet de reporting en parallèle — ancien référentiel et IPSAS côte à côte.",
+      "item10": "Obtenez un pré-engagement de l'audit — validation des soldes d'ouverture par l'auditeur avant la mise en œuvre.",
+      "item11": "Fixez la date de basculement — et la date limite pour clôturer toutes les modifications.",
+      "item12": "Planifiez la revue post-implémentation — mois 6 et mois 12."
+    },
+    "form": {
+      "downloadEyebrow": "Téléchargez le document",
+      "downloadHeadline": "Envoyez-moi la liste de contrôle",
+      "downloadLead": "Entrez votre email ci-dessous. Le lien de téléchargement apparaît immédiatement sur cette page. Aucun suivi sauf si vous y consentez.",
+      "emailSrLabel": "Adresse email",
+      "emailPlaceholder": "vous@ministère.gov",
+      "consent": "Envoyez-moi la liste de contrôle et des notes de pratique IPSAS (occasionnelles). Je peux me désabonner à tout moment.",
+      "sending": "Envoi…",
+      "submitButton": "Envoyez-moi la liste de contrôle",
+      "downloadButton": "Téléchargez la liste de contrôle",
+      "privacyNote": "Nous utilisons votre email pour envoyer le téléchargement et, si vous y consentez, des notes de pratique occasionnelles. Vous pouvez vous désabonner à tout moment. Nous ne partageons ni ne vendons jamais les adresses email."
+    }
+  },
+  "Insights": {
+    "metaTitle": "Perspectives — Notes de pratique IPSAS",
+    "metaDescription": "Notes pratiques courtes sur les normes IPSAS, l'adoption de la base de trésorerie, la réforme de la GFP et la conception des IFMIS — rédigées pour le personnel financier des ministères.",
+    "eyebrow": "Perspectives",
+    "headline": "Notes de pratique sur IPSAS, GFP et la conception des IFMIS.",
+    "lead": "Conseils courts et concrets pour le personnel financier des ministères — rédigés à partir d'interventions sur le terrain dans le Pacifique, en Afrique et en Asie du Sud.",
+    "minRead": "min de lecture",
+    "readPost": "Lire l’article",
+    "noPosts": "Pas encore d’articles."
   }
 }

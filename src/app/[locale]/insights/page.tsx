@@ -3,18 +3,42 @@
 
 import type { Metadata } from "next"
 import Link from "next/link"
+import { getTranslations } from "next-intl/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import { listInsights } from "@/lib/insights"
 
-export const metadata: Metadata = {
-  title: "Insights — IPSAS practice notes",
-  description:
-    "Short practical notes on IPSAS standards, cash-basis adoption, PFM reform, and IFMIS design — written for ministry finance staff.",
-  alternates: { canonical: "/insights" },
+// Date locale codes for Intl.DateTimeFormat. The post.publishedAt is an ISO
+// date in en-GB ordering ("4 May 2026"); other locales reformat naturally.
+const DATE_LOCALE: Record<string, string> = {
+  en: "en-GB",
+  fr: "fr-FR",
+  es: "es-ES",
+  pt: "pt-PT",
 }
 
-export default function InsightsIndexPage() {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Insights" })
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: { canonical: "/insights" },
+  }
+}
+
+export default async function InsightsIndexPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Insights" })
+  const dateLocale = DATE_LOCALE[locale] ?? "en-GB"
   const posts = listInsights()
 
   return (
@@ -23,13 +47,12 @@ export default function InsightsIndexPage() {
       <main className="bg-white">
         <section className="border-b border-ink-200 bg-ppf-navy px-6 pt-[140px] pb-12 text-white md:px-12 md:pt-[160px] md:pb-16">
           <div className="mx-auto max-w-[1240px]">
-            <p className="eyebrow text-white/60">Insights</p>
+            <p className="eyebrow text-white/60">{t("eyebrow")}</p>
             <h1 className="mt-3 max-w-[24ch] text-[clamp(32px,4.2vw,52px)] font-semibold leading-[1.05] tracking-[-0.03em]">
-              Practice notes on IPSAS, PFM, and IFMIS design.
+              {t("headline")}
             </h1>
             <p className="mt-5 max-w-[58ch] text-[17px] leading-[1.6] text-white/80">
-              Short, concrete guidance for ministry finance staff — written from
-              field engagements across the Pacific, Africa, and South Asia.
+              {t("lead")}
             </p>
           </div>
         </section>
@@ -41,14 +64,14 @@ export default function InsightsIndexPage() {
                 <Link href={`/insights/${post.slug}`} className="group block">
                   <div className="flex flex-wrap items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-500">
                     <time dateTime={post.publishedAt}>
-                      {new Date(post.publishedAt).toLocaleDateString("en-GB", {
+                      {new Date(post.publishedAt).toLocaleDateString(dateLocale, {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
                       })}
                     </time>
                     <span>·</span>
-                    <span>{post.readingMinutes} min read</span>
+                    <span>{post.readingMinutes} {t("minRead")}</span>
                     {post.tags.length > 0 && (
                       <>
                         <span>·</span>
@@ -63,7 +86,7 @@ export default function InsightsIndexPage() {
                     {post.summary}
                   </p>
                   <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-ppf-sky">
-                    Read the post
+                    {t("readPost")}
                     <span aria-hidden className="transition-transform duration-150 group-hover:translate-x-0.5">→</span>
                   </span>
                 </Link>
@@ -73,7 +96,7 @@ export default function InsightsIndexPage() {
 
           {posts.length === 0 && (
             <div className="rounded-lg border border-dashed border-ink-300 bg-ink-50 p-10 text-center text-ink-500">
-              No posts yet.
+              {t("noPosts")}
             </div>
           )}
         </section>

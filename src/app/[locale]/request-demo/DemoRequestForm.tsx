@@ -6,9 +6,11 @@
 // where the honeypot is non-empty.
 
 import { useState, useTransition } from "react"
+import { useTranslations } from "next-intl"
 import { submitDemoRequest, type DemoRequestInput, type DemoRequestResult } from "./actions"
 
 export default function DemoRequestForm() {
+  const t = useTranslations("RequestDemo")
   const [pending, startTransition] = useTransition()
   const [result, setResult] = useState<DemoRequestResult | null>(null)
   const [form, setForm] = useState<DemoRequestInput>({
@@ -45,7 +47,7 @@ export default function DemoRequestForm() {
       <div className="rounded-lg border border-green-200 bg-green-50 p-6 text-green-900">
         <p className="text-lg font-semibold">{result.message}</p>
         <p className="mt-2 text-sm">
-          You&apos;ll receive a sign-in email once your trial organisation is set up.
+          {t("success.trialNote")}
         </p>
       </div>
     )
@@ -59,7 +61,7 @@ export default function DemoRequestForm() {
       {/* Honeypot — keep visually hidden but not display:none (some bots skip those) */}
       <div aria-hidden="true" style={{ position: "absolute", left: "-10000px", top: "auto", width: "1px", height: "1px", overflow: "hidden" }}>
         <label>
-          Website (leave blank)
+          {t("form.websiteHoneypotLabel")}
           <input
             type="text"
             tabIndex={-1}
@@ -71,7 +73,7 @@ export default function DemoRequestForm() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Field label="Organisation name *">
+        <Field label={t("form.orgNameLabel")}>
           <input
             type="text"
             required
@@ -80,7 +82,7 @@ export default function DemoRequestForm() {
             className={inputCls}
           />
         </Field>
-        <Field label="Country *">
+        <Field label={t("form.countryLabel")}>
           <input
             type="text"
             required
@@ -89,7 +91,7 @@ export default function DemoRequestForm() {
             className={inputCls}
           />
         </Field>
-        <Field label="Your name *">
+        <Field label={t("form.yourNameLabel")}>
           <input
             type="text"
             required
@@ -98,7 +100,7 @@ export default function DemoRequestForm() {
             className={inputCls}
           />
         </Field>
-        <Field label="Work email *">
+        <Field label={t("form.workEmailLabel")}>
           <input
             type="email"
             required
@@ -107,16 +109,16 @@ export default function DemoRequestForm() {
             className={inputCls}
           />
         </Field>
-        <Field label="Your role">
+        <Field label={t("form.yourRoleLabel")}>
           <input
             type="text"
             value={form.role ?? ""}
             onChange={(e) => update("role", e.target.value)}
-            placeholder="e.g. Director of Treasury"
+            placeholder={t("form.yourRolePlaceholder")}
             className={inputCls}
           />
         </Field>
-        <Field label="Expected users (1–10000)">
+        <Field label={t("form.expectedUsersLabel")}>
           <input
             type="number"
             min={1}
@@ -126,16 +128,16 @@ export default function DemoRequestForm() {
             className={inputCls}
           />
         </Field>
-        <Field label="Accounting framework">
+        <Field label={t("form.accountingFrameworkLabel")}>
           <select
             value={form.accounting_type ?? ""}
             onChange={(e) => update("accounting_type", (e.target.value || undefined) as DemoRequestInput["accounting_type"])}
             className={inputCls}
           >
-            <option value="">— Select —</option>
-            <option value="cash-basis">Cash-basis IPSAS</option>
-            <option value="accrual">Accrual IPSAS</option>
-            <option value="custom">Custom jurisdiction</option>
+            <option value="">{t("form.accountingSelectPlaceholder")}</option>
+            <option value="cash-basis">{t("form.accountingCashBasis")}</option>
+            <option value="accrual">{t("form.accountingAccrual")}</option>
+            <option value="custom">{t("form.accountingCustom")}</option>
           </select>
         </Field>
       </div>
@@ -145,7 +147,7 @@ export default function DemoRequestForm() {
         disabled={pending}
         className="mt-6 rounded-md bg-ppf-sky px-5 py-2.5 text-sm font-semibold text-white hover:bg-ppf-sky-hover disabled:opacity-60"
       >
-        {pending ? "Submitting…" : "Request trial"}
+        {pending ? t("form.submitting") : t("form.submitButton")}
       </button>
 
       {result && !result.ok && (
@@ -153,7 +155,7 @@ export default function DemoRequestForm() {
       )}
 
       <p className="mt-4 text-xs text-slate-500">
-        We respond within one business day (Australia / Pacific time).
+        {t("form.responseNote")}
       </p>
     </form>
   )

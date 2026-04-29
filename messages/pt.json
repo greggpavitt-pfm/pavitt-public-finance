@@ -292,5 +292,84 @@
       "missingFields": "Por favor, preencha todos os campos.",
       "unavailable": "O formulário de contato está temporariamente indisponível. Por favor, tente novamente mais tarde."
     }
+  },
+  "RequestDemo": {
+    "metaTitle": "Solicite uma demonstração — Pavitt Public Finance",
+    "metaDescription": "Experimente gratuitamente por 14 dias a plataforma de treinamento em IPSAS e consultoria para profissionais da Pavitt Public Finance. Configure seu teste em um dia útil.",
+    "headline": "Solicite um teste de 14 dias",
+    "lead": "Teste gratuito dos módulos de treinamento em IPSAS e da consultoria para profissionais para sua equipe. Configuraremos sua organização, enviaremos os detalhes de acesso para você e você poderá convidar colegas diretamente no painel de administração.",
+    "whatYouGet": "O que você recebe",
+    "benefits": {
+      "fullAccess": "Acesso completo a todos os caminhos de treinamento (IPSAS base de caixa, IPSAS de competência, jurisdições personalizadas)",
+      "advisor": "Consultoria para profissionais — perguntas e respostas sobre IPSAS em linguagem natural com verificação de citações",
+      "seats": "Até 50 usuários durante o período de teste",
+      "admin": "Painel de administração — aprovar usuários, atribuir subgrupos, monitorar uso"
+    },
+    "noCard": "Nenhum cartão de crédito necessário. O teste expira automaticamente após 14 dias, a menos que você opte por converter.",
+    "form": {
+      "orgNameLabel": "Nome da organização *",
+      "countryLabel": "País *",
+      "yourNameLabel": "Seu nome *",
+      "workEmailLabel": "E-mail profissional *",
+      "yourRoleLabel": "Seu cargo",
+      "yourRolePlaceholder": "ex.: Diretor de Tesouro",
+      "expectedUsersLabel": "Usuários esperados (1–10000)",
+      "accountingFrameworkLabel": "Estrutura contábil",
+      "accountingSelectPlaceholder": "— Selecione —",
+      "accountingCashBasis": "IPSAS de caixa",
+      "accountingAccrual": "IPSAS de competência",
+      "accountingCustom": "Jurisdição personalizada",
+      "websiteHoneypotLabel": "Website (deixe em branco)",
+      "submitting": "Enviando…",
+      "submitButton": "Solicitar teste",
+      "responseNote": "Respondemos em até um dia útil (horário da Austrália/Pacífico)."
+    },
+    "success": {
+      "trialNote": "Você receberá um e-mail de acesso assim que sua organização de teste estiver configurada."
+    }
+  },
+  "LeadMagnet": {
+    "metaTitle": "Download gratuito — Checklist de Adoção do IPSAS para o Ministério das Finanças",
+    "metaDescription": "Um checklist prático de 12 pontos cobrindo os passos que um Ministério das Finanças deve completar antes de implementar o IPSAS de competência. Download gratuito.",
+    "eyebrow": "Download gratuito",
+    "headline": "Lista de Verificação para Adoção das IPSAS para Ministérios das Finanças",
+    "lead": "Uma lista de verificação com 12 pontos cobrindo os passos que você deve completar antes de implementar as IPSAS de regime de competência. Baseada em experiências no Pacífico e na África Subsaariana.",
+    "whatIsInChecklist": "O que está na lista de verificação",
+    "checklist": {
+      "item1": "Defina o modelo de dados — plano de contas mapeado para os itens das linhas das IPSAS antes de qualquer mudança no sistema.",
+      "item2": "Inventarie os padrões em escopo — a adoção inicial utiliza as IPSAS 33 mais os padrões vigentes no ano de transição.",
+      "item3": "Identifique as isenções que você usará sob as IPSAS 33 — e os prazos para encerrar cada uma.",
+      "item4": "Capture o saldo inicial — base de mensuração decidida por classe de ativo.",
+      "item5": "Decida suas divulgações de transição — reconciliação da base anterior para as IPSAS.",
+      "item6": "Mapeie seu IFMIS para os novos itens de linha — incluindo o mapeamento das linhas orçamentárias (IPSAS 24).",
+      "item7": "Treine os preparadores e revisores — mínimo de 40 horas por oficial financeiro.",
+      "item8": "Documente as políticas contábeis — manual de políticas em formato resumido aprovado pelo CFO.",
+      "item9": "Realize um ciclo completo de relatórios em paralelo — base antiga e IPSAS lado a lado.",
+      "item10": "Obtenha pré-engajamento de auditoria — aprovação do auditor sobre os saldos iniciais antes da implementação.",
+      "item11": "Defina a data de transição — e a data em que todas as alterações devem estar concluídas.",
+      "item12": "Planeje a revisão pós-implementação — mês 6 e mês 12."
+    },
+    "form": {
+      "downloadEyebrow": "Obtenha o download",
+      "downloadHeadline": "Envie-me a lista de verificação",
+      "downloadLead": "Insira seu e-mail abaixo. O link para download aparecerá imediatamente nesta página. Nenhum acompanhamento será feito, a menos que você opte por isso.",
+      "emailSrLabel": "Endereço de e-mail",
+      "emailPlaceholder": "voce@ministerio.gov",
+      "consent": "Envie-me a lista de verificação e notas práticas (ocasionalmente) sobre IPSAS. Posso cancelar a inscrição a qualquer momento.",
+      "sending": "Enviando…",
+      "submitButton": "Envie-me a lista de verificação",
+      "downloadButton": "Baixar a lista de verificação",
+      "privacyNote": "Usamos seu e-mail para enviar o download e, caso você opte, notas práticas ocasionais. Você pode cancelar a inscrição a qualquer momento. Nunca compartilhamos ou vendemos endereços de e-mail."
+    }
+  },
+  "Insights": {
+    "metaTitle": "Insights — Notas práticas sobre IPSAS",
+    "metaDescription": "Notas práticas curtas sobre os padrões IPSAS, adoção do regime de caixa, reforma da PFM e design do IFMIS — escritas para funcionários financeiros de ministérios.",
+    "eyebrow": "Insights",
+    "headline": "Notas práticas sobre IPSAS, PFM e design de IFMIS.",
+    "lead": "Orientações curtas e concretas para funcionários financeiros de ministérios — baseadas em experiências de campo no Pacífico, África e Sul da Ásia.",
+    "minRead": "min de leitura",
+    "readPost": "Leia o artigo",
+    "noPosts": "Ainda não há artigos."
   }
 }

@@ -292,5 +292,84 @@
       "missingFields": "Por favor, complete todos los campos.",
       "unavailable": "El formulario de contacto no está disponible temporalmente. Por favor, inténtelo de nuevo más tarde."
     }
+  },
+  "RequestDemo": {
+    "metaTitle": "Solicite una demostración — Pavitt Public Finance",
+    "metaDescription": "Pruebe la plataforma de formación en IPSAS y asesoramiento para profesionales de Pavitt Public Finance gratis durante 14 días. Configure su prueba en un día hábil.",
+    "headline": "Solicite una prueba de 14 días",
+    "lead": "Prueba gratuita de los módulos de formación en IPSAS y del asesor para profesionales para su equipo. Configuraremos su organización, le enviaremos los datos de inicio de sesión y podrá invitar a colegas desde el panel de administración.",
+    "whatYouGet": "Lo que obtiene",
+    "benefits": {
+      "fullAccess": "Acceso completo a todas las rutas de formación (IPSAS en base de efectivo, IPSAS en base de acumulación, jurisdicciones personalizadas)",
+      "advisor": "Asesor para profesionales — preguntas y respuestas sobre IPSAS en lenguaje natural con verificación de citas",
+      "seats": "Hasta 50 usuarios durante la prueba",
+      "admin": "Panel de administración — apruebe usuarios, asigne subgrupos, supervise el uso"
+    },
+    "noCard": "No se requiere tarjeta de crédito. La prueba expira automáticamente después de 14 días, a menos que decida convertirla.",
+    "form": {
+      "orgNameLabel": "Nombre de la organización *",
+      "countryLabel": "País *",
+      "yourNameLabel": "Su nombre *",
+      "workEmailLabel": "Correo electrónico laboral *",
+      "yourRoleLabel": "Su cargo",
+      "yourRolePlaceholder": "p. ej., Director de Tesorería",
+      "expectedUsersLabel": "Usuarios esperados (1–10000)",
+      "accountingFrameworkLabel": "Marco contable",
+      "accountingSelectPlaceholder": "— Seleccionar —",
+      "accountingCashBasis": "IPSAS en base de efectivo",
+      "accountingAccrual": "IPSAS en base de acumulación",
+      "accountingCustom": "Jurisdicción personalizada",
+      "websiteHoneypotLabel": "Sitio web (dejar en blanco)",
+      "submitting": "Enviando…",
+      "submitButton": "Solicitar prueba",
+      "responseNote": "Respondemos dentro de un día hábil (hora de Australia / Pacífico)."
+    },
+    "success": {
+      "trialNote": "Recibirá un correo electrónico de inicio de sesión una vez que su organización de prueba esté configurada."
+    }
+  },
+  "LeadMagnet": {
+    "metaTitle": "Descarga gratuita — Lista de verificación para la adopción de IPSAS para el Ministerio de Finanzas",
+    "metaDescription": "Una lista práctica de 12 puntos que cubre los pasos que un Ministerio de Finanzas debe completar antes de implementar IPSAS en base de acumulación. Descarga gratuita.",
+    "eyebrow": "Descarga gratuita",
+    "headline": "Lista de verificación para la adopción de IPSAS para Ministerios de Finanzas",
+    "lead": "Una lista de verificación de 12 puntos que cubre los pasos que debe completar antes de implementar IPSAS por devengo. Basada en experiencias en el Pacífico y África Subsahariana.",
+    "whatIsInChecklist": "Qué incluye la lista de verificación",
+    "checklist": {
+      "item1": "Defina el modelo de datos: el plan de cuentas debe estar mapeado a los rubros de IPSAS antes de cualquier cambio en el sistema.",
+      "item2": "Haga un inventario de las normas aplicables: la adopción inicial utiliza IPSAS 33 más las normas vigentes en su año de transición.",
+      "item3": "Identifique las exenciones que utilizará bajo IPSAS 33 y los plazos para cerrar cada una.",
+      "item4": "Capture el balance de apertura: base de medición decidida por clase de activo.",
+      "item5": "Decida sus revelaciones de transición: conciliación desde la base anterior a IPSAS.",
+      "item6": "Mapee su IFMIS a los nuevos rubros: incluyendo el mapeo de líneas presupuestarias (IPSAS 24).",
+      "item7": "Capacite a los preparadores y revisores: mínimo 40 horas por oficial financiero.",
+      "item8": "Documente las políticas contables: manual de políticas en formato breve aprobado por el CFO.",
+      "item9": "Realice un ciclo completo de reporte en paralelo: base anterior e IPSAS lado a lado.",
+      "item10": "Obtenga un precompromiso de auditoría: aprobación del auditor sobre los balances de apertura antes de la implementación.",
+      "item11": "Establezca la fecha de cambio: y la fecha en que deben cerrarse todas las enmiendas.",
+      "item12": "Planifique la revisión posterior a la implementación: mes 6 y mes 12."
+    },
+    "form": {
+      "downloadEyebrow": "Obtén la descarga",
+      "downloadHeadline": "Envíame la lista de verificación",
+      "downloadLead": "Ingrese su correo electrónico a continuación. El enlace de descarga aparecerá inmediatamente en esta página. No habrá seguimiento a menos que usted lo autorice.",
+      "emailSrLabel": "Dirección de correo electrónico",
+      "emailPlaceholder": "usted@ministerio.gob",
+      "consent": "Envíenme la lista de verificación y notas prácticas (ocasionales) sobre IPSAS. Puedo darme de baja en cualquier momento.",
+      "sending": "Enviando…",
+      "submitButton": "Envíame la lista de verificación",
+      "downloadButton": "Descargar la lista de verificación",
+      "privacyNote": "Usamos su correo electrónico para enviar la descarga y, si usted lo autoriza, notas prácticas ocasionales. Puede darse de baja en cualquier momento. Nunca compartimos ni vendemos direcciones de correo electrónico."
+    }
+  },
+  "Insights": {
+    "metaTitle": "Perspectivas — Notas prácticas sobre IPSAS",
+    "metaDescription": "Notas prácticas breves sobre las normas IPSAS, adopción en base de efectivo, reforma de PFM y diseño de IFMIS — escritas para el personal financiero de ministerios.",
+    "eyebrow": "Perspectivas",
+    "headline": "Notas prácticas sobre IPSAS, PFM y diseño de IFMIS.",
+    "lead": "Orientación breve y concreta para el personal financiero de ministerios — escrita a partir de experiencias en el terreno en el Pacífico, África y el sur de Asia.",
+    "minRead": "min de lectura",
+    "readPost": "Leer el artículo",
+    "noPosts": "Aún no hay artículos."
   }
 }

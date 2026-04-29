@@ -18,6 +18,35 @@ export const metadata: Metadata = {
   alternates: { canonical: "/drills" },
 }
 
+// Compact scope grid below the 3 narrative pain points.
+// Source: projects/ipsas-advisor/content/Drill-Down/IPSAS_Drill_Topics.md (DT-01 … DT-15).
+// Tiles are static (no link). Purpose: scope reassurance + SEO surface for every topic
+// + standard. If we later build a /drills/topics deep-reference page, link the tiles.
+type DrillTopic = {
+  code: string
+  name: string
+  tagline: string
+  standards: string[] // displayed as "IPSAS 17 · 33 · 46" — drop "IPSAS" prefix on 2nd+
+}
+
+const DRILL_TOPICS: DrillTopic[] = [
+  { code: "DT-01", name: "Property, plant & equipment", tagline: "The biggest balance sheet item — and the biggest source of audit qualifications.", standards: ["IPSAS 17", "33", "46"] },
+  { code: "DT-02", name: "Non-exchange revenue", tagline: "Where IPSAS most differs from commercial accounting.", standards: ["IPSAS 23", "47"] },
+  { code: "DT-03", name: "Employee benefits", tagline: "Pension and leave obligations done properly, with actuarial method.", standards: ["IPSAS 39", "19"] },
+  { code: "DT-04", name: "Provisions & contingencies", tagline: "Legal claims, guarantees, and PPP obligations — usually under-disclosed.", standards: ["IPSAS 19", "28"] },
+  { code: "DT-05", name: "Consolidation", tagline: "Defining the reporting entity, and the mechanics of consolidating it.", standards: ["IPSAS 35", "36", "37"] },
+  { code: "DT-06", name: "Budget vs actuals", tagline: "Original budget, final budget, actual — with the variance narrative auditors want.", standards: ["IPSAS 24", "1"] },
+  { code: "DT-07", name: "Financial instruments", tagline: "Concessional loans, ECL staging, and government loan portfolios.", standards: ["IPSAS 41", "28", "30"] },
+  { code: "DT-08", name: "Asset impairment", tagline: "Recoverable service amount for schools, hospitals, and roads.", standards: ["IPSAS 21", "26"] },
+  { code: "DT-09", name: "Service concessions (PPPs)", tagline: "Putting PPP assets on balance sheet, where they belong.", standards: ["IPSAS 32", "17"] },
+  { code: "DT-10", name: "Inventories", tagline: "Distribution stock, strategic reserves, and donated goods.", standards: ["IPSAS 12"] },
+  { code: "DT-11", name: "Leases", tagline: "Right-of-use assets and lease liabilities under IPSAS 43.", standards: ["IPSAS 43", "17"] },
+  { code: "DT-12", name: "Financial statement presentation", tagline: "The four primary statements, accounting policies, and prior-period errors.", standards: ["IPSAS 1", "2", "3"] },
+  { code: "DT-13", name: "Opening balances & transition", tagline: "First-time recognition, deemed cost, and comparative restatement.", standards: ["IPSAS 33", "3", "46"] },
+  { code: "DT-14", name: "Revenue, grants & donor funds", tagline: "Multi-year grants, in-kind contributions, and clawback risk.", standards: ["IPSAS 23", "47", "35"] },
+  { code: "DT-15", name: "Reporting & audit readiness", tagline: "Whole-of-government consolidation, GFS mapping, and audit working papers.", standards: ["IPSAS 35", "2", "24"] },
+]
+
 const PAIN_POINTS = [
   {
     title: "Opening balances and transition",
@@ -163,6 +192,44 @@ export default function DrillsPage() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ---------- SECTION 3b — Full topic coverage (compact tile grid) ---------- */}
+        {/* Static scope-reassurance grid. All 15 drill topics + lead IPSAS standards on the
+            page so visitors searching for "IPSAS 17 PPE" or "IPSAS 43 leases" land here. */}
+        <section className="border-t border-ink-200 bg-white px-6 py-20 md:px-12 md:py-24">
+          <div className="mx-auto max-w-[1240px]">
+            <p className="eyebrow">Full topic coverage</p>
+            <h2 className="mt-3 max-w-[28ch] text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-ink-900">
+              15 topics. Every standard your team will actually meet.
+            </h2>
+            <p className="mt-5 max-w-[60ch] text-[15px] leading-[1.65] text-ink-700">
+              The pain points above are where most teams start. Here&rsquo;s the full topic coverage — each tagged to the standards that govern it.
+            </p>
+
+            <ul className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {DRILL_TOPICS.map((t) => (
+                <li
+                  key={t.code}
+                  className="rounded-md border border-ink-200 bg-white p-4 shadow-crisp-sm"
+                >
+                  <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-500">
+                    {t.code}
+                  </p>
+                  <h3 className="mt-1.5 text-[14px] font-semibold leading-[1.3] tracking-[-0.01em] text-ink-900">
+                    {t.name}
+                  </h3>
+                  <p className="mt-1.5 text-[12.5px] leading-[1.5] text-ink-700">
+                    {t.tagline}
+                  </p>
+                  <p className="mt-3 text-[11px] font-medium text-ppf-blue">
+                    {/* Render full IPSAS prefix on first standard, then bare numbers separated by middle-dot. */}
+                    {t.standards.map((s, i) => (i === 0 ? s : ` · ${s}`)).join("")}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
 

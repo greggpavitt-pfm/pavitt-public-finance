@@ -5,16 +5,21 @@
 "use client"
 import Link from "next/link"
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { useReveal } from "@/lib/useReveal"
 
-const TABS = [
-  { id: "advisor",   label: "IPSAS Desk" },
-  { id: "training",  label: "IPSAS Drills" },
-  { id: "tools",     label: "Reform Tools" },
-] as const
-type TabId = typeof TABS[number]["id"]
+const TABS = ["advisor", "training", "tools"] as const
+type TabId = (typeof TABS)[number]
 
-const BODIES: Record<TabId, { lines: Array<{ num: number; parts: Array<{ t: string; c?: "k" | "s" | "c" }> }> }> = {
+// Pseudo-code body for each tab — kept in English on purpose. These are
+// stylised "code-themed" mockups (terminal output, inline keywords); they
+// read more like a screenshot than prose, so translating them would lose
+// the visual effect. The eyebrow/title/body of each side card and the tab
+// labels themselves DO translate (those are user-facing copy).
+const BODIES: Record<
+  TabId,
+  { lines: Array<{ num: number; parts: Array<{ t: string; c?: "k" | "s" | "c" }> }> }
+> = {
   advisor: {
     lines: [
       { num: 1, parts: [{ t: "# Query", c: "c" }] },
@@ -46,6 +51,7 @@ const BODIES: Record<TabId, { lines: Array<{ num: number; parts: Array<{ t: stri
 }
 
 export default function ToolkitSection() {
+  const t = useTranslations("Toolkit")
   const reveal = useReveal<HTMLElement>()
   const [tab, setTab] = useState<TabId>("advisor")
   const body = BODIES[tab]
@@ -72,13 +78,12 @@ export default function ToolkitSection() {
 
       <div className="relative z-[1] mx-auto max-w-[1240px]">
         <div className="on-dark mb-10 max-w-[640px]">
-          <p className="eyebrow">Practitioner Toolkit</p>
+          <p className="eyebrow">{t("eyebrow")}</p>
           <h2 className="mt-3 text-[clamp(28px,3.2vw,44px)] font-semibold leading-[1.1] tracking-[-0.028em] text-white">
-            The same systems Gregg uses — available to your team.
+            {t("headline")}
           </h2>
           <p className="mt-4 text-[16px] leading-[1.6] text-white/70">
-            Purpose-built software for IPSAS queries, staff training, and reform
-            diagnostics. Available to Ministry of Finance practitioners on request.
+            {t("lead")}
           </p>
         </div>
 
@@ -86,19 +91,19 @@ export default function ToolkitSection() {
           {/* Main — tabbed terminal */}
           <div className="overflow-hidden rounded-lg border border-white/10 bg-white/[0.04]">
             <div className="flex border-b border-white/10">
-              {TABS.map((t) => (
+              {TABS.map((id) => (
                 <button
-                  key={t.id}
+                  key={id}
                   type="button"
-                  onClick={() => setTab(t.id)}
+                  onClick={() => setTab(id)}
                   className={[
                     "px-4 py-3.5 text-[13px] font-medium transition-colors",
-                    t.id === tab
+                    id === tab
                       ? "border-b-2 border-ppf-sky text-white"
                       : "text-white/60 hover:text-white/85",
                   ].join(" ")}
                 >
-                  {t.label}
+                  {t(`tabs.${id}` as `tabs.${typeof id}`)}
                 </button>
               ))}
             </div>
@@ -125,23 +130,21 @@ export default function ToolkitSection() {
               className="rounded-lg border border-white/10 bg-white/[0.04] p-5 transition-colors hover:border-ppf-sky/60 hover:bg-white/[0.06]"
             >
               <div className="font-mono text-[11px] uppercase tracking-[0.1em] text-ppf-sky">
-                IPSAS Desk
+                {t("deskCard.eyebrow")}
               </div>
               <div className="mt-1.5 text-base font-semibold tracking-[-0.01em] text-white">
-                Sourced IPSAS answers, paragraph-cited
+                {t("deskCard.title")}
               </div>
               <div className="mt-1.5 text-[13px] leading-[1.55] text-white/70">
-                Ask any IPSAS question in plain English. Get a sourced answer with
-                the exact paragraph citation, written so it can go straight into
-                your working papers.
+                {t("deskCard.body")}
               </div>
               <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3.5">
                 <div>
                   <div className="font-semibold tabular-nums text-[22px] tracking-[-0.02em] text-white">
-                    2,400+
+                    {t("deskCard.metric")}
                   </div>
                   <div className="text-[11px] uppercase tracking-[0.08em] text-white/50">
-                    Queries answered
+                    {t("deskCard.metricLabel")}
                   </div>
                 </div>
                 <span aria-hidden className="text-white/60">→</span>
@@ -153,23 +156,21 @@ export default function ToolkitSection() {
               className="rounded-lg border border-white/10 bg-white/[0.04] p-5 transition-colors hover:border-ppf-sky/60 hover:bg-white/[0.06]"
             >
               <div className="font-mono text-[11px] uppercase tracking-[0.1em] text-ppf-sky">
-                IPSAS Drills
+                {t("drillsCard.eyebrow")}
               </div>
               <div className="mt-1.5 text-base font-semibold tracking-[-0.01em] text-white">
-                Build the reflexes. Close the books faster.
+                {t("drillsCard.title")}
               </div>
               <div className="mt-1.5 text-[13px] leading-[1.55] text-white/70">
-                Short, focused practice questions tuned to the situations your team
-                will actually face — opening balances, donor grants under IPSAS 23,
-                GFS mapping. Built from current implementation work.
+                {t("drillsCard.body")}
               </div>
               <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3.5">
                 <div>
                   <div className="font-semibold tabular-nums text-[22px] tracking-[-0.02em] text-white">
-                    88%
+                    {t("drillsCard.metric")}
                   </div>
                   <div className="text-[11px] uppercase tracking-[0.08em] text-white/50">
-                    Avg. pass rate
+                    {t("drillsCard.metricLabel")}
                   </div>
                 </div>
                 <span aria-hidden className="text-white/60">→</span>
@@ -180,7 +181,7 @@ export default function ToolkitSection() {
               href="/pricing"
               className="rounded-lg border border-ppf-sky/30 bg-ppf-sky/10 px-5 py-3 text-center text-[13px] font-medium text-white transition-colors hover:bg-ppf-sky/20"
             >
-              See pricing for both →
+              {t("pricingLink")}
             </Link>
           </div>
         </div>

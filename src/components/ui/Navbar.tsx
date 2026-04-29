@@ -10,21 +10,32 @@ import Image from "next/image"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { siteConfig, images } from "@/lib/content"
-
-const navLinks = [
-  { label: "About", href: "/#about" },
-  { label: "Expertise", href: "/#expertise" },
-  { label: "Regions", href: "/#regions" },
-  { label: "Products", href: "/products" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Insights", href: "/insights" },
-  { label: "Contact", href: "/#contact" },
-]
 
 export default function Navbar() {
   const pathname = usePathname()
-  const isHome = pathname === "/"
+  const t = useTranslations("Navbar")
+
+  // Path comparison must ignore the locale prefix — the homepage is `/` for
+  // English but `/fr`, `/es`, `/pt` for other locales. Strip a leading
+  // /xx segment if present.
+  const localeStripped = pathname.replace(/^\/(en|fr|es|pt)(?=\/|$)/, "") || "/"
+  const isHome = localeStripped === "/"
+
+  // next-intl's <Link> isn't used here because the nav has section anchors
+  // (#about, #expertise, …) that should always point at the homepage of the
+  // active locale. We render plain <Link>/<a> with absolute paths; next-intl
+  // middleware rewrites bare paths to the active locale automatically.
+  const navLinks = [
+    { label: t("links.about"),     href: "/#about" },
+    { label: t("links.expertise"), href: "/#expertise" },
+    { label: t("links.regions"),   href: "/#regions" },
+    { label: t("links.products"),  href: "/products" },
+    { label: t("links.pricing"),   href: "/pricing" },
+    { label: t("links.insights"),  href: "/insights" },
+    { label: t("links.contact"),   href: "/#contact" },
+  ]
 
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
@@ -79,7 +90,7 @@ export default function Navbar() {
         >
           <Image
             src={images.logoTransparent}
-            alt="PPF Logo"
+            alt={t("logoAlt")}
             width={80}
             height={80}
             priority
@@ -120,13 +131,13 @@ export default function Navbar() {
             href="/drills"
             className="rounded-md bg-ppf-sky px-3.5 py-1.5 text-sm font-medium text-white shadow-crisp-sm transition-colors hover:bg-ppf-sky-hover"
           >
-            IPSAS Drills
+            {t("ctas.drills")}
           </Link>
           <Link
             href="/desk"
             className="rounded-md bg-[#2A8FE0] px-3.5 py-1.5 text-sm font-medium text-white shadow-crisp-sm transition-colors hover:bg-[#3B9AE1]"
           >
-            IPSAS Desk
+            {t("ctas.desk")}
           </Link>
           {/* Pricing already lives in the main nav links above; Request demo is
               kept as a secondary outlined CTA so existing inbound links work. */}
@@ -134,7 +145,7 @@ export default function Navbar() {
             href="/request-demo"
             className="rounded-md border border-ppf-sky px-3.5 py-1.5 text-sm font-medium text-ppf-sky transition-colors hover:bg-ppf-sky hover:text-white"
           >
-            Request demo
+            {t("ctas.requestDemo")}
           </Link>
         </div>
 
@@ -142,7 +153,7 @@ export default function Navbar() {
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Close menu" : "Open menu"}
+          aria-label={open ? t("closeMenu") : t("openMenu")}
           aria-expanded={open}
           className={[
             "md:hidden flex h-10 w-10 items-center justify-center rounded-md transition-colors",
@@ -195,21 +206,21 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className="rounded-md bg-ppf-sky px-4 py-2.5 text-center text-sm font-medium text-white"
             >
-              IPSAS Drills
+              {t("ctas.drills")}
             </Link>
             <Link
               href="/desk"
               onClick={() => setOpen(false)}
               className="rounded-md bg-[#2A8FE0] px-4 py-2.5 text-center text-sm font-medium text-white"
             >
-              IPSAS Desk
+              {t("ctas.desk")}
             </Link>
             <Link
               href="/request-demo"
               onClick={() => setOpen(false)}
               className="rounded-md border border-ppf-sky px-4 py-2.5 text-center text-sm font-medium text-ppf-sky"
             >
-              Request demo
+              {t("ctas.requestDemo")}
             </Link>
           </li>
         </ul>

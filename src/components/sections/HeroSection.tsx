@@ -9,55 +9,25 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { siteConfig, images, donors, completedCountries, currentCountries, expertiseAreas } from "@/lib/content"
+import { useTranslations } from "next-intl"
+import { images, donors, completedCountries, currentCountries, expertiseAreas } from "@/lib/content"
 import { useReveal } from "@/lib/useReveal"
 
-const HERO_COPY = {
-  kicker: "Currently engaged · Solomon Islands",
-  headlineLead: "Public financial reform that",
-  headlineAccent: "outlasts the project cycle.",
-  lead:
-    "Gregg Pavitt has led PFM reform for Ministries of Finance across 15 countries — designing the systems, building the capacity, and delivering the assessments donors rely on. The same field-tested IPSAS expertise is now available as a self-serve Drill kit or authoritative live Desk reference.",
-  primaryCta:  { label: "Discuss an engagement", href: "/#contact" },
-  drillsCta:   { label: "IPSAS Drills",          href: "/drills"  },
-  deskCta:     { label: "IPSAS Desk",            href: "/desk"    },
-  expertiseLink: { label: "See expertise areas →", href: "/#expertise" },
-  heroCardCaption: "FIELD · HONIARA",
-  heroCardTitle: "Ministry of Finance & Treasury",
-  heroCardTag: "2024 — present",
-}
-
-// Second-hero band: two equally-weighted positions sit below the main hero
-// stats bar. Left card promotes direct consulting; right card promotes the
-// SaaS toolkit (IPSAS Drills + IPSAS Desk) at a fraction of consulting cost.
-const TWO_WAYS = {
-  eyebrow: "Two ways to work with us",
-  headline: "Senior PFM expertise on the ground, or in your daily workflow.",
-  consult: {
-    title: "Engage Gregg directly",
-    body: "For ministries and donors needing senior PFM expertise on the ground — embedded advisory, system design, capacity building, and the assessments donors rely on.",
-    cta: { label: "Discuss an engagement", href: "/#contact" },
-  },
-  toolkit: {
-    title: "Use the toolkit",
-    body: "For teams who need IPSAS Drills and IPSAS Desk in their daily work, at a fraction of consulting cost. Self-serve, 14-day free trial, no card to look around.",
-    drills: { label: "IPSAS Drills", href: "/drills" },
-    desk:   { label: "IPSAS Desk",   href: "/desk" },
-    pricing: { label: "See pricing for both →", href: "/pricing" },
-  },
-}
-
 export default function HeroSection() {
+  const t = useTranslations("Hero")
+  const tBio = useTranslations("Bio")
+  const tDonors = useTranslations("Donors")
+
   const revealLeft = useReveal<HTMLDivElement>()
   const revealRight = useReveal<HTMLDivElement>()
 
   const totalCountries = currentCountries.length + completedCountries.length
   const stats: Array<{ value: string; suffix?: string; label: string }> = [
-    { value: "25", suffix: "+", label: "Years in PFM" },
-    { value: String(totalCountries), label: "Countries served" },
-    { value: String(donors.length), label: "Donor agencies" },
+    { value: "25", suffix: "+", label: t("stats.yearsLabel") },
+    { value: String(totalCountries), label: t("stats.countriesLabel") },
+    { value: String(donors.length), label: t("stats.donorsLabel") },
     // Derived from expertiseAreas in content.ts — not a fabricated marketing claim
-    { value: String(expertiseAreas.length), label: "PFM domains" },
+    { value: String(expertiseAreas.length), label: t("stats.domainsLabel") },
   ]
 
   return (
@@ -70,9 +40,9 @@ export default function HeroSection() {
             GP
           </div>
           <div>
-            <p className="text-base font-bold leading-tight">Gregg Pavitt</p>
-            <p className="text-xs text-blue-300">International PFM Expert</p>
-            <p className="text-xs text-blue-200 mt-0.5">Sub-Saharan Africa · South Asia · Pacific</p>
+            <p className="text-base font-bold leading-tight">{t("mobile.name")}</p>
+            <p className="text-xs text-blue-300">{t("mobile.title")}</p>
+            <p className="text-xs text-blue-200 mt-0.5">{t("mobile.regions")}</p>
           </div>
         </div>
 
@@ -96,61 +66,61 @@ export default function HeroSection() {
             href="/#contact"
             className="block w-full rounded-md bg-ppf-sky py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-ppf-sky-hover"
           >
-            Get in Touch
+            {t("mobile.getInTouch")}
           </a>
         </div>
 
         {/* Two ways to work — mobile (stacked) */}
         <div className="border-t border-white/10 bg-ppf-navy-deep px-5 py-6">
           <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ppf-sky">
-            {TWO_WAYS.eyebrow}
+            {t("twoWays.eyebrow")}
           </p>
           <h2 className="mt-2 text-[20px] font-semibold leading-[1.2] tracking-[-0.02em] text-white">
-            {TWO_WAYS.headline}
+            {t("twoWays.headline")}
           </h2>
 
           {/* Engage Gregg directly */}
           <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.04] p-4">
             <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-white">
-              {TWO_WAYS.consult.title}
+              {t("twoWays.consultTitle")}
             </h3>
             <p className="mt-2 text-[13px] leading-[1.55] text-white/75">
-              {TWO_WAYS.consult.body}
+              {t("twoWays.consultBody")}
             </p>
             <Link
-              href={TWO_WAYS.consult.cta.href}
+              href="/#contact"
               className="mt-4 inline-flex items-center gap-2 rounded-md bg-ppf-sky px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-ppf-sky-hover"
             >
-              {TWO_WAYS.consult.cta.label} <span aria-hidden>→</span>
+              {t("twoWays.consultCta")} <span aria-hidden>→</span>
             </Link>
           </div>
 
           {/* Use the toolkit */}
           <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.04] p-4">
             <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-white">
-              {TWO_WAYS.toolkit.title}
+              {t("twoWays.toolkitTitle")}
             </h3>
             <p className="mt-2 text-[13px] leading-[1.55] text-white/75">
-              {TWO_WAYS.toolkit.body}
+              {t("twoWays.toolkitBody")}
             </p>
             <div className="mt-4 flex flex-col gap-2">
               <Link
-                href={TWO_WAYS.toolkit.drills.href}
+                href="/drills"
                 className="rounded-md bg-ppf-sky px-4 py-2 text-center text-[13px] font-medium text-white transition-colors hover:bg-ppf-sky-hover"
               >
-                {TWO_WAYS.toolkit.drills.label} →
+                {t("twoWays.toolkitDrills")} →
               </Link>
               <Link
-                href={TWO_WAYS.toolkit.desk.href}
+                href="/desk"
                 className="rounded-md bg-[#2A8FE0] px-4 py-2 text-center text-[13px] font-medium text-white transition-colors hover:bg-[#3B9AE1]"
               >
-                {TWO_WAYS.toolkit.desk.label} →
+                {t("twoWays.toolkitDesk")} →
               </Link>
               <Link
-                href={TWO_WAYS.toolkit.pricing.href}
+                href="/pricing"
                 className="text-center text-[12px] font-medium text-ppf-sky underline-offset-2 hover:underline"
               >
-                {TWO_WAYS.toolkit.pricing.label}
+                {t("twoWays.toolkitPricing")}
               </Link>
             </div>
           </div>
@@ -187,15 +157,15 @@ export default function HeroSection() {
           <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[12px]">
             <span className="ppf-pulse h-[7px] w-[7px] rounded-full bg-[#4ADE80]" />
             <span className="font-mono text-[11px] tracking-wide text-white/85">
-              {HERO_COPY.kicker}
+              {t("kicker")}
             </span>
           </div>
 
           {/* Headline goes full-width across the top of the fold so the slogan
               reads as the page's primary statement, not a left-column heading. */}
           <h1 className="mt-6 max-w-[26ch] text-[clamp(40px,6.4vw,80px)] font-semibold leading-[1.02] tracking-[-0.035em] text-white">
-            {HERO_COPY.headlineLead}{" "}
-            <span className="text-ppf-sky">{HERO_COPY.headlineAccent}</span>
+            {t("headlineLead")}{" "}
+            <span className="text-ppf-sky">{t("headlineAccent")}</span>
           </h1>
         </div>
 
@@ -204,63 +174,66 @@ export default function HeroSection() {
           {/* LEFT — lead + 3 CTAs (Discuss + Drills + Desk) + donor strip */}
           <div>
             <p className="max-w-[56ch] text-[17px] leading-[1.6] text-white/80">
-              {HERO_COPY.lead}
+              {t("lead")}
             </p>
 
             {/* Three CTAs in the top fold so toolkit offer is explicit on first
                 paint. Discuss = consulting (primary); Drills + Desk = SaaS toolkit. */}
             <div className="mt-8 flex flex-wrap gap-2.5">
               <Link
-                href={HERO_COPY.primaryCta.href}
+                href="/#contact"
                 className="inline-flex items-center gap-2 rounded-md bg-ppf-sky px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-ppf-sky-hover hover:shadow-crisp-md"
               >
-                {HERO_COPY.primaryCta.label}
+                {t("primaryCta")}
                 <span aria-hidden>→</span>
               </Link>
               <Link
-                href={HERO_COPY.drillsCta.href}
+                href="/drills"
                 className="inline-flex items-center gap-2 rounded-md bg-ppf-sky px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-ppf-sky-hover hover:shadow-crisp-md"
               >
-                {HERO_COPY.drillsCta.label}
+                {t("drillsCta")}
                 <span aria-hidden>→</span>
               </Link>
               <Link
-                href={HERO_COPY.deskCta.href}
+                href="/desk"
                 className="inline-flex items-center gap-2 rounded-md bg-[#2A8FE0] px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-[#3B9AE1] hover:shadow-crisp-md"
               >
-                {HERO_COPY.deskCta.label}
+                {t("deskCta")}
                 <span aria-hidden>→</span>
               </Link>
             </div>
 
             <Link
-              href={HERO_COPY.expertiseLink.href}
+              href="/#expertise"
               className="mt-3 inline-block text-[13px] font-medium text-ppf-sky underline-offset-2 hover:underline"
             >
-              {HERO_COPY.expertiseLink.label}
+              {t("expertiseLink")}
             </Link>
 
             {/* Donor trust strip */}
             <div className="mt-10 flex flex-wrap items-center gap-4 border-t border-white/10 pt-6">
               <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-white/50">
-                Worked with
+                {t("workedWith")}
               </span>
               <div className="flex flex-wrap items-center gap-3">
-                {donors.slice(0, 5).map((d) => (
-                  <div
-                    key={d.id}
-                    className="flex h-[40px] items-center justify-center rounded bg-white/90 px-3"
-                    title={d.name}
-                  >
-                    <Image
-                      src={d.logo}
-                      alt={d.name}
-                      width={100}
-                      height={28}
-                      className="h-[28px] w-auto object-contain"
-                    />
-                  </div>
-                ))}
+                {donors.slice(0, 5).map((d) => {
+                  const name = tDonors(`names.${d.id}` as `names.${typeof d.id}`)
+                  return (
+                    <div
+                      key={d.id}
+                      className="flex h-[40px] items-center justify-center rounded bg-white/90 px-3"
+                      title={name}
+                    >
+                      <Image
+                        src={d.logo}
+                        alt={name}
+                        width={100}
+                        height={28}
+                        className="h-[28px] w-auto object-contain"
+                      />
+                    </div>
+                  )
+                })}
               </div>
             </div>
           </div>
@@ -277,7 +250,7 @@ export default function HeroSection() {
             >
               <Image
                 src={images.hero}
-                alt="Gregg Pavitt — fieldwork"
+                alt={t("mobile.name")}
                 fill
                 priority
                 className="object-cover object-top"
@@ -292,14 +265,14 @@ export default function HeroSection() {
               <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-3 text-white">
                 <div>
                   <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-white/70">
-                    {HERO_COPY.heroCardCaption}
+                    {t("card.caption")}
                   </p>
                   <p className="mt-1 text-base font-semibold tracking-tight">
-                    {HERO_COPY.heroCardTitle}
+                    {t("card.title")}
                   </p>
                 </div>
                 <span className="rounded-sm bg-white/15 px-2 py-1 font-mono text-[10.5px] tracking-wide text-white/90">
-                  {HERO_COPY.heroCardTag}
+                  {t("card.tag")}
                 </span>
               </div>
             </div>
@@ -338,10 +311,10 @@ export default function HeroSection() {
         <div className="mx-auto max-w-[1240px]">
           <div className="max-w-[680px]">
             <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ppf-sky">
-              {TWO_WAYS.eyebrow}
+              {t("twoWays.eyebrow")}
             </p>
             <h2 className="mt-3 text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-white">
-              {TWO_WAYS.headline}
+              {t("twoWays.headline")}
             </h2>
           </div>
 
@@ -349,19 +322,19 @@ export default function HeroSection() {
             {/* Left card — Engage Gregg directly */}
             <div className="rounded-lg border border-white/10 bg-white/[0.04] p-7 transition-colors hover:border-ppf-sky/40 hover:bg-white/[0.06]">
               <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-ppf-sky">
-                Consulting
+                {t("twoWays.consultEyebrow")}
               </p>
               <h3 className="mt-2.5 text-[22px] font-semibold tracking-[-0.015em] text-white">
-                {TWO_WAYS.consult.title}
+                {t("twoWays.consultTitle")}
               </h3>
               <p className="mt-3 text-[15px] leading-[1.65] text-white/80">
-                {TWO_WAYS.consult.body}
+                {t("twoWays.consultBody")}
               </p>
               <Link
-                href={TWO_WAYS.consult.cta.href}
+                href="/#contact"
                 className="mt-6 inline-flex items-center gap-2 rounded-md bg-ppf-sky px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-ppf-sky-hover hover:shadow-crisp-md"
               >
-                {TWO_WAYS.consult.cta.label}
+                {t("twoWays.consultCta")}
                 <span aria-hidden>→</span>
               </Link>
             </div>
@@ -369,42 +342,42 @@ export default function HeroSection() {
             {/* Right card — Use the toolkit */}
             <div className="rounded-lg border border-white/10 bg-white/[0.04] p-7 transition-colors hover:border-ppf-sky/40 hover:bg-white/[0.06]">
               <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-ppf-sky">
-                Toolkit
+                {t("twoWays.toolkitEyebrow")}
               </p>
               <h3 className="mt-2.5 text-[22px] font-semibold tracking-[-0.015em] text-white">
-                {TWO_WAYS.toolkit.title}
+                {t("twoWays.toolkitTitle")}
               </h3>
               <p className="mt-3 text-[15px] leading-[1.65] text-white/80">
-                {TWO_WAYS.toolkit.body}
+                {t("twoWays.toolkitBody")}
               </p>
               <div className="mt-6 flex flex-wrap gap-2.5">
                 <Link
-                  href={TWO_WAYS.toolkit.drills.href}
+                  href="/drills"
                   className="inline-flex items-center gap-2 rounded-md bg-ppf-sky px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-ppf-sky-hover hover:shadow-crisp-md"
                 >
-                  {TWO_WAYS.toolkit.drills.label}
+                  {t("twoWays.toolkitDrills")}
                   <span aria-hidden>→</span>
                 </Link>
                 <Link
-                  href={TWO_WAYS.toolkit.desk.href}
+                  href="/desk"
                   className="inline-flex items-center gap-2 rounded-md bg-[#2A8FE0] px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-[#3B9AE1] hover:shadow-crisp-md"
                 >
-                  {TWO_WAYS.toolkit.desk.label}
+                  {t("twoWays.toolkitDesk")}
                   <span aria-hidden>→</span>
                 </Link>
               </div>
               <Link
-                href={TWO_WAYS.toolkit.pricing.href}
+                href="/pricing"
                 className="mt-4 inline-block text-[13px] font-medium text-ppf-sky underline-offset-2 hover:underline"
               >
-                {TWO_WAYS.toolkit.pricing.label}
+                {t("twoWays.toolkitPricing")}
               </Link>
             </div>
           </div>
         </div>
       </div>
 
-      <span className="sr-only">{siteConfig.tagline}</span>
+      <span className="sr-only">{tBio("tagline")}</span>
     </section>
     </>
   )

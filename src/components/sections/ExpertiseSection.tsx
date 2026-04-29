@@ -6,10 +6,12 @@
 // doesn't need to add them imperatively (avoids visible→invisible FOUC).
 "use client"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { expertiseAreas } from "@/lib/content"
 import { useRevealChildren } from "@/lib/useReveal"
 
 export default function ExpertiseSection() {
+  const t = useTranslations("Expertise")
   const gridRef = useRevealChildren<HTMLDivElement>()
 
   return (
@@ -20,13 +22,13 @@ export default function ExpertiseSection() {
       <div className="mx-auto max-w-[1240px]">
         <div className="mb-10 flex max-w-[800px] items-end justify-between gap-6">
           <div>
-            <p className="eyebrow">Areas of Expertise</p>
+            <p className="eyebrow">{t("eyebrow")}</p>
             <h2 className="mt-3 text-[clamp(28px,3.2vw,44px)] font-semibold leading-[1.1] tracking-[-0.028em] text-ink-900">
-              Six reform tracks, one integrated practice.
+              {t("headline")}
             </h2>
           </div>
           <span className="hidden shrink-0 font-mono text-[11px] tabular-nums tracking-[0.08em] text-ink-500 md:block">
-            {String(expertiseAreas.length).padStart(2, "0")} tracks
+            {String(expertiseAreas.length).padStart(2, "0")} {t("tracksSuffix")}
           </span>
         </div>
 
@@ -34,35 +36,42 @@ export default function ExpertiseSection() {
           ref={gridRef}
           className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
         >
-          {expertiseAreas.map((area, i) => (
-            // Cards link to #contact — "interested in this area? get in touch"
-            <Link
-              key={area.id}
-              href="/#contact"
-              className={[
-                "reveal-on-scroll",
-                "group flex min-h-[240px] flex-col rounded-lg border border-ink-200 bg-white p-6",
-                "transition-all duration-200 hover:-translate-y-px hover:border-ppf-sky hover:shadow-crisp-md",
-              ].join(" ")}
-              data-delay={String(Math.min(i + 1, 5))}
-            >
-              <div className="font-mono text-[11px] tabular-nums tracking-[0.08em] text-ink-400">
-                {String(i + 1).padStart(2, "0")} / {String(expertiseAreas.length).padStart(2, "0")}
-              </div>
-              <div className="mt-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-ppf-sky">
-                {area.label}
-              </div>
-              <h3 className="mt-3 text-lg font-semibold leading-[1.25] tracking-[-0.01em] text-ink-900">
-                {area.fullName}
-              </h3>
-              <p className="mt-2.5 flex-1 text-sm leading-[1.55] text-ink-700">
-                {area.description}
-              </p>
-              <div className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-500 transition-[color,transform] duration-150 group-hover:translate-x-0.5 group-hover:text-ppf-sky">
-                Learn more <span aria-hidden>→</span>
-              </div>
-            </Link>
-          ))}
+          {expertiseAreas.map((area, i) => {
+            // Translation keys are addressed by area.id; the same six ids are
+            // hard-coded in messages/<locale>.json.
+            const label = t(`areas.${area.id}.label` as `areas.${typeof area.id}.label`)
+            const fullName = t(`areas.${area.id}.fullName` as `areas.${typeof area.id}.fullName`)
+            const description = t(`areas.${area.id}.description` as `areas.${typeof area.id}.description`)
+            return (
+              // Cards link to #contact — "interested in this area? get in touch"
+              <Link
+                key={area.id}
+                href="/#contact"
+                className={[
+                  "reveal-on-scroll",
+                  "group flex min-h-[240px] flex-col rounded-lg border border-ink-200 bg-white p-6",
+                  "transition-all duration-200 hover:-translate-y-px hover:border-ppf-sky hover:shadow-crisp-md",
+                ].join(" ")}
+                data-delay={String(Math.min(i + 1, 5))}
+              >
+                <div className="font-mono text-[11px] tabular-nums tracking-[0.08em] text-ink-400">
+                  {String(i + 1).padStart(2, "0")} / {String(expertiseAreas.length).padStart(2, "0")}
+                </div>
+                <div className="mt-1 text-[13px] font-semibold uppercase tracking-[0.06em] text-ppf-sky">
+                  {label}
+                </div>
+                <h3 className="mt-3 text-lg font-semibold leading-[1.25] tracking-[-0.01em] text-ink-900">
+                  {fullName}
+                </h3>
+                <p className="mt-2.5 flex-1 text-sm leading-[1.55] text-ink-700">
+                  {description}
+                </p>
+                <div className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-500 transition-[color,transform] duration-150 group-hover:translate-x-0.5 group-hover:text-ppf-sky">
+                  {t("learnMore")} <span aria-hidden>→</span>
+                </div>
+              </Link>
+            )
+          })}
         </div>
       </div>
     </section>

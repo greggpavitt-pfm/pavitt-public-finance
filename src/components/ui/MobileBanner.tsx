@@ -1,10 +1,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 
 const STORAGE_KEY = "ppf-mobile-banner-dismissed"
 
 export default function MobileBanner() {
+  const t = useTranslations("MobileBanner")
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -25,13 +27,13 @@ export default function MobileBanner() {
       <div className="flex items-center gap-3">
         <span className="text-base" aria-hidden>💻</span>
         <div>
-          <p className="text-xs font-semibold text-white leading-tight">Best viewed on desktop</p>
-          <p className="text-xs text-blue-300 leading-tight">Some features work better on a larger screen</p>
+          <p className="text-xs font-semibold text-white leading-tight">{t("headline")}</p>
+          <p className="text-xs text-blue-300 leading-tight">{t("subline")}</p>
         </div>
       </div>
       <button
         onClick={dismiss}
-        aria-label="Dismiss banner"
+        aria-label={t("dismiss")}
         className="shrink-0 text-blue-300 hover:text-white transition-colors text-lg leading-none"
       >
         ✕

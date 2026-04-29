@@ -1,47 +1,54 @@
 // src/components/ui/Footer.tsx  (v2 fintech — drop-in replacement)
 //
-// 4-column dark footer: brand, sitemap, toolkit, legal; fine-print rule.
+// 4-column dark footer: brand, sitemap, products, resources; fine-print rule.
 // External links (LinkedIn) render as <a target="_blank"> not next/link.
 import Image from "next/image"
 import Link from "next/link"
+import { useTranslations } from "next-intl"
 import { siteConfig, images } from "@/lib/content"
 
-type FooterLink = { label: string; href: string; external?: boolean }
-type FooterCol = { title: string; links: FooterLink[] }
-
-const COLS: FooterCol[] = [
-  {
-    title: "Site",
-    links: [
-      { label: "About",     href: "/#about" },
-      { label: "Expertise", href: "/#expertise" },
-      { label: "Regions",   href: "/#regions" },
-      { label: "Insights",  href: "/insights" },
-      { label: "Contact",   href: "/#contact" },
-    ],
-  },
-  {
-    title: "Products",
-    links: [
-      { label: "Overview",     href: "/products" },
-      { label: "IPSAS Drills", href: "/drills" },
-      { label: "IPSAS Desk",   href: "/desk" },
-      { label: "Pricing",      href: "/pricing" },
-    ],
-  },
-  {
-    title: "Resources",
-    links: [
-      { label: "IPSAS Adoption Checklist", href: "/lead-magnet" },
-      { label: "LinkedIn", href: siteConfig.linkedIn, external: true },
-    ],
-  },
-]
-
-const linkClass = "mb-2.5 block text-[13px] text-white/82 transition-colors hover:text-ppf-sky"
-
 export default function Footer() {
+  const t = useTranslations("Footer")
   const year = new Date().getFullYear()
+
+  // Columns are built inside the component so each link label can pull its
+  // translation. Keeping the structure in one place (rather than a module-
+  // level COLS constant) is the simplest way to wire next-intl into this
+  // small component.
+  const columns: Array<{
+    title: string
+    links: Array<{ label: string; href: string; external?: boolean }>
+  }> = [
+    {
+      title: t("columns.site"),
+      links: [
+        { label: t("links.about"),     href: "/#about" },
+        { label: t("links.expertise"), href: "/#expertise" },
+        { label: t("links.regions"),   href: "/#regions" },
+        { label: t("links.insights"),  href: "/insights" },
+        { label: t("links.contact"),   href: "/#contact" },
+      ],
+    },
+    {
+      title: t("columns.products"),
+      links: [
+        { label: t("links.overview"), href: "/products" },
+        { label: t("links.drills"),   href: "/drills" },
+        { label: t("links.desk"),     href: "/desk" },
+        { label: t("links.pricing"),  href: "/pricing" },
+      ],
+    },
+    {
+      title: t("columns.resources"),
+      links: [
+        { label: t("links.checklist"), href: "/lead-magnet" },
+        { label: t("links.linkedin"), href: siteConfig.linkedIn, external: true },
+      ],
+    },
+  ]
+
+  const linkClass =
+    "mb-2.5 block text-[13px] text-white/82 transition-colors hover:text-ppf-sky"
 
   return (
     <footer className="bg-ink-950 px-6 py-20 pb-7 text-white md:px-12">
@@ -52,7 +59,7 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <Image
                 src={images.logoTransparent}
-                alt="PPF"
+                alt={t("logoAlt")}
                 width={80}
                 height={80}
                 unoptimized
@@ -68,12 +75,11 @@ export default function Footer() {
               </div>
             </div>
             <p className="mt-1 max-w-[34ch] text-[13px] leading-[1.55] text-white/60">
-              Public financial management advisory for Ministries of Finance and
-              the donors who fund them.
+              {t("tagline")}
             </p>
           </div>
 
-          {COLS.map((col) => (
+          {columns.map((col) => (
             <div key={col.title}>
               <h5 className="mb-3.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-white/45">
                 {col.title}
@@ -101,7 +107,7 @@ export default function Footer() {
 
         <div className="mt-12 h-px bg-white/10" />
         <div className="mt-4 flex flex-wrap justify-between gap-2 font-mono text-xs tabular-nums text-white/40">
-          <span>&copy; {year} {siteConfig.companyName}. All rights reserved.</span>
+          <span>&copy; {year} {siteConfig.companyName}. {t("rightsReserved")}</span>
           <span>{siteConfig.domain}</span>
         </div>
       </div>

@@ -5,6 +5,7 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { logoutUser } from "@/app/auth/actions"
 
 interface AuthNavbarProps {
@@ -13,15 +14,22 @@ interface AuthNavbarProps {
 }
 
 export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
+  const t = useTranslations("AuthNavbar")
+  const tCommon = useTranslations("Common")
   const [menuOpen, setMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     await logoutUser()
   }
 
+  // Active-state detection ignores the leading locale segment so /fr/training
+  // still matches the "Training" link as active.
+  const stripped = currentPath?.replace(/^\/(en|fr|es|pt)(?=\/|$)/, "") ?? ""
+  const isActive = (path: string) => stripped.startsWith(path)
+
   const linkClass = (path: string) =>
     `text-sm font-medium transition-colors ${
-      currentPath?.startsWith(path) ? "text-white" : "text-blue-200 hover:text-white"
+      isActive(path) ? "text-white" : "text-blue-200 hover:text-white"
     }`
 
   return (
@@ -29,12 +37,12 @@ export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
       {/* ── DESKTOP (≥ 768px) ── */}
       <div className="hidden md:flex h-14 items-center justify-between px-16">
         <Link href="/training" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-          <span className="text-lg font-bold tracking-tight text-white">PFM IPSAS</span>
+          <span className="text-lg font-bold tracking-tight text-white">{t("brand")}</span>
         </Link>
         <div className="flex items-center gap-6">
           <ul className="flex gap-4">
-            <li><Link href="/training" className={linkClass("/training")}>Training</Link></li>
-            <li><Link href="/advisor" className={linkClass("/advisor")}>Advisor</Link></li>
+            <li><Link href="/training" className={linkClass("/training")}>{t("training")}</Link></li>
+            <li><Link href="/advisor" className={linkClass("/advisor")}>{t("advisor")}</Link></li>
           </ul>
           <div className="flex items-center gap-3 pl-3 border-l border-blue-800">
             {userName && <span className="text-sm text-blue-200">{userName}</span>}
@@ -42,7 +50,7 @@ export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
               onClick={handleLogout}
               className="text-sm font-medium text-blue-200 hover:text-white transition-colors"
             >
-              Log Out
+              {tCommon("logOut")}
             </button>
           </div>
         </div>
@@ -52,11 +60,11 @@ export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
       <div className="md:hidden">
         <div className="flex h-14 items-center justify-between px-4">
           <Link href="/training" className="text-base font-bold tracking-tight text-white">
-            PFM IPSAS
+            {t("brand")}
           </Link>
           <button
             onClick={() => setMenuOpen((o) => !o)}
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-label={menuOpen ? t("closeMenu") : t("openMenu")}
             className="text-white text-2xl leading-none px-1"
           >
             {menuOpen ? "✕" : "☰"}
@@ -69,16 +77,16 @@ export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
             <Link
               href="/training"
               onClick={() => setMenuOpen(false)}
-              className={`pt-3 text-sm font-semibold ${currentPath?.startsWith("/training") ? "text-white" : "text-blue-200"}`}
+              className={`pt-3 text-sm font-semibold ${isActive("/training") ? "text-white" : "text-blue-200"}`}
             >
-              Training
+              {t("training")}
             </Link>
             <Link
               href="/advisor"
               onClick={() => setMenuOpen(false)}
-              className={`text-sm font-semibold ${currentPath?.startsWith("/advisor") ? "text-white" : "text-blue-200"}`}
+              className={`text-sm font-semibold ${isActive("/advisor") ? "text-white" : "text-blue-200"}`}
             >
-              Advisor
+              {t("advisor")}
             </Link>
             <div className="border-t border-blue-900 pt-3 flex items-center justify-between">
               {userName && <span className="text-sm text-blue-300">{userName}</span>}
@@ -86,7 +94,7 @@ export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
                 onClick={handleLogout}
                 className="text-sm font-medium text-blue-200 hover:text-white transition-colors"
               >
-                Log Out
+                {tCommon("logOut")}
               </button>
             </div>
           </div>

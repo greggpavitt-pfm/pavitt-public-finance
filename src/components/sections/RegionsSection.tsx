@@ -7,6 +7,7 @@
 // Maps over all currentCountries for the callout — safe when
 // currentCountries grows beyond one entry.
 "use client"
+import { useTranslations } from "next-intl"
 import { currentCountries, completedCountries, allCountries } from "@/lib/content"
 import RegionsMap from "@/components/sections/RegionsMap"
 import { useReveal } from "@/lib/useReveal"
@@ -23,6 +24,7 @@ function groupByRegion(countries: Country[]) {
 }
 
 export default function RegionsSection() {
+  const t = useTranslations("Regions")
   const reveal = useReveal<HTMLElement>()
   const groups = groupByRegion(allCountries)
 
@@ -36,9 +38,9 @@ export default function RegionsSection() {
         {/* Head */}
         <div className="mb-12 grid gap-8 md:grid-cols-[1.3fr_1fr] md:items-end md:gap-12">
           <div>
-            <p className="eyebrow">Global Reach</p>
+            <p className="eyebrow">{t("eyebrow")}</p>
             <h2 className="mt-3 max-w-[20ch] text-[clamp(28px,3.2vw,44px)] font-semibold leading-[1.1] tracking-[-0.028em] text-ink-900">
-              Fifteen countries, three regions, one playbook.
+              {t("headline")}
             </h2>
           </div>
 
@@ -52,14 +54,14 @@ export default function RegionsSection() {
                 >
                   <span className="inline-flex items-center gap-1.5 rounded-sm bg-success-bg px-2.5 py-1 font-mono text-[11px] font-medium uppercase tracking-[0.1em] text-success-fg">
                     <span className="ppf-pulse h-[7px] w-[7px] rounded-full bg-success" />
-                    {country.badge ?? "Current"}
+                    {t("currentBadge")}
                   </span>
                   <div>
                     <div className="text-[17px] font-semibold tracking-[-0.01em] text-ink-900">
                       {country.name}
                     </div>
                     <div className="mt-0.5 text-xs text-ink-500">
-                      Ministry of Finance & Treasury
+                      {t("ministry")}
                     </div>
                   </div>
                   {country.years && (
@@ -94,7 +96,10 @@ export default function RegionsSection() {
               >
                 <div className="mb-2.5 flex items-baseline justify-between">
                   <h3 className="m-0 text-[12px] font-semibold uppercase tracking-[0.12em] text-ppf-blue">
-                    {g.region}
+                    {/* Region names live in messages so they translate but the
+                        underlying region key stays English (used as a data
+                        partition key). */}
+                    {t(`regionNames.${g.region}` as `regionNames.${typeof g.region}`)}
                   </h3>
                   <span className="font-mono text-[11px] tabular-nums text-ink-500">
                     {String(g.items.length).padStart(2, "0")}

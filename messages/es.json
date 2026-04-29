@@ -1,8 +1,296 @@
 {
   "Common": {
     "languageName": "Español",
-    "loading": "Cargando...",
+    "loading": "Cargando…",
     "submit": "Enviar",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "logIn": "Iniciar sesión",
+    "logOut": "Cerrar sesión",
+    "register": "Registrarse",
+    "signOut": "Cerrar sesión"
+  },
+  "LanguagePicker": {
+    "label": "Idioma",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "portuguese": "Português"
+  },
+  "Navbar": {
+    "logoAlt": "Logotipo de Pavitt Public Finance",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "links": {
+      "about": "Acerca de",
+      "expertise": "Experiencia",
+      "regions": "Regiones",
+      "products": "Productos",
+      "pricing": "Precios",
+      "insights": "Perspectivas",
+      "contact": "Contacto"
+    },
+    "ctas": {
+      "drills": "IPSAS Drills",
+      "desk": "IPSAS Desk",
+      "requestDemo": "Solicitar demostración"
+    }
+  },
+  "Footer": {
+    "logoAlt": "Pavitt Public Finance",
+    "tagline": "Asesoría en gestión de finanzas públicas para Ministerios de Hacienda y los donantes que los financian.",
+    "rightsReserved": "Todos los derechos reservados.",
+    "columns": {
+      "site": "Sitio",
+      "products": "Productos",
+      "resources": "Recursos"
+    },
+    "links": {
+      "about": "Acerca de",
+      "expertise": "Experiencia",
+      "regions": "Regiones",
+      "insights": "Perspectivas",
+      "contact": "Contacto",
+      "overview": "Descripción general",
+      "drills": "IPSAS Drills",
+      "desk": "IPSAS Desk",
+      "pricing": "Precios",
+      "checklist": "Lista de verificación para la adopción de IPSAS",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "MobileBanner": {
+    "headline": "Mejor visualización en escritorio",
+    "subline": "Algunas funciones funcionan mejor en una pantalla más grande",
+    "dismiss": "Cerrar aviso"
+  },
+  "AuthNavbar": {
+    "brand": "PFM IPSAS",
+    "training": "Capacitación",
+    "advisor": "Asesor",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú"
+  },
+  "Hero": {
+    "kicker": "Actualmente comprometido · Islas Salomón",
+    "headlineLead": "Reforma de finanzas públicas que",
+    "headlineAccent": "perdura más allá del ciclo del proyecto.",
+    "lead": "Gregg Pavitt ha liderado reformas de GFP para Ministerios de Finanzas en 15 países — diseñando los sistemas, desarrollando la capacidad y entregando las evaluaciones en las que confían los donantes. La misma experiencia comprobada en IPSAS está ahora disponible como kit de Ejercicios autoguiados o como referencia en vivo autorizada en Desk.",
+    "primaryCta": "Discutir un compromiso",
+    "drillsCta": "Ejercicios IPSAS",
+    "deskCta": "IPSAS Desk",
+    "expertiseLink": "Ver áreas de especialización →",
+    "workedWith": "Ha trabajado con",
+    "card": {
+      "caption": "CAMPO · HONIARA",
+      "title": "Ministerio de Finanzas y Tesoro",
+      "tag": "2024 — presente"
+    },
+    "mobile": {
+      "name": "Gregg Pavitt",
+      "title": "Experto Internacional en GFP",
+      "regions": "África Subsahariana · Asia Meridional · Pacífico",
+      "getInTouch": "Contáctenos"
+    },
+    "stats": {
+      "yearsLabel": "Años en GFP",
+      "countriesLabel": "Países atendidos",
+      "donorsLabel": "Agencias donantes",
+      "domainsLabel": "Dominios de GFP"
+    },
+    "twoWays": {
+      "eyebrow": "Dos formas de trabajar con nosotros",
+      "headline": "Experiencia senior en GFP sobre el terreno, o en su flujo de trabajo diario.",
+      "consultEyebrow": "Consultoría",
+      "consultTitle": "Contrate a Gregg directamente",
+      "consultBody": "Para ministerios y donantes que necesitan experiencia senior en GFP sobre el terreno — asesoría integrada, diseño de sistemas, desarrollo de capacidades y las evaluaciones en las que confían los donantes.",
+      "consultCta": "Discutir un proyecto",
+      "toolkitEyebrow": "Herramientas",
+      "toolkitTitle": "Use las herramientas",
+      "toolkitBody": "Para equipos que necesitan IPSAS Drills e IPSAS Desk en su trabajo diario, a una fracción del costo de consultoría. Autoservicio, prueba gratuita de 14 días, sin tarjeta para explorar.",
+      "toolkitDrills": "IPSAS Drills",
+      "toolkitDesk": "IPSAS Desk",
+      "toolkitPricing": "Ver precios de ambas →"
+    }
+  },
+  "Bio": {
+    "eyebrow": "Acerca de",
+    "headline": "Entrega confiable en los entornos de GFP más difíciles.",
+    "tagline": "Especialista en GFP · Más de 25 años · Pacífico, África, Asia",
+    "paragraph1": "Gregg Pavitt es un especialista en gestión financiera pública con más de 25 años de experiencia ayudando a gobiernos en África Subsahariana, Asia Meridional y el Pacífico a fortalecer la manera en que planifican, asignan y contabilizan los recursos públicos.",
+    "paragraph2": "Proporciona asistencia técnica y servicios de asesoría en seis áreas principales: estudios y evaluaciones de GFP, gestión del gasto público (PEM), movilización de ingresos internos (DRM), sistemas integrados de gestión financiera (IFMIS), gestión de la inversión pública (PIM) y Normas Internacionales de Contabilidad del Sector Público (IPSAS).",
+    "paragraph3": "Gregg se ha desempeñado como Jefe de Equipo y Experto Clave en programas financiados por la EU (EuropeAid), World Bank, DFAT, USAID y DFID/FCDO — tanto en funciones integradas de largo plazo dentro de Ministerios de Finanzas como en asignaciones específicas de corto plazo. Es reconocido por su diálogo efectivo de políticas con contrapartes gubernamentales, diseño práctico de reformas y desarrollo de capacidad nacional que perdura más allá del ciclo del proyecto.",
+    "paragraph4": "Firmas consultoras internacionales y organizaciones de desarrollo contratan a Gregg por su capacidad de movilizarse rápidamente, gestionar equipos multidisciplinarios y entregar de manera confiable dentro de los marcos de cumplimiento y presentación de informes que exigen los programas financiados por donantes.",
+    "facts": {
+      "based": "Ubicación",
+      "basedValue": "África Subsahariana / Pacífico",
+      "experience": "Experiencia",
+      "experienceValue": "Más de 25 años",
+      "countries": "Países",
+      "countriesValue": "15",
+      "languages": "Idiomas",
+      "languagesValue": "Inglés"
+    },
+    "quote": "“Gregg fue el consultor profesional por excelencia en mi equipo… Su asesoramiento fue mesurado, claramente expresado y poseía tanto una visión estratégica a largo plazo de lo que podría ser posible como los pasos operativos a corto plazo para implementarse de inmediato.”",
+    "quoteAuthor": "Director de Proyecto · FCDO",
+    "linkedinFull": "Perfil completo en LinkedIn"
+  },
+  "Expertise": {
+    "eyebrow": "Áreas de Especialización",
+    "headline": "Seis líneas de reforma, una práctica integrada.",
+    "tracksSuffix": "líneas",
+    "learnMore": "Más información",
+    "areas": {
+      "pfm-studies": {
+        "label": "Estudios de PFM",
+        "fullName": "Estudios y Evaluaciones de PFM",
+        "description": "Realización de evaluaciones diagnósticas (PEFA, revisiones fiduciarias) e investigaciones para informar estrategias de reforma de PFM."
+      },
+      "ifms": {
+        "label": "IFMS",
+        "fullName": "Sistemas Integrados de Gestión Financiera",
+        "description": "Asesoramiento sobre el diseño, implementación y mejora de los sistemas de información financiera gubernamental."
+      },
+      "ipsas": {
+        "label": "IPSAS",
+        "fullName": "Normas Internacionales de Contabilidad del Sector Público",
+        "description": "Apoyo a los gobiernos en la transición a la contabilidad basada en el devengo y la elaboración de informes financieros conformes a las IPSAS."
+      },
+      "pim": {
+        "label": "PIM",
+        "fullName": "Gestión de Inversiones Públicas",
+        "description": "Fortalecimiento de los sistemas para planificar, priorizar y ejecutar programas de inversión pública para maximizar los resultados de desarrollo."
+      },
+      "pem": {
+        "label": "PEM",
+        "fullName": "Gestión del Gasto Público",
+        "description": "Apoyo en las reformas de formulación, ejecución y reporte presupuestario para mejorar la disciplina fiscal y la prestación de servicios."
+      },
+      "drm": {
+        "label": "DRM",
+        "fullName": "Movilización de Ingresos Nacionales",
+        "description": "Ayudando a los gobiernos a aumentar los ingresos nacionales mediante políticas fiscales, reformas administrativas y mejora del cumplimiento."
+      }
+    }
+  },
+  "Regions": {
+    "eyebrow": "Alcance Global",
+    "headline": "Quince países, tres regiones, un enfoque.",
+    "currentBadge": "Actual",
+    "ministry": "Ministerio de Finanzas y Tesorería",
+    "regionNames": {
+      "Pacific": "Pacífico",
+      "Sub-Saharan Africa": "África Subsahariana",
+      "South Asia": "Asia del Sur"
+    }
+  },
+  "Donors": {
+    "eyebrow": "Socios y Donantes",
+    "headline": "Confiado por las agencias que financian las reformas PFM más difíciles del mundo.",
+    "countSuffix": "agencias · 15 programas",
+    "names": {
+      "world-bank": "World Bank",
+      "eu": "European Union",
+      "usaid": "USAID",
+      "mcc": "Corporación del Desafío del Milenio",
+      "dfat": "DFAT (Ayuda Australiana)",
+      "fcdo": "FCDO"
+    }
+  },
+  "Cases": {
+    "eyebrow": "Trabajo Seleccionado",
+    "headline": "Programas de reforma implementados.",
+    "countSuffix": "3 de 15 compromisos",
+    "items": {
+      "fsm": {
+        "tag": "Islas Salomón · Pacífico",
+        "years": "2024–Presente",
+        "title": "Creación y Despliegue de un Sistema de Reportes basado en IPSAS",
+        "desc": "Desarrollo de un sistema de reportes personalizado basado en IPSAS. Modificación del plan contable secundario, automatización del sistema de producción de tablas dinámicas para reportes multianuales de fondos gubernamentales, de donantes y de propósito especial.",
+        "metric1Label": "Cobertura IPSAS",
+        "metric1Value": "94%",
+        "metric2Label": "Personal Capacitado",
+        "metric2Value": "48"
+      },
+      "eu-drm": {
+        "tag": "África Subsahariana",
+        "years": "2019–2022",
+        "title": "Estudios Diagnósticos de PFM",
+        "desc": "Se realizaron análisis de reforma tributaria, evaluaciones de transparencia fiscal y modelado de ingresos locales en Mozambique y Malawi, incluyendo revisiones de PEFA, reformas del IVA e impuestos corporativos, reestructuración del impuesto a la propiedad y descentralización fiscal subnacional para la Millennium Challenge Corporation.",
+        "metric1Label": "Estudios Realizados",
+        "metric1Value": "7",
+        "metric2Label": "Países",
+        "metric2Value": "2"
+      },
+      "ifmis": {
+        "tag": "FSM · Pacífico",
+        "years": "2021–2024",
+        "title": "Diseño y operativización de IFMIS",
+        "desc": "Diseño y adquisición de un IFMIS resiliente para modernizar la gestión financiera pública, garantizar el cumplimiento de GAAP y maximizar la transparencia en las operaciones insulares. Coordinado para estados insulares individuales y el gobierno nacional.",
+        "metric1Label": "Puesta en Marcha a Tiempo",
+        "metric1Value": "Sí",
+        "metric2Label": "Ministerios Incorporados",
+        "metric2Value": "12"
+      }
+    }
+  },
+  "Toolkit": {
+    "eyebrow": "Kit de herramientas para profesionales",
+    "headline": "Los mismos sistemas que utiliza Gregg, disponibles para su equipo.",
+    "lead": "Software diseñado específicamente para consultas sobre IPSAS, capacitación de personal y diagnósticos de reforma. Disponible para los profesionales del Ministerio de Finanzas bajo solicitud.",
+    "tabs": {
+      "advisor": "Mesa de IPSAS",
+      "training": "Ejercicios de IPSAS",
+      "tools": "Herramientas de reforma"
+    },
+    "deskCard": {
+      "eyebrow": "Mesa de IPSAS",
+      "title": "Respuestas fundamentadas sobre IPSAS, con citas de párrafos",
+      "body": "Haga cualquier pregunta sobre IPSAS en inglés sencillo. Obtenga una respuesta fundamentada con la cita exacta del párrafo, redactada para que pueda integrarse directamente en sus documentos de trabajo.",
+      "metric": "2,400+",
+      "metricLabel": "Consultas respondidas"
+    },
+    "drillsCard": {
+      "eyebrow": "Ejercicios de IPSAS",
+      "title": "Desarrolle reflejos. Cierre los libros más rápido.",
+      "body": "Preguntas prácticas cortas y enfocadas, adaptadas a las situaciones que su equipo realmente enfrentará: saldos iniciales, subvenciones de donantes bajo IPSAS 23, mapeo GFS. Construidas a partir del trabajo actual de implementación.",
+      "metric": "88%",
+      "metricLabel": "Promedio de tasa de aprobación"
+    },
+    "pricingLink": "Ver precios para ambos →"
+  },
+  "Contact": {
+    "eyebrow": "Contáctenos",
+    "headline": "¿Planeando una intervención en PFM?",
+    "lead": "Diagnósticos a corto plazo, roles integrados a largo plazo o una segunda opinión sobre el diseño de una reforma — envíe un resumen y Gregg responderá dentro de dos días laborables.",
+    "linkedinConnect": "Conéctese en LinkedIn",
+    "facts": {
+      "responseTimeLabel": "Tiempo de respuesta",
+      "responseTimeValue": "< 48 horas",
+      "availabilityLabel": "Disponibilidad",
+      "availabilityValue": "Q1 2026",
+      "basedLabel": "Ubicación",
+      "basedValue": "Pacífico / SSA",
+      "areasLabel": "Áreas",
+      "areasValue": "Estudios de PFM · IFMS · IPSAS · PIM · PEM · DRM"
+    },
+    "form": {
+      "nameLabel": "Su nombre",
+      "namePlaceholder": "Jane Smith",
+      "emailLabel": "Su correo electrónico",
+      "emailPlaceholder": "jane@example.com",
+      "messageLabel": "Resumen del proyecto",
+      "messagePlaceholder": "Alcance, región, cronograma, donante, entregables…",
+      "sending": "Enviando…",
+      "sendButton": "Enviar mensaje"
+    },
+    "success": {
+      "title": "Mensaje enviado.",
+      "messageDefault": "¡Gracias! Su mensaje ha sido enviado. Gregg se pondrá en contacto con usted en breve."
+    },
+    "errors": {
+      "missingFields": "Por favor, complete todos los campos.",
+      "unavailable": "El formulario de contacto no está disponible temporalmente. Por favor, inténtelo de nuevo más tarde."
+    }
   }
 }

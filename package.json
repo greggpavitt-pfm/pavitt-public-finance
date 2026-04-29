@@ -11,7 +11,8 @@
     "e2e:ui": "playwright test --ui",
     "migrate:status": "tsx scripts/migrate.ts status",
     "migrate:apply": "tsx scripts/migrate.ts apply",
-    "migrate:backfill": "tsx scripts/migrate.ts backfill"
+    "migrate:backfill": "tsx scripts/migrate.ts backfill",
+    "translate": "tsx scripts/translate.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.9.0",

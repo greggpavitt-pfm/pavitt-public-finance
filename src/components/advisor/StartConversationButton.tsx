@@ -3,7 +3,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { createConversation } from "@/app/advisor/actions"
+import { createConversation } from "@/app/[locale]/advisor/actions"
 
 export default function StartConversationButton() {
   const [creating, setCreating] = useState(false)

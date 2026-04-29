@@ -2,7 +2,7 @@
 // Context panel — allows users to set jurisdiction, entity type, reporting basis, currency
 
 import { useState } from "react"
-import { saveContext } from "@/app/advisor/actions"
+import { saveContext } from "@/app/[locale]/advisor/actions"
 
 interface ContextPanelProps {
   initialContext?: {

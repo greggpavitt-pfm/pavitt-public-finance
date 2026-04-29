@@ -3,7 +3,7 @@
 // Submitting overwrites any prior vote from the same user on the same message.
 
 import { useState, useTransition } from "react"
-import { submitMessageFeedback } from "@/app/advisor/actions"
+import { submitMessageFeedback } from "@/app/[locale]/advisor/actions"
 
 interface Props {
   messageId: string

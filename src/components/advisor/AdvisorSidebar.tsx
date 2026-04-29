@@ -3,7 +3,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { listConversations } from "@/app/advisor/actions"
+import { listConversations } from "@/app/[locale]/advisor/actions"
 
 interface Conversation {
   id: string

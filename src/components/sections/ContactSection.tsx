@@ -4,7 +4,7 @@
 // Light slate background. Left: intro + facts grid + LinkedIn.
 // Right: white form card. Keeps the existing useActionState wiring.
 import { useActionState } from "react"
-import { sendContactEmail, type FormState } from "@/app/actions"
+import { sendContactEmail, type FormState } from "@/app/[locale]/actions"
 import { siteConfig } from "@/lib/content"
 import { useReveal } from "@/lib/useReveal"
 

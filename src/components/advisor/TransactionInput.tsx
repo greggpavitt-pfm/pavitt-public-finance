@@ -3,7 +3,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { sendMessage } from "@/app/advisor/actions"
+import { sendMessage } from "@/app/[locale]/advisor/actions"
 
 interface TransactionInputProps {
   conversationId: string

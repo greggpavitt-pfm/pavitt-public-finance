@@ -3,6 +3,11 @@
 // This keeps Server Actions available for the contact form in Phase 4.
 import path from "node:path"
 import type { NextConfig } from "next"
+import createNextIntlPlugin from "next-intl/plugin"
+
+// next-intl plugin — points at the request-config file that loads messages
+// for the active locale. Must wrap the exported config (see end of file).
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts")
 
 const nextConfig: NextConfig = {
   // next/image works with Vercel's built-in optimizer — no unoptimized flag.
@@ -24,6 +29,11 @@ const nextConfig: NextConfig = {
   //   /ipsas-questions → /desk    (IPSAS Desk)
   // Permanent (308) so search engines update the index and inbound link
   // equity transfers to the new paths.
+  //
+  // Only the bare (English / default-locale) paths need redirecting — the
+  // /fr, /es, /pt prefixes never existed publicly, so there are no legacy
+  // inbound links to preserve there. With localePrefix: 'as-needed', the
+  // bare `/drills` and `/desk` paths resolve to the default English locale.
   async redirects() {
     return [
       { source: "/ipsas-training", destination: "/drills", permanent: true },
@@ -32,4 +42,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withNextIntl(nextConfig)

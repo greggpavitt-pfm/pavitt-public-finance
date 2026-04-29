@@ -11,7 +11,7 @@
 
 import { useState, useRef, DragEvent, ChangeEvent } from "react"
 import { useRouter } from "next/navigation"
-import { createConversation } from "@/app/advisor/actions"
+import { createConversation } from "@/app/[locale]/advisor/actions"
 
 const MAX_SIZE_BYTES = 4 * 1024 * 1024 // 4 MB
 

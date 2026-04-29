@@ -10,7 +10,7 @@
 
 import FeedbackButtons from "./FeedbackButtons"
 import TreatmentCards from "./TreatmentCards"
-import type { QuickTreatmentResponse } from "@/app/advisor/actions"
+import type { QuickTreatmentResponse } from "@/app/[locale]/advisor/actions"
 
 interface Citation {
   standard: string

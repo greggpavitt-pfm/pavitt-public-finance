@@ -4,27 +4,64 @@
 // are deprecated and will not run on Vercel).
 //
 // Responsibilities:
-//   1. Refresh the Supabase session cookie so it doesn't expire mid-visit.
-//   2. Protect routes that require authentication.
-//   3. Redirect users to the right place based on their account state.
+//   1. Run next-intl locale negotiation (redirects /xx unknown to default,
+//      rewrites bare paths like /desk to the default locale internally, etc.)
+//   2. Refresh the Supabase session cookie so it doesn't expire mid-visit.
+//   3. Protect routes that require authentication, with locale-aware redirects.
 //
-// Route rules:
-//   /advisor/*          — must be logged in + account approved + onboarding complete
+// Route rules (path matched after stripping the locale prefix):
+//   /advisor/*          — must be logged in + account approved
 //   /training/*         — must be logged in + account approved + onboarding complete
-//   /admin/*            — must be logged in + admin (checked again server-side per page)
+//   /admin/*            — must be logged in (per-page admin role check on top)
 //   /pending            — accessible when logged in but not yet approved
 //   /onboarding         — accessible when logged in but onboarding not complete
 //   /practitioner-login — redirect to /advisor if already logged in
-//   All others          — public (marketing site, login, register)
+//   All others          — public (marketing, login, register)
+//
+// Locale-aware redirects: if a French visitor (/fr/...) hits a protected path
+// without a session, they are redirected to /fr/login (not /login).
 
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import createIntlMiddleware from 'next-intl/middleware'
+import { routing } from '@/i18n/routing'
+
+// next-intl middleware instance — built once at module load, not per-request.
+const handleI18n = createIntlMiddleware(routing)
+
+// Match a leading locale segment, e.g. /fr or /es-MX or /pt followed by /
+// or end-of-string. Constructed from the locales declared in routing.ts so
+// the regex stays in sync if a locale is added.
+const LOCALE_RE = new RegExp(`^/(?:${routing.locales.join('|')})(?=/|$)`)
+
+/** Returns { locale, path } where path has the locale prefix removed. */
+function splitLocale(pathname: string): { locale: string; path: string } {
+  const match = pathname.match(LOCALE_RE)
+  if (match) {
+    const locale = match[0].slice(1) // drop leading /
+    const path = pathname.slice(match[0].length) || '/'
+    return { locale, path }
+  }
+  return { locale: routing.defaultLocale, path: pathname }
+}
+
+/** Build a locale-prefixed URL for redirects. English (default) stays bare. */
+function localizedUrl(path: string, locale: string, base: string | URL): URL {
+  const prefix = locale === routing.defaultLocale ? '' : `/${locale}`
+  return new URL(`${prefix}${path}`, base)
+}
 
 export async function proxy(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({ request })
+  // 1. Let next-intl decide locale routing first. The returned response will
+  //    either be a redirect (e.g. unknown locale → default), a rewrite (bare
+  //    `/desk` → internal `/en/desk`), or a plain pass-through. We mutate
+  //    cookies on this response below so they survive the redirect/rewrite.
+  const i18nResponse = handleI18n(request)
 
-  // Create a Supabase client that can read/write cookies on the response.
-  // This is the pattern recommended by Supabase for Next.js App Router proxy.
+  // 2. Build a Supabase client that writes any session-refresh cookies onto
+  //    the i18n response. This is the @supabase/ssr pattern adapted for
+  //    composition with another middleware: setAll writes cookies on whatever
+  //    response we plan to return.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -34,13 +71,14 @@ export async function proxy(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          // Write updated cookies to both the request and the response
+          // Mirror cookies back onto the request (so further reads in this
+          // proxy invocation see them) and onto the response (so the browser
+          // gets them).
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            i18nResponse.cookies.set(name, value, options)
           )
         },
       },
@@ -51,16 +89,16 @@ export async function proxy(request: NextRequest) {
   // A simple mistake here will break session refresh for the entire app.
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
+  // 3. Strip locale prefix once for path-pattern matching. Auth redirects
+  //    use `localizedUrl()` to keep the user on their chosen language.
+  const { locale, path } = splitLocale(request.nextUrl.pathname)
 
   // --- Protect /training/* ---
-  if (pathname.startsWith('/training')) {
+  if (path.startsWith('/training')) {
     if (!user) {
-      // Not logged in → send to login
-      return NextResponse.redirect(new URL('/login', request.url))
+      return NextResponse.redirect(localizedUrl('/login', locale, request.url))
     }
 
-    // Check profile state (approved + onboarding complete)
     const { data: profile } = await supabase
       .from('profiles')
       .select('account_status, onboarding_complete')
@@ -68,35 +106,32 @@ export async function proxy(request: NextRequest) {
       .single()
 
     if (!profile) {
-      // No profile row yet → send to onboarding
-      return NextResponse.redirect(new URL('/onboarding', request.url))
+      return NextResponse.redirect(localizedUrl('/onboarding', locale, request.url))
     }
 
     if (profile.account_status === 'pending') {
-      return NextResponse.redirect(new URL('/pending', request.url))
+      return NextResponse.redirect(localizedUrl('/pending', locale, request.url))
     }
 
     if (profile.account_status === 'suspended') {
       // Do NOT call signOut() here — proxy runs on the Edge Runtime and
       // initiating a Supabase server-side signOut from the edge causes
-      // MIDDLEWARE_INVOCATION_FAILED on Vercel.
-      // Instead, redirect to /login with a flag; the login page clears the
-      // session on the client via supabase.auth.signOut() after it loads.
-      return NextResponse.redirect(new URL('/login?reason=suspended', request.url))
+      // MIDDLEWARE_INVOCATION_FAILED on Vercel. The login page clears the
+      // session client-side after it loads.
+      return NextResponse.redirect(localizedUrl('/login?reason=suspended', locale, request.url))
     }
 
     if (!profile.onboarding_complete) {
-      return NextResponse.redirect(new URL('/onboarding', request.url))
+      return NextResponse.redirect(localizedUrl('/onboarding', locale, request.url))
     }
   }
 
   // --- Protect /advisor/* ---
   // Requires login + approved account. Does NOT require onboarding_complete —
   // practitioners set their context inside the advisor via ContextPanel.
-  if (pathname.startsWith('/advisor')) {
+  if (path.startsWith('/advisor')) {
     if (!user) {
-      // Unauthenticated practitioners should land on the practitioner sign-in page
-      return NextResponse.redirect(new URL('/practitioner-login', request.url))
+      return NextResponse.redirect(localizedUrl('/practitioner-login', locale, request.url))
     }
 
     const { data: profile } = await supabase
@@ -106,41 +141,42 @@ export async function proxy(request: NextRequest) {
       .single()
 
     if (!profile || profile.account_status === 'pending') {
-      return NextResponse.redirect(new URL('/pending', request.url))
+      return NextResponse.redirect(localizedUrl('/pending', locale, request.url))
     }
 
     if (profile.account_status === 'suspended') {
-      return NextResponse.redirect(new URL('/practitioner-login?reason=suspended', request.url))
+      return NextResponse.redirect(localizedUrl('/practitioner-login?reason=suspended', locale, request.url))
     }
   }
 
   // --- Protect /admin/* ---
-  // Full admin verification (role check) happens again inside each admin page;
+  // Full admin role verification happens again inside each admin page;
   // this just blocks non-logged-in users at the edge.
-  if (pathname.startsWith('/admin')) {
+  if (path.startsWith('/admin')) {
     if (!user) {
-      return NextResponse.redirect(new URL('/login', request.url))
+      return NextResponse.redirect(localizedUrl('/login', locale, request.url))
     }
   }
 
   // --- Redirect logged-in users away from /login and /register ---
-  // Training login → student area; practitioner login → advisor area.
-  if (user && (pathname === '/login' || pathname === '/register')) {
-    return NextResponse.redirect(new URL('/training', request.url))
+  if (user && (path === '/login' || path === '/register')) {
+    return NextResponse.redirect(localizedUrl('/training', locale, request.url))
   }
-  if (user && pathname === '/practitioner-login') {
-    return NextResponse.redirect(new URL('/advisor', request.url))
+  if (user && path === '/practitioner-login') {
+    return NextResponse.redirect(localizedUrl('/advisor', locale, request.url))
   }
 
-  return supabaseResponse
+  // No auth redirect — return next-intl's response (with refreshed Supabase
+  // cookies attached via setAll above).
+  return i18nResponse
 }
 
 // Tell Next.js which paths this proxy should run on.
-// Skip static assets, images, Next.js internals, and /auth/* routes.
-// /auth/callback must be excluded so the route handler can exchange the
-// confirmation code for a session before the proxy tries to read it.
+// Skip static assets, images, Next.js internals, /api/* (no locale or auth
+// gate at edge — handled per-route), and /auth/* (the callback exchanges
+// the OAuth code for a session before any cookies are set).
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|images/|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api/|_next/static|_next/image|favicon.ico|images/|auth/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

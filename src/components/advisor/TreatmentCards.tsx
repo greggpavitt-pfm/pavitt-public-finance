@@ -23,7 +23,7 @@ import type {
   QuickTreatmentResponse,
   JournalEntryBlock,
   Citation,
-} from "@/app/advisor/actions"
+} from "@/app/[locale]/advisor/actions"
 
 // ---------------------------------------------------------------------------
 // Top-level renderer

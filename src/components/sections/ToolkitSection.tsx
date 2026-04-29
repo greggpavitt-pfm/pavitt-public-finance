@@ -8,8 +8,8 @@ import { useState } from "react"
 import { useReveal } from "@/lib/useReveal"
 
 const TABS = [
-  { id: "advisor",   label: "IPSAS Advisor" },
-  { id: "training",  label: "Training Modules" },
+  { id: "advisor",   label: "IPSAS Desk" },
+  { id: "training",  label: "IPSAS Drills" },
   { id: "tools",     label: "Reform Tools" },
 ] as const
 type TabId = typeof TABS[number]["id"]
@@ -118,21 +118,22 @@ export default function ToolkitSection() {
             </pre>
           </div>
 
-          {/* Side — two cards */}
+          {/* Side — two cards (Desk, Drills) plus a small pricing link below */}
           <div className="grid gap-3">
             <Link
-              href="/advisor"
+              href="/desk"
               className="rounded-lg border border-white/10 bg-white/[0.04] p-5 transition-colors hover:border-ppf-sky/60 hover:bg-white/[0.06]"
             >
               <div className="font-mono text-[11px] uppercase tracking-[0.1em] text-ppf-sky">
-                Advisor
+                IPSAS Desk
               </div>
               <div className="mt-1.5 text-base font-semibold tracking-[-0.01em] text-white">
-                Ask IPSAS, get a sourced answer
+                Sourced IPSAS answers, paragraph-cited
               </div>
               <div className="mt-1.5 text-[13px] leading-[1.55] text-white/70">
-                Conversational assistant trained on IPSAS standards 1–42, PEFA, and
-                IFMIS design patterns — with citations.
+                Ask any IPSAS question in plain English. Get a sourced answer with
+                the exact paragraph citation, written so it can go straight into
+                your working papers.
               </div>
               <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3.5">
                 <div>
@@ -148,18 +149,19 @@ export default function ToolkitSection() {
             </Link>
 
             <Link
-              href="/ipsas-training"
+              href="/drills"
               className="rounded-lg border border-white/10 bg-white/[0.04] p-5 transition-colors hover:border-ppf-sky/60 hover:bg-white/[0.06]"
             >
               <div className="font-mono text-[11px] uppercase tracking-[0.1em] text-ppf-sky">
-                Training
+                IPSAS Drills
               </div>
               <div className="mt-1.5 text-base font-semibold tracking-[-0.01em] text-white">
-                Self-paced modules for finance staff
+                Build the reflexes. Close the books faster.
               </div>
               <div className="mt-1.5 text-[13px] leading-[1.55] text-white/70">
-                Six modules on accrual transition, opening balances, consolidation,
-                and GFS mapping — with quizzes and certificates.
+                Short, focused practice questions tuned to the situations your team
+                will actually face — opening balances, donor grants under IPSAS 23,
+                GFS mapping. Built from current implementation work.
               </div>
               <div className="mt-3.5 flex items-center justify-between border-t border-white/10 pt-3.5">
                 <div>
@@ -172,6 +174,13 @@ export default function ToolkitSection() {
                 </div>
                 <span aria-hidden className="text-white/60">→</span>
               </div>
+            </Link>
+
+            <Link
+              href="/pricing"
+              className="rounded-lg border border-ppf-sky/30 bg-ppf-sky/10 px-5 py-3 text-center text-[13px] font-medium text-white transition-colors hover:bg-ppf-sky/20"
+            >
+              See pricing for both →
             </Link>
           </div>
         </div>

@@ -17,12 +17,34 @@ const HERO_COPY = {
   headlineLead: "Public financial reform that",
   headlineAccent: "outlasts the project cycle.",
   lead:
-    "Gregg Pavitt has led PFM reform for Ministries of Finance across 15 countries — designing the systems, building the capacity, and delivering the assessments donors rely on.",
-  primaryCta: { label: "Discuss an engagement", href: "/#contact" },
-  secondaryCta: { label: "See expertise areas", href: "/#expertise" },
+    "Gregg Pavitt has led PFM reform for Ministries of Finance across 15 countries — designing the systems, building the capacity, and delivering the assessments donors rely on. The same field-tested IPSAS expertise is now available as a self-serve Drill kit or authoritative live Desk reference.",
+  primaryCta:  { label: "Discuss an engagement", href: "/#contact" },
+  drillsCta:   { label: "IPSAS Drills",          href: "/drills"  },
+  deskCta:     { label: "IPSAS Desk",            href: "/desk"    },
+  expertiseLink: { label: "See expertise areas →", href: "/#expertise" },
   heroCardCaption: "FIELD · HONIARA",
   heroCardTitle: "Ministry of Finance & Treasury",
   heroCardTag: "2024 — present",
+}
+
+// Second-hero band: two equally-weighted positions sit below the main hero
+// stats bar. Left card promotes direct consulting; right card promotes the
+// SaaS toolkit (IPSAS Drills + IPSAS Desk) at a fraction of consulting cost.
+const TWO_WAYS = {
+  eyebrow: "Two ways to work with us",
+  headline: "Senior PFM expertise on the ground, or in your daily workflow.",
+  consult: {
+    title: "Engage Gregg directly",
+    body: "For ministries and donors needing senior PFM expertise on the ground — embedded advisory, system design, capacity building, and the assessments donors rely on.",
+    cta: { label: "Discuss an engagement", href: "/#contact" },
+  },
+  toolkit: {
+    title: "Use the toolkit",
+    body: "For teams who need IPSAS Drills and IPSAS Desk in their daily work, at a fraction of consulting cost. Self-serve, 14-day free trial, no card to look around.",
+    drills: { label: "IPSAS Drills", href: "/drills" },
+    desk:   { label: "IPSAS Desk",   href: "/desk" },
+    pricing: { label: "See pricing for both →", href: "/pricing" },
+  },
 }
 
 export default function HeroSection() {
@@ -77,6 +99,62 @@ export default function HeroSection() {
             Get in Touch
           </a>
         </div>
+
+        {/* Two ways to work — mobile (stacked) */}
+        <div className="border-t border-white/10 bg-ppf-navy-deep px-5 py-6">
+          <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-ppf-sky">
+            {TWO_WAYS.eyebrow}
+          </p>
+          <h2 className="mt-2 text-[20px] font-semibold leading-[1.2] tracking-[-0.02em] text-white">
+            {TWO_WAYS.headline}
+          </h2>
+
+          {/* Engage Gregg directly */}
+          <div className="mt-5 rounded-lg border border-white/10 bg-white/[0.04] p-4">
+            <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-white">
+              {TWO_WAYS.consult.title}
+            </h3>
+            <p className="mt-2 text-[13px] leading-[1.55] text-white/75">
+              {TWO_WAYS.consult.body}
+            </p>
+            <Link
+              href={TWO_WAYS.consult.cta.href}
+              className="mt-4 inline-flex items-center gap-2 rounded-md bg-ppf-sky px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-ppf-sky-hover"
+            >
+              {TWO_WAYS.consult.cta.label} <span aria-hidden>→</span>
+            </Link>
+          </div>
+
+          {/* Use the toolkit */}
+          <div className="mt-3 rounded-lg border border-white/10 bg-white/[0.04] p-4">
+            <h3 className="text-[15px] font-semibold tracking-[-0.01em] text-white">
+              {TWO_WAYS.toolkit.title}
+            </h3>
+            <p className="mt-2 text-[13px] leading-[1.55] text-white/75">
+              {TWO_WAYS.toolkit.body}
+            </p>
+            <div className="mt-4 flex flex-col gap-2">
+              <Link
+                href={TWO_WAYS.toolkit.drills.href}
+                className="rounded-md bg-ppf-sky px-4 py-2 text-center text-[13px] font-medium text-white transition-colors hover:bg-ppf-sky-hover"
+              >
+                {TWO_WAYS.toolkit.drills.label} →
+              </Link>
+              <Link
+                href={TWO_WAYS.toolkit.desk.href}
+                className="rounded-md bg-[#2A8FE0] px-4 py-2 text-center text-[13px] font-medium text-white transition-colors hover:bg-[#3B9AE1]"
+              >
+                {TWO_WAYS.toolkit.desk.label} →
+              </Link>
+              <Link
+                href={TWO_WAYS.toolkit.pricing.href}
+                className="text-center text-[12px] font-medium text-ppf-sky underline-offset-2 hover:underline"
+              >
+                {TWO_WAYS.toolkit.pricing.label}
+              </Link>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ── DESKTOP HERO (≥ 768px) ── */}
@@ -103,104 +181,127 @@ export default function HeroSection() {
         }}
       />
 
-      <div className="relative z-[2] mx-auto grid max-w-[1240px] gap-14 px-6 md:grid-cols-[1.05fr_0.95fr] md:gap-[72px] md:px-12">
-        {/* LEFT — headline + CTAs */}
-        <div ref={revealLeft} className="reveal-on-scroll pb-14 md:pb-[72px]">
-          {/* Live-status kicker */}
-          <div className="mb-6 inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[12px]">
+      <div className="relative z-[2] mx-auto max-w-[1240px] px-6 md:px-12">
+        {/* TOP — full-width slogan band */}
+        <div ref={revealLeft} className="reveal-on-scroll">
+          <div className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 text-[12px]">
             <span className="ppf-pulse h-[7px] w-[7px] rounded-full bg-[#4ADE80]" />
             <span className="font-mono text-[11px] tracking-wide text-white/85">
               {HERO_COPY.kicker}
             </span>
           </div>
 
-          <h1 className="max-w-[14ch] text-[clamp(40px,5.6vw,68px)] font-semibold leading-[1.02] tracking-[-0.035em] text-white">
+          {/* Headline goes full-width across the top of the fold so the slogan
+              reads as the page's primary statement, not a left-column heading. */}
+          <h1 className="mt-6 max-w-[26ch] text-[clamp(40px,6.4vw,80px)] font-semibold leading-[1.02] tracking-[-0.035em] text-white">
             {HERO_COPY.headlineLead}{" "}
             <span className="text-ppf-sky">{HERO_COPY.headlineAccent}</span>
           </h1>
-
-          <p className="mt-6 max-w-[52ch] text-[17px] leading-[1.6] text-white/80">
-            {HERO_COPY.lead}
-          </p>
-
-          <div className="mt-8 flex flex-wrap gap-2.5">
-            <Link
-              href={HERO_COPY.primaryCta.href}
-              className="inline-flex items-center gap-2 rounded-md bg-ppf-sky px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-ppf-sky-hover hover:shadow-crisp-md"
-            >
-              {HERO_COPY.primaryCta.label}
-              <span aria-hidden>→</span>
-            </Link>
-            <Link
-              href={HERO_COPY.secondaryCta.href}
-              className="inline-flex items-center gap-2 rounded-md border border-white/20 bg-transparent px-4 py-2.5 text-sm font-medium text-white transition-colors hover:border-white/35 hover:bg-white/[0.06]"
-            >
-              {HERO_COPY.secondaryCta.label}
-            </Link>
-          </div>
-
-          {/* Donor trust strip */}
-          <div className="mt-12 flex flex-wrap items-center gap-4 border-t border-white/10 pt-6">
-            <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-white/50">
-              Worked with
-            </span>
-            <div className="flex flex-wrap items-center gap-3">
-              {donors.slice(0, 5).map((d) => (
-                <div
-                  key={d.id}
-                  className="flex h-[40px] items-center justify-center rounded bg-white/90 px-3"
-                  title={d.name}
-                >
-                  <Image
-                    src={d.logo}
-                    alt={d.name}
-                    width={100}
-                    height={28}
-                    className="h-[28px] w-auto object-contain"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
-        {/* RIGHT — photo card (needs its own ref; a ref can only bind one node) */}
-        <div ref={revealRight} className="reveal-on-scroll pb-14 md:pb-[72px]" data-delay="2">
-          <div
-            className="relative mx-auto aspect-[4/5] max-w-[640px] overflow-hidden rounded-xl bg-ppf-navy-deep"
-            style={{
-              boxShadow:
-                "0 40px 80px -40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
-            }}
-          >
-            <Image
-              src={images.hero}
-              alt="Gregg Pavitt — fieldwork"
-              fill
-              priority
-              className="object-cover object-top"
-            />
-            {/* Bottom scrim */}
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(180deg, transparent 40%, rgba(5,28,90,0.85) 100%)",
-              }}
-            />
-            {/* Caption */}
-            <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-3 text-white">
-              <div>
-                <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-white/70">
-                  {HERO_COPY.heroCardCaption}
-                </p>
-                <p className="mt-1 text-base font-semibold tracking-tight">
-                  {HERO_COPY.heroCardTitle}
-                </p>
-              </div>
-              <span className="rounded-sm bg-white/15 px-2 py-1 font-mono text-[10.5px] tracking-wide text-white/90">
-                {HERO_COPY.heroCardTag}
+        {/* BELOW — 2-col: lead + CTAs on left, smaller photo on right */}
+        <div className="mt-10 grid gap-10 pb-14 md:grid-cols-[1.4fr_0.85fr] md:gap-[64px] md:pb-[72px]">
+          {/* LEFT — lead + 3 CTAs (Discuss + Drills + Desk) + donor strip */}
+          <div>
+            <p className="max-w-[56ch] text-[17px] leading-[1.6] text-white/80">
+              {HERO_COPY.lead}
+            </p>
+
+            {/* Three CTAs in the top fold so toolkit offer is explicit on first
+                paint. Discuss = consulting (primary); Drills + Desk = SaaS toolkit. */}
+            <div className="mt-8 flex flex-wrap gap-2.5">
+              <Link
+                href={HERO_COPY.primaryCta.href}
+                className="inline-flex items-center gap-2 rounded-md bg-ppf-sky px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-ppf-sky-hover hover:shadow-crisp-md"
+              >
+                {HERO_COPY.primaryCta.label}
+                <span aria-hidden>→</span>
+              </Link>
+              <Link
+                href={HERO_COPY.drillsCta.href}
+                className="inline-flex items-center gap-2 rounded-md bg-ppf-sky px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-ppf-sky-hover hover:shadow-crisp-md"
+              >
+                {HERO_COPY.drillsCta.label}
+                <span aria-hidden>→</span>
+              </Link>
+              <Link
+                href={HERO_COPY.deskCta.href}
+                className="inline-flex items-center gap-2 rounded-md bg-[#2A8FE0] px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-[#3B9AE1] hover:shadow-crisp-md"
+              >
+                {HERO_COPY.deskCta.label}
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
+
+            <Link
+              href={HERO_COPY.expertiseLink.href}
+              className="mt-3 inline-block text-[13px] font-medium text-ppf-sky underline-offset-2 hover:underline"
+            >
+              {HERO_COPY.expertiseLink.label}
+            </Link>
+
+            {/* Donor trust strip */}
+            <div className="mt-10 flex flex-wrap items-center gap-4 border-t border-white/10 pt-6">
+              <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-white/50">
+                Worked with
               </span>
+              <div className="flex flex-wrap items-center gap-3">
+                {donors.slice(0, 5).map((d) => (
+                  <div
+                    key={d.id}
+                    className="flex h-[40px] items-center justify-center rounded bg-white/90 px-3"
+                    title={d.name}
+                  >
+                    <Image
+                      src={d.logo}
+                      alt={d.name}
+                      width={100}
+                      height={28}
+                      className="h-[28px] w-auto object-contain"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT — photo card. Reduced from max-w-[640px]/aspect-[4/5] to
+              max-w-[420px]/aspect-[3/4] so the slogan stays dominant. */}
+          <div ref={revealRight} className="reveal-on-scroll" data-delay="2">
+            <div
+              className="relative mx-auto aspect-[3/4] max-w-[420px] overflow-hidden rounded-xl bg-ppf-navy-deep"
+              style={{
+                boxShadow:
+                  "0 40px 80px -40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.06)",
+              }}
+            >
+              <Image
+                src={images.hero}
+                alt="Gregg Pavitt — fieldwork"
+                fill
+                priority
+                className="object-cover object-top"
+              />
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(180deg, transparent 40%, rgba(5,28,90,0.85) 100%)",
+                }}
+              />
+              <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-3 text-white">
+                <div>
+                  <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-white/70">
+                    {HERO_COPY.heroCardCaption}
+                  </p>
+                  <p className="mt-1 text-base font-semibold tracking-tight">
+                    {HERO_COPY.heroCardTitle}
+                  </p>
+                </div>
+                <span className="rounded-sm bg-white/15 px-2 py-1 font-mono text-[10.5px] tracking-wide text-white/90">
+                  {HERO_COPY.heroCardTag}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -229,6 +330,77 @@ export default function HeroSection() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* SECOND HERO BAND — Two ways to work with us (desktop) */}
+      <div className="relative z-[2] border-t border-white/10 bg-ppf-navy-deep px-6 py-14 md:px-12 md:py-20">
+        <div className="mx-auto max-w-[1240px]">
+          <div className="max-w-[680px]">
+            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-ppf-sky">
+              {TWO_WAYS.eyebrow}
+            </p>
+            <h2 className="mt-3 text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-white">
+              {TWO_WAYS.headline}
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            {/* Left card — Engage Gregg directly */}
+            <div className="rounded-lg border border-white/10 bg-white/[0.04] p-7 transition-colors hover:border-ppf-sky/40 hover:bg-white/[0.06]">
+              <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-ppf-sky">
+                Consulting
+              </p>
+              <h3 className="mt-2.5 text-[22px] font-semibold tracking-[-0.015em] text-white">
+                {TWO_WAYS.consult.title}
+              </h3>
+              <p className="mt-3 text-[15px] leading-[1.65] text-white/80">
+                {TWO_WAYS.consult.body}
+              </p>
+              <Link
+                href={TWO_WAYS.consult.cta.href}
+                className="mt-6 inline-flex items-center gap-2 rounded-md bg-ppf-sky px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-ppf-sky-hover hover:shadow-crisp-md"
+              >
+                {TWO_WAYS.consult.cta.label}
+                <span aria-hidden>→</span>
+              </Link>
+            </div>
+
+            {/* Right card — Use the toolkit */}
+            <div className="rounded-lg border border-white/10 bg-white/[0.04] p-7 transition-colors hover:border-ppf-sky/40 hover:bg-white/[0.06]">
+              <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-ppf-sky">
+                Toolkit
+              </p>
+              <h3 className="mt-2.5 text-[22px] font-semibold tracking-[-0.015em] text-white">
+                {TWO_WAYS.toolkit.title}
+              </h3>
+              <p className="mt-3 text-[15px] leading-[1.65] text-white/80">
+                {TWO_WAYS.toolkit.body}
+              </p>
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                <Link
+                  href={TWO_WAYS.toolkit.drills.href}
+                  className="inline-flex items-center gap-2 rounded-md bg-ppf-sky px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-ppf-sky-hover hover:shadow-crisp-md"
+                >
+                  {TWO_WAYS.toolkit.drills.label}
+                  <span aria-hidden>→</span>
+                </Link>
+                <Link
+                  href={TWO_WAYS.toolkit.desk.href}
+                  className="inline-flex items-center gap-2 rounded-md bg-[#2A8FE0] px-[18px] py-[11px] text-sm font-medium text-white shadow-crisp-sm transition-all hover:bg-[#3B9AE1] hover:shadow-crisp-md"
+                >
+                  {TWO_WAYS.toolkit.desk.label}
+                  <span aria-hidden>→</span>
+                </Link>
+              </div>
+              <Link
+                href={TWO_WAYS.toolkit.pricing.href}
+                className="mt-4 inline-block text-[13px] font-medium text-ppf-sky underline-offset-2 hover:underline"
+              >
+                {TWO_WAYS.toolkit.pricing.label}
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 

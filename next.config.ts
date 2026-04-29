@@ -18,6 +18,18 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+
+  // 301 redirects — the products were renamed and routes moved:
+  //   /ipsas-training  → /drills  (IPSAS Drills)
+  //   /ipsas-questions → /desk    (IPSAS Desk)
+  // Permanent (308) so search engines update the index and inbound link
+  // equity transfers to the new paths.
+  async redirects() {
+    return [
+      { source: "/ipsas-training", destination: "/drills", permanent: true },
+      { source: "/ipsas-questions", destination: "/desk", permanent: true },
+    ]
+  },
 }
 
 export default nextConfig

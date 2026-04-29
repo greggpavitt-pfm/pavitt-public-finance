@@ -23,10 +23,10 @@ const COLS: FooterCol[] = [
   {
     title: "Products",
     links: [
-      { label: "Overview",        href: "/products" },
-      { label: "IPSAS Training",  href: "/ipsas-training" },
-      { label: "IPSAS Questions", href: "/ipsas-questions" },
-      { label: "Practitioner Advisor", href: "/products#advisor" },
+      { label: "Overview",     href: "/products" },
+      { label: "IPSAS Drills", href: "/drills" },
+      { label: "IPSAS Desk",   href: "/desk" },
+      { label: "Pricing",      href: "/pricing" },
     ],
   },
   {

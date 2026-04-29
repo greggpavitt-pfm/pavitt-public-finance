@@ -1,6 +1,7 @@
 // /products — public landing page for the PFS SaaS products.
-// Two products: IPSAS Training (self-paced modules + grading) and
-// IPSAS Advisor (practitioner Q&A with citations).
+// Two products:
+//   • IPSAS Drills — short, focused practice questions (page: /drills)
+//   • IPSAS Desk   — paragraph-cited Q&A reference desk (page: /desk)
 // Target audience: Ministry of Finance procurement + training officers.
 
 import type { Metadata } from "next"
@@ -9,9 +10,9 @@ import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 
 export const metadata: Metadata = {
-  title: "Products — IPSAS Training and Practitioner Advisor",
+  title: "Products — IPSAS Drills and IPSAS Desk",
   description:
-    "Software products for public sector accounting teams: self-paced IPSAS training modules with organisational reporting, plus a practitioner advisor that answers real IPSAS questions with cited paragraphs.",
+    "Two software products for public sector accounting teams: IPSAS Drills, short focused practice questions tuned to real implementation pain points; and IPSAS Desk, a paragraph-cited reference desk for hard IPSAS questions.",
   alternates: { canonical: "/products" },
 }
 
@@ -32,81 +33,76 @@ type Product = {
 
 const PRODUCTS: Product[] = [
   {
-    id: "training",
-    name: "IPSAS Training",
+    id: "drills",
+    name: "IPSAS Drills",
     kicker: "Product 01",
-    tagline: "Self-paced IPSAS training for ministry finance staff.",
+    tagline: "Build the reflexes. Close the books faster.",
     summary:
-      "Over 100 modules across accrual and cash-basis IPSAS, jurisdiction overlays for country-specific rules, per-user grading with a 70% pass mark, and org-level reporting for training managers.",
+      "Short, focused practice questions tuned to the situations your team will actually face — opening balances that won't reconcile, donor grants under IPSAS 23, GFS mapping with a chart of accounts that wasn't designed for it. Built from current implementation work in a Pacific Treasury, not from a textbook.",
     features: [
-      "110+ modules across accrual, cash-basis, and shared content",
-      "Three difficulty levels for accrual learners",
+      "110+ drills across accrual, cash-basis, and shared content",
+      "Graduated by difficulty and tagged to the standard",
+      "Organised around real implementation pain points",
       "Solomon Islands jurisdiction overlay (more jurisdictions on request)",
-      "Per-product approval — admins control training access per user",
-      "Reviewer role — two reviewers per org with scoped result access",
+      "Team progress dashboard for the lead accountant",
       "Usage caps with inheritance (user → subgroup → org → unlimited)",
-      "Auto-submit after 24 hours to keep records clean",
+      "14-day free trial, no card required",
       "Certificate on 70% pass, with verifiable URL",
     ],
     pricing: [
       {
-        tier: "Beta",
-        headline: "Free 14-day pilot",
-        detail: "Full feature access for ministries evaluating the platform. Up to 50 seats.",
-      },
-      {
         tier: "Individual",
-        headline: "$X / seat / month",
-        detail: "Single seat for individual students or accountants. Cancel anytime. Self-signup via Stripe.",
+        headline: "USD 19 / month",
+        detail: "Single seat for individual accountants and PFM consultants. Or USD 180 / year (save USD 48).",
       },
       {
         tier: "Team",
-        headline: "$Y / seat / year",
-        detail: "Org licence with configurable seat limits and subgroup structure.",
+        headline: "USD 600 / year for 5",
+        detail: "For small audit firms and finance departments. Additional seats USD 80/seat/year.",
       },
       {
-        tier: "Enterprise",
-        headline: "Custom",
-        detail: "Custom jurisdiction overlay, content co-authoring, onboarding support.",
+        tier: "Organisation",
+        headline: "From USD 4,800 / year",
+        detail: "Unlimited staff in one Ministry, statutory body, or larger audit firm.",
       },
     ],
-    cta: { label: "Request a licence", href: "/#contact" },
+    cta: { label: "See IPSAS Drills →", href: "/drills" },
   },
   {
-    id: "advisor",
-    name: "IPSAS Practitioner Advisor",
+    id: "desk",
+    name: "IPSAS Desk",
     kicker: "Product 02",
-    tagline: "Describe a transaction. Get a cited IPSAS treatment.",
+    tagline: "The technical reference desk for teams without one.",
     summary:
-      "Interactive Q&A for working accountants. The advisor identifies applicable standards, asks clarifying questions when needed, and returns recognition, measurement, and disclosure guidance with paragraph-level citations.",
+      "Ask any IPSAS question in plain English. Get a sourced answer with the exact paragraph citation, written so it can go straight into your working papers. Built specifically for IPSAS — not IFRS with public-sector content bolted on.",
     features: [
-      "Natural-language input — no need to know which standard applies",
-      "Context-aware — jurisdiction, entity type, reporting basis locked per conversation",
-      "Citations to specific IPSAS paragraphs",
-      "Clarifying-question flow for ESL users (clickable options)",
-      "PDF attachments up to 4MB for transaction documents",
+      "Plain-English questions; paragraph-cited answers from the IPSAS source",
+      "Context-aware — jurisdiction, entity type, reporting basis per conversation",
+      "PDF document upload (up to 4MB) for transaction-specific questions",
+      "Working-paper export format on Firm and above",
+      "Customised plans add your local statute and regulation",
       "Conversation history saved for audit reference",
       "Daily + rolling 7-day token caps (cost controlled)",
       "Admin-configurable LLM routing via OpenRouter",
     ],
     pricing: [
       {
-        tier: "Beta",
-        headline: "Included with Training licence",
-        detail: "Practitioner access granted per-user by org admin during pilot.",
+        tier: "Practitioner",
+        headline: "USD 49 / month",
+        detail: "Up to 100 queries / month. Or USD 480 / year (save USD 108).",
       },
       {
-        tier: "Standard",
-        headline: "Per-user, per-month",
-        detail: "Usage caps configurable at org, subgroup, or user level.",
+        tier: "Firm / Small Ministry",
+        headline: "USD 2,400 / year",
+        detail: "Up to 10 named users sharing 1,000 queries / month. Annual invoicing.",
       },
       {
-        tier: "Enterprise",
-        headline: "Custom",
-        detail: "Jurisdiction-specific knowledge base extension, SLA, dedicated support.",
+        tier: "Customised",
+        headline: "From USD 6,000 / year",
+        detail: "Local statute, regulations, and accounting manual added to the reference base.",
       },
     ],
-    cta: { label: "Request access", href: "/#contact" },
+    cta: { label: "See IPSAS Desk →", href: "/desk" },
   },
 ]
 

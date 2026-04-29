@@ -17,6 +17,7 @@ const navLinks = [
   { label: "Expertise", href: "/#expertise" },
   { label: "Regions", href: "/#regions" },
   { label: "Products", href: "/products" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Insights", href: "/insights" },
   { label: "Contact", href: "/#contact" },
 ]
@@ -116,17 +117,19 @@ export default function Navbar() {
           </ul>
 
           <Link
-            href="/ipsas-training"
+            href="/drills"
             className="rounded-md bg-ppf-sky px-3.5 py-1.5 text-sm font-medium text-white shadow-crisp-sm transition-colors hover:bg-ppf-sky-hover"
           >
-            IPSAS Training
+            IPSAS Drills
           </Link>
           <Link
-            href="/ipsas-questions"
+            href="/desk"
             className="rounded-md bg-[#2A8FE0] px-3.5 py-1.5 text-sm font-medium text-white shadow-crisp-sm transition-colors hover:bg-[#3B9AE1]"
           >
-            IPSAS Questions
+            IPSAS Desk
           </Link>
+          {/* Pricing already lives in the main nav links above; Request demo is
+              kept as a secondary outlined CTA so existing inbound links work. */}
           <Link
             href="/request-demo"
             className="rounded-md border border-ppf-sky px-3.5 py-1.5 text-sm font-medium text-ppf-sky transition-colors hover:bg-ppf-sky hover:text-white"
@@ -188,18 +191,18 @@ export default function Navbar() {
           })}
           <li className="mt-4 flex flex-col gap-2">
             <Link
-              href="/ipsas-training"
+              href="/drills"
               onClick={() => setOpen(false)}
               className="rounded-md bg-ppf-sky px-4 py-2.5 text-center text-sm font-medium text-white"
             >
-              IPSAS Training
+              IPSAS Drills
             </Link>
             <Link
-              href="/ipsas-questions"
+              href="/desk"
               onClick={() => setOpen(false)}
               className="rounded-md bg-[#2A8FE0] px-4 py-2.5 text-center text-sm font-medium text-white"
             >
-              IPSAS Questions
+              IPSAS Desk
             </Link>
             <Link
               href="/request-demo"

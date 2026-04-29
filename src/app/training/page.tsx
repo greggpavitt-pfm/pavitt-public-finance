@@ -137,7 +137,20 @@ export default async function TrainingPage() {
           <h1 className="mb-1 text-3xl font-bold text-ppf-navy">
             Welcome back{profile.full_name ? `, ${profile.full_name.split(" ")[0]}` : ""}
           </h1>
-          <p className="mb-2 text-slate-500">{pathwayLabel}</p>
+          <p className="mb-4 text-slate-500">{pathwayLabel}</p>
+
+          {/* View toggle: Module View | Topic View */}
+          <div className="mb-6 flex gap-2">
+            <span className="inline-flex items-center rounded-md bg-ppf-sky px-4 py-1.5 text-sm font-semibold text-white">
+              Module View
+            </span>
+            <Link
+              href="/training/topics"
+              className="inline-flex items-center rounded-md border border-ppf-sky/30 px-4 py-1.5 text-sm font-semibold text-ppf-sky transition-colors hover:border-ppf-sky hover:bg-ppf-pale"
+            >
+              Browse by Topic
+            </Link>
+          </div>
 
           {/* Progress summary — split if jurisdiction overlay modules exist */}
           {modules.length > 0 && (

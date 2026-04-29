@@ -371,5 +371,345 @@
     "minRead": "min read",
     "readPost": "Read the post",
     "noPosts": "No posts yet."
+  },
+  "Desk": {
+    "metaTitle": "IPSAS Desk — Pavitt Public Finance",
+    "metaDescription": "Sourced, paragraph-cited IPSAS answers for government finance teams and audit firms. Built for IPSAS first, not IFRS with public-sector mode. Free trial.",
+    "hero": {
+      "eyebrow": "Now in beta · For practitioners and audit teams",
+      "headline": "IPSAS Desk",
+      "tagline": "The technical reference desk for teams without one.",
+      "lead": "Ask any IPSAS question in plain English. Get a sourced answer with the exact paragraph citation, written so it can go straight into your working papers. Built specifically for IPSAS — not IFRS with public-sector content bolted on.",
+      "ctaTrial": "Start free trial",
+      "ctaSample": "See a sample answer →"
+    },
+    "what": {
+      "eyebrow": "What it does",
+      "headline": "Twenty seconds. Paragraph reference. Plain English.",
+      "p1": "A senior PFM advisor bills somewhere between USD 800 and USD 2,000 per day. For most public-sector accounting questions, that's the wrong tool — too expensive, too slow, and unavailable when you need an answer in time for the close.",
+      "p2": "The Desk is the right tool for those questions. Ask in plain English. Upload supporting documentation if it helps. You get back the applicable standard, the specific paragraph(s), the recommended treatment for your context, and — where it matters — a note on what working-paper documentation an auditor will expect.",
+      "p3": "Every answer is grounded in the actual IPSAS source text. Citations are real and verifiable. The Desk is designed never to invent a paragraph reference that doesn't exist."
+    },
+    "ipsasFirst": {
+      "eyebrow": "IPSAS-first",
+      "headline": "Built for IPSAS first, not IFRS with public-sector mode.",
+      "p1": "Most AI accounting tools were built for the IFRS / FASB market and added IPSAS later, if at all. The result: shallow handling of the standards that matter most in public sector — IPSAS 23 (non-exchange revenue), 24 (budget reporting), 32 (service concession arrangements), 35 (consolidated statements), and the GFS reconciliation that ties government accounts back to fiscal reporting.",
+      "p2": "The Desk is built around those standards, by a practitioner who applies them on real engagements. The IFRS-equivalent treatments are there too, where they help — but the centre of gravity is public sector."
+    },
+    "howItWorks": {
+      "eyebrow": "How it works",
+      "headline": "Three steps. Sourced answer.",
+      "steps": {
+        "step1Title": "Set your context",
+        "step1Body": "Tell the Desk your jurisdiction, entity type, reporting basis (cash, modified accrual, full accrual), and which IPSAS standards you've adopted. Answers are tuned to your situation, not generic.",
+        "step2Title": "Ask in plain language",
+        "step2Body": "“We received a USD 4m grant from a bilateral donor with conditions tied to construction milestones. How do we recognise this under IPSAS 23?” The Desk identifies the applicable standard, reads any documents you upload, and answers in context.",
+        "step3Title": "Use the answer",
+        "step3Body": "Paragraph citations, recommended treatment, suggested working-paper note. Copy what you need into your file. The citation is verifiable — it points to a real paragraph in a real standard."
+      }
+    },
+    "audience": {
+      "eyebrow": "Who uses the Desk",
+      "headline": "Built for teams who need a defensible answer fast.",
+      "cards": {
+        "card1Title": "Senior accountants and CFOs in government",
+        "card1Body": "For when the question is too hard for the team but too small to bring in a consultant. Get a sourced answer fast, defend it to your auditor, move on.",
+        "card2Title": "Audit firms outside the Big Four",
+        "card2Body": "For firms that audit governments but don't have a public-sector technical desk. The Desk fills that role: ask, cite, document, sign.",
+        "card3Title": "PFM advisors and donor-project staff",
+        "card3Body": "For consultants who need to give a defensible answer quickly to a Ministry counterpart, with the citation already attached."
+      }
+    },
+    "limits": {
+      "eyebrow": "Limits",
+      "headline": "What the Desk doesn't do.",
+      "p1": "The Desk is a research and reference tool, not a replacement for professional judgment or audit. It will give you a sourced position on an IPSAS question; you and your team are still responsible for the accounting decision and the audit response.",
+      "p2": "It also doesn't pretend to know what it doesn't know. If a question requires entity-specific information the Desk doesn't have, it asks. If a question falls outside IPSAS into local statute or regulation, it says so — unless you're on a Customised plan, where local statute and regulation can be added to the Desk's reference base."
+    },
+    "trust": {
+      "eyebrow": "Trust signals",
+      "headline": "Sourced answers. Built by a practitioner, not a chatbot vendor.",
+      "lead": "The Desk is curated and operated by Gregg Pavitt, a public financial management specialist with 25 years of work across Sub-Saharan Africa, South Asia, and the Pacific. The reference base is the actual IPSAS standards — IPSAS 1 through the most recently issued — plus IPSASB framework documents and selected public-sector application guidance. Updates are pushed as standards are revised.",
+      "donorsHeadline": "Donors funding the underlying consulting practice"
+    },
+    "pricing": {
+      "eyebrow": "Pricing",
+      "headline": "Try it free. Subscribe when you've used it on a real question.",
+      "p1": "Start with a 14-day free trial — generous query allowance, no credit card needed to look around. Add a card to keep going past day 14.",
+      "p2": "For audit firms, ministries, and donor-funded organisations, see team and organisation pricing. Customised plans (your local statute and regulation added to the reference base) are available for organisations that need them.",
+      "ctaTrial": "Start free trial",
+      "ctaPricing": "See pricing →"
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "headline": "Common questions",
+      "q1": "How is this different from ChatGPT or general AI tools?",
+      "a1": "ChatGPT will confidently cite IPSAS paragraph numbers that don't exist. The Desk is grounded in the actual standards: every citation is traceable to a real paragraph. If the answer isn't in the source, the Desk says so.",
+      "q2": "How is this different from IFRS Buddy / Acclara / IFRS Companion?",
+      "a2": "Those tools are excellent at IFRS. They handle IPSAS as a secondary feature, if at all. The Desk is built for IPSAS first.",
+      "q3": "Can it handle our local jurisdiction?",
+      "a3": "Standard plans answer in IPSAS terms with general public-sector context. Customised plans add your local statute, regulations, and accounting manual to the reference base, so the answer reflects your specific compliance environment.",
+      "q4": "Will the answer hold up in an audit?",
+      "a4": "The citation will. The accounting position is yours and your auditor's to agree on — but the Desk gives you a defensible, sourced starting point with the paragraph reference your auditor will ask for anyway.",
+      "q5": "What if I'm just learning IPSAS?",
+      "a5Part1": "The Desk is built for practitioners with a working knowledge. If you're learning the standards, ",
+      "a5LinkLabel": "IPSAS Drills",
+      "a5Part2": " is the better starting point."
+    },
+    "cross": {
+      "headline": "Drills + Desk go together.",
+      "body": "Drills builds your team's reflexes on routine treatments. Desk handles the hard cases when they come up.",
+      "cta": "See bundle pricing →"
+    }
+  },
+  "Drills": {
+    "metaTitle": "IPSAS Drills — Pavitt Public Finance",
+    "metaDescription": "Field-tested IPSAS practice for government finance teams and audit firms. Built by a current Pacific Treasury implementation lead, not from a textbook. Free trial.",
+    "hero": {
+      "eyebrow": "Now in beta · Pacific, Sub-Saharan Africa, South Asia",
+      "headline": "IPSAS Drills",
+      "tagline": "Build the reflexes. Close the books faster.",
+      "lead": "Short, focused practice questions tuned to the situations your team will actually face — opening balances that won't reconcile, donor grants under IPSAS 23, GFS mapping with a chart of accounts that wasn't designed for it. Built from current implementation work in a Pacific Treasury, not from a textbook.",
+      "ctaTrial": "Start free trial",
+      "ctaSample": "See a sample drill →"
+    },
+    "whyNot": {
+      "eyebrow": "Why this isn't another IPSAS course",
+      "headline": "This isn't a course. It's training the way professionals actually train.",
+      "p1": "Most IPSAS training is built around the standards. You read the standard, you watch the video, you sit the exam. That's how you get a certificate — but it's not how you get faster, more accurate, or more confident on a Monday morning when the books need closing.",
+      "p2": "Drills works the way a junior surgeon, a pilot, or an auditor in a Big Four firm trains: short, repeated, focused on the moves you'll actually make. Ten to fifteen minutes a day. Targeted at the situations that come up in real public-sector accounting — not edge cases, not exam tricks, not US-only treatments."
+    },
+    "painPoints": {
+      "eyebrow": "What's in the drills",
+      "headline": "Built around the problems that actually stop IPSAS adoption.",
+      "lead": "Each drill is graduated by difficulty and tagged to the standard, but organised around real implementation pain points:",
+      "card1Title": "Opening balances and transition",
+      "card1Body": "The unglamorous work that derails most IPSAS adoptions. First-time recognition of assets and liabilities. Restating prior-year comparatives. Opening balance sheet construction when source data is patchy.",
+      "card2Title": "Revenue, grants, and donor funds",
+      "card2Body": "Where small governments live or die. IPSAS 23 (non-exchange revenue) at the level you'll actually apply it. Grant conditions, restrictions, and timing. Consolidating donor-funded special purpose funds into the whole-of-government accounts.",
+      "card3Title": "Reporting and consolidation",
+      "card3Body": "What auditors actually look at. Whole-of-government consolidation under IPSAS 35. GFS-to-IPSAS mapping. Cash-flow statement construction in environments where the IFMIS doesn't help. Disclosure quality."
+    },
+    "topics": {
+      "eyebrow": "Full topic coverage",
+      "headline": "15 topics. Every standard your team will actually meet.",
+      "lead": "The pain points above are where most teams start. Here's the full topic coverage — each tagged to the standards that govern it.",
+      "items": {
+        "DT-01-name": "Property, plant & equipment",
+        "DT-01-tagline": "The biggest balance sheet item — and the biggest source of audit qualifications.",
+        "DT-02-name": "Non-exchange revenue",
+        "DT-02-tagline": "Where IPSAS most differs from commercial accounting.",
+        "DT-03-name": "Employee benefits",
+        "DT-03-tagline": "Pension and leave obligations done properly, with actuarial method.",
+        "DT-04-name": "Provisions & contingencies",
+        "DT-04-tagline": "Legal claims, guarantees, and PPP obligations — usually under-disclosed.",
+        "DT-05-name": "Consolidation",
+        "DT-05-tagline": "Defining the reporting entity, and the mechanics of consolidating it.",
+        "DT-06-name": "Budget vs actuals",
+        "DT-06-tagline": "Original budget, final budget, actual — with the variance narrative auditors want.",
+        "DT-07-name": "Financial instruments",
+        "DT-07-tagline": "Concessional loans, ECL staging, and government loan portfolios.",
+        "DT-08-name": "Asset impairment",
+        "DT-08-tagline": "Recoverable service amount for schools, hospitals, and roads.",
+        "DT-09-name": "Service concessions (PPPs)",
+        "DT-09-tagline": "Putting PPP assets on balance sheet, where they belong.",
+        "DT-10-name": "Inventories",
+        "DT-10-tagline": "Distribution stock, strategic reserves, and donated goods.",
+        "DT-11-name": "Leases",
+        "DT-11-tagline": "Right-of-use assets and lease liabilities under IPSAS 43.",
+        "DT-12-name": "Financial statement presentation",
+        "DT-12-tagline": "The four primary statements, accounting policies, and prior-period errors.",
+        "DT-13-name": "Opening balances & transition",
+        "DT-13-tagline": "First-time recognition, deemed cost, and comparative restatement.",
+        "DT-14-name": "Revenue, grants & donor funds",
+        "DT-14-tagline": "Multi-year grants, in-kind contributions, and clawback risk.",
+        "DT-15-name": "Reporting & audit readiness",
+        "DT-15-tagline": "Whole-of-government consolidation, GFS mapping, and audit working papers."
+      }
+    },
+    "howItWorks": {
+      "eyebrow": "How it works",
+      "headline": "Three steps. Ten minutes a day.",
+      "step1Title": "Pick your level",
+      "step1Body": "Tell us your role and what you're working on. We'll start you with drills appropriate to your situation, not generic exam prep.",
+      "step2Title": "Drill, daily",
+      "step2Body": "Ten to fifteen minutes per session. Each question gives you the answer, the standard, the paragraph, and — where it matters — the implementation note from real projects.",
+      "step3Title": "Track the team",
+      "step3Body": "Solo users see their own progress. Team and ministry plans give the lead accountant a dashboard: who's drilling, where the team is weakest, and what to focus on next."
+    },
+    "audience": {
+      "eyebrow": "Who it's for",
+      "headline": "Built for the teams who actually have to make IPSAS work.",
+      "card1Title": "Government finance teams",
+      "card1Body": "For Ministries, line ministries, and statutory bodies adopting or applying IPSAS. Especially useful where the team is small, capacity is stretched, and external training is hard to access.",
+      "card2Title": "Audit firms with public-sector clients",
+      "card2Body": "For small and mid-size firms where government audit isn't the firm's main practice. Bring your team's IPSAS knowledge up to a level where you can confidently sign the opinion.",
+      "card3Title": "PFM consultants and donor-project staff",
+      "card3Body": "For staff supporting government counterparts on IPSAS reform. Use Drills yourself; deploy it to the teams you're supporting."
+    },
+    "trust": {
+      "eyebrow": "Trust signals",
+      "headline": "Built by someone currently doing the work.",
+      "lead": "Drills is written and curated by Gregg Pavitt — a public financial management specialist with 25 years of experience across Sub-Saharan Africa, South Asia, and the Pacific, and currently embedded in the Solomon Islands Ministry of Finance & Treasury. The questions come from the implementations he is running and has run, with input from the counterparts who have lived the problems.",
+      "donorsHeadline": "Donors funding the underlying consulting practice"
+    },
+    "pricing": {
+      "eyebrow": "Pricing",
+      "headline": "Try it free. Subscribe when it's earning its keep.",
+      "p1": "Start with a 14-day free trial — no credit card needed to look around. Add a card to keep going past day 14. Cancel any time before the first charge.",
+      "p2": "For teams of 5 or more, ministries, or audit firms wanting a single account for the whole staff, see team and organisation pricing.",
+      "ctaTrial": "Start free trial",
+      "ctaPricing": "See pricing →"
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "headline": "Common questions",
+      "q1": "Do I get a certificate?",
+      "a1": "Drills isn't a certificate program — that's CIPFA and ACCA's territory, and they do it well. Drills makes you better at the daily work. Many teams use Drills alongside a CIPFA Certificate or Diploma, not instead of one.",
+      "q2": "Is this aligned to the current IPSAS standards?",
+      "a2": "Yes — Drills covers IPSAS 1 through the most recent issued standards, including IPSAS 41 (Financial Instruments), 43 (Leases), and the public-sector-specific standards (23, 24, 32). Updates are pushed as standards are revised.",
+      "q3": "We're a Ministry — can we get a single account for the whole finance team?",
+      "a3": "Yes. Ministry plans cover unlimited staff in one entity, with a dashboard for the Director of Accounts. We also offer donor-funded pricing for governments where adoption is being supported by an international donor.",
+      "q4": "What if I want one-on-one help on something specific?",
+      "a4Part1": "That's what ",
+      "a4LinkLabel": "IPSAS Desk",
+      "a4Part2": " is for. Drills builds reflexes; Desk handles the hard cases."
+    },
+    "cross": {
+      "headline": "Drills + Desk go together.",
+      "body": "Drills builds your team's reflexes on routine treatments. Desk handles the hard cases when they come up.",
+      "cta": "See bundle pricing →"
+    }
+  },
+  "Pricing": {
+    "metaTitle": "Pricing — Pavitt Public Finance",
+    "metaDescription": "Pricing for IPSAS Drills and IPSAS Desk. Self-serve plans for individuals and small teams; organisation plans for ministries and audit firms; donor-funded and regional pricing available.",
+    "hero": {
+      "eyebrow": "Pricing",
+      "headline": "Pricing",
+      "tagline": "Built to be affordable to the teams that need it most.",
+      "lead": "Self-serve plans for individuals and small teams. Organisation plans for ministries and audit firms. Donor-funded pricing for governments adopting IPSAS with international donor support. All prices in USD; reduced pricing available for organisations in low- and lower-middle-income countries — see below."
+    },
+    "drillsSection": {
+      "eyebrow": "IPSAS Drills",
+      "headline": "For staff and teams building IPSAS reflexes.",
+      "donorNotePart1": "Donor-funded deployment? ",
+      "donorNotePart2": "If your IPSAS adoption is being supported by World Bank, EU, DFAT, USAID, MCC, FCDO, or another donor, ",
+      "donorNoteLink": "ask about",
+      "donorNotePart3": " our donor-funded pricing format — designed to drop directly into a project budget line."
+    },
+    "deskSection": {
+      "eyebrow": "IPSAS Desk",
+      "headline": "For practitioners and audit teams who need sourced answers, fast."
+    },
+    "bundle": {
+      "eyebrow": "Drills + Desk",
+      "headline": "Save 20% when you take both.",
+      "lead": "Drills builds the reflexes for routine treatments. The Desk handles the hard cases when they come up. Most of our team and ministry customers want both — so we offer them together at a discount.",
+      "boxTitle": "Drills + Desk bundle",
+      "line1Label": "Individual + Practitioner",
+      "line1Price": "USD 54 / month or USD 528 / year",
+      "line2Label": "Team + Firm",
+      "line2Price": "USD 2,400 / year",
+      "line3Label": "Organisation + Firm",
+      "line3Price": "Contact us for combined pricing",
+      "line4Label": "Organisation + Customised",
+      "line4Price": "Contact us for combined pricing",
+      "cta": "Contact us for bundle setup"
+    },
+    "regional": {
+      "eyebrow": "Regional & donor",
+      "headline": "Regional and donor-funded pricing",
+      "p1": "We charge full list price to organisations in high-income countries. For organisations based in countries on the OECD DAC list of ODA recipients — particularly Least Developed Countries and Lower-Middle-Income Countries — we offer reduced pricing of 30 to 50 percent off list, depending on country tier and organisation type.",
+      "p2": "For governments adopting IPSAS with the support of an international donor (World Bank, EU, DFAT, USAID, MCC, FCDO, and others), we provide pricing in a format designed to drop directly into a project budget line. We will provide a sample budget justification on request.",
+      "p3": "To request regional or donor-funded pricing, send us a brief on your organisation, country, and intended use, and we'll come back to you within two working days.",
+      "cta": "Request regional / donor pricing"
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "headline": "Common questions about pricing",
+      "q1": "Do prices include VAT or local taxes?",
+      "a1": "Prices are exclusive of any local sales tax or VAT. For invoiced organisational plans, applicable taxes will be shown on the invoice.",
+      "q2": "Can we pay by invoice rather than card?",
+      "a2": "Yes — Team, Organisation, Firm, and Customised plans can all be invoiced annually in advance. Individual and Practitioner plans are card-only.",
+      "q3": "Can we cancel any time?",
+      "a3": "Yes. Self-serve monthly plans cancel at the next billing date. Annual plans run to the end of the period; we don't pro-rate refunds, but we don't auto-renew without a reminder.",
+      "q4": "What counts as one “query” on the Desk?",
+      "a4": "One query is one question with one answer, including any follow-up clarification within the same conversation. Practitioner plans have a generous 100/month allowance; in normal use, very few practitioners reach the cap.",
+      "q5": "Is there a free version?",
+      "a5": "Both products offer a 14-day free trial with no credit card required to start. We don't offer a permanently free tier — keeping the products focused, accurate, and well-maintained requires real revenue."
+    },
+    "ctaTrial": "Start free trial",
+    "ctaContact": "Contact us",
+    "tiers": {
+      "drills-individual": {
+        "name": "Individual",
+        "price": "USD 19 / month",
+        "priceSub": "or USD 180 / year (save USD 48)",
+        "description": "For individual accountants, junior staff, and PFM consultants building their own IPSAS skills.",
+        "f1": "Full drill library, all standards",
+        "f2": "Personal progress tracking",
+        "f3": "Updated as standards are revised",
+        "f4": "14-day free trial — no card to look around",
+        "smallText": "Student pricing (USD 9/mo, .edu or equivalent verification) — ",
+        "smallLink": "contact us"
+      },
+      "drills-team": {
+        "name": "Team",
+        "price": "USD 600 / year for 5 seats",
+        "priceSub": "Additional seats: USD 80 / seat / year",
+        "description": "For small audit firms, donor-project teams, and small finance departments.",
+        "f1": "Everything in Individual",
+        "f2": "Up to 5 staff in one account",
+        "f3": "Team progress dashboard for the lead",
+        "f4": "Quarterly review of team weak spots",
+        "f5": "Invoicing available (annual, in advance)",
+        "badge": "Most popular for small audit firms"
+      },
+      "drills-organisation": {
+        "name": "Organisation",
+        "price": "From USD 4,800 / year",
+        "priceSub": "Unlimited staff in one entity",
+        "description": "For Ministries, statutory bodies, and larger audit firms.",
+        "f1": "Everything in Team",
+        "f2": "Unlimited seats within one organisation",
+        "f3": "Director's dashboard with team-wide analytics",
+        "f4": "Onboarding session for the lead accountant",
+        "f5": "Annual invoicing, donor-project budget format on request"
+      },
+      "desk-practitioner": {
+        "name": "Practitioner",
+        "price": "USD 49 / month",
+        "priceSub": "or USD 480 / year (save USD 108)",
+        "description": "For senior accountants, sole practitioners, and PFM consultants.",
+        "f1": "Up to 100 queries / month",
+        "f2": "Paragraph-cited answers from the IPSAS source",
+        "f3": "Document upload (PDF) for context-specific questions",
+        "f4": "14-day free trial — generous query allowance, no card to look around"
+      },
+      "desk-firm": {
+        "name": "Firm / Small Ministry",
+        "price": "USD 2,400 / year",
+        "priceSub": "Up to 10 named users · 1,000 queries / month shared",
+        "description": "For small-to-mid audit firms and small Ministries of Finance.",
+        "f1": "Everything in Practitioner",
+        "f2": "Up to 10 named users in one account",
+        "f3": "Shared query allowance (1,000/month)",
+        "f4": "Working-paper export format for audit files",
+        "f5": "Annual invoicing",
+        "badge": "Most popular for audit firms outside Big Four"
+      },
+      "desk-customised": {
+        "name": "Customised",
+        "price": "From USD 6,000 / year",
+        "priceSub": "Local statute and regulation added",
+        "description": "For organisations needing the Desk to reflect their specific compliance environment.",
+        "f1": "Everything in Firm / Small Ministry",
+        "f2": "Your local statute, regulations, and accounting manual added to the reference base",
+        "f3": "Bespoke responses tied to your jurisdiction",
+        "f4": "Quarterly review and update of the customised reference base",
+        "f5": "Dedicated point of contact"
+      }
+    }
   }
 }

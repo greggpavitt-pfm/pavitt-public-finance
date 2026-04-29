@@ -7,111 +7,66 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
+import { getTranslations } from "next-intl/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import { donors } from "@/lib/content"
 
-export const metadata: Metadata = {
-  title: "IPSAS Drills — Pavitt Public Finance",
-  description:
-    "Field-tested IPSAS practice for government finance teams and audit firms. Built by a current Pacific Treasury implementation lead, not from a textbook. Free trial.",
-  alternates: { canonical: "/drills" },
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Drills" })
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+    alternates: { canonical: "/drills" },
+  }
 }
 
-// Compact scope grid below the 3 narrative pain points.
-// Source: projects/ipsas-advisor/content/Drill-Down/IPSAS_Drill_Topics.md (DT-01 … DT-15).
-// Tiles are static (no link). Purpose: scope reassurance + SEO surface for every topic
-// + standard. If we later build a /drills/topics deep-reference page, link the tiles.
+// Drill topic codes + IPSAS standard arrays. The codes (DT-01..DT-15) map
+// 1:1 to messages.Drills.topics.items.<code>-name / -tagline. Standards
+// arrays stay in code because they are technical identifiers (e.g.
+// "IPSAS 17") that must not be translated.
 type DrillTopic = {
   code: string
-  name: string
-  tagline: string
-  standards: string[] // displayed as "IPSAS 17 · 33 · 46" — drop "IPSAS" prefix on 2nd+
+  standards: string[]
 }
 
 const DRILL_TOPICS: DrillTopic[] = [
-  { code: "DT-01", name: "Property, plant & equipment", tagline: "The biggest balance sheet item — and the biggest source of audit qualifications.", standards: ["IPSAS 17", "33", "46"] },
-  { code: "DT-02", name: "Non-exchange revenue", tagline: "Where IPSAS most differs from commercial accounting.", standards: ["IPSAS 23", "47"] },
-  { code: "DT-03", name: "Employee benefits", tagline: "Pension and leave obligations done properly, with actuarial method.", standards: ["IPSAS 39", "19"] },
-  { code: "DT-04", name: "Provisions & contingencies", tagline: "Legal claims, guarantees, and PPP obligations — usually under-disclosed.", standards: ["IPSAS 19", "28"] },
-  { code: "DT-05", name: "Consolidation", tagline: "Defining the reporting entity, and the mechanics of consolidating it.", standards: ["IPSAS 35", "36", "37"] },
-  { code: "DT-06", name: "Budget vs actuals", tagline: "Original budget, final budget, actual — with the variance narrative auditors want.", standards: ["IPSAS 24", "1"] },
-  { code: "DT-07", name: "Financial instruments", tagline: "Concessional loans, ECL staging, and government loan portfolios.", standards: ["IPSAS 41", "28", "30"] },
-  { code: "DT-08", name: "Asset impairment", tagline: "Recoverable service amount for schools, hospitals, and roads.", standards: ["IPSAS 21", "26"] },
-  { code: "DT-09", name: "Service concessions (PPPs)", tagline: "Putting PPP assets on balance sheet, where they belong.", standards: ["IPSAS 32", "17"] },
-  { code: "DT-10", name: "Inventories", tagline: "Distribution stock, strategic reserves, and donated goods.", standards: ["IPSAS 12"] },
-  { code: "DT-11", name: "Leases", tagline: "Right-of-use assets and lease liabilities under IPSAS 43.", standards: ["IPSAS 43", "17"] },
-  { code: "DT-12", name: "Financial statement presentation", tagline: "The four primary statements, accounting policies, and prior-period errors.", standards: ["IPSAS 1", "2", "3"] },
-  { code: "DT-13", name: "Opening balances & transition", tagline: "First-time recognition, deemed cost, and comparative restatement.", standards: ["IPSAS 33", "3", "46"] },
-  { code: "DT-14", name: "Revenue, grants & donor funds", tagline: "Multi-year grants, in-kind contributions, and clawback risk.", standards: ["IPSAS 23", "47", "35"] },
-  { code: "DT-15", name: "Reporting & audit readiness", tagline: "Whole-of-government consolidation, GFS mapping, and audit working papers.", standards: ["IPSAS 35", "2", "24"] },
+  { code: "DT-01", standards: ["IPSAS 17", "33", "46"] },
+  { code: "DT-02", standards: ["IPSAS 23", "47"] },
+  { code: "DT-03", standards: ["IPSAS 39", "19"] },
+  { code: "DT-04", standards: ["IPSAS 19", "28"] },
+  { code: "DT-05", standards: ["IPSAS 35", "36", "37"] },
+  { code: "DT-06", standards: ["IPSAS 24", "1"] },
+  { code: "DT-07", standards: ["IPSAS 41", "28", "30"] },
+  { code: "DT-08", standards: ["IPSAS 21", "26"] },
+  { code: "DT-09", standards: ["IPSAS 32", "17"] },
+  { code: "DT-10", standards: ["IPSAS 12"] },
+  { code: "DT-11", standards: ["IPSAS 43", "17"] },
+  { code: "DT-12", standards: ["IPSAS 1", "2", "3"] },
+  { code: "DT-13", standards: ["IPSAS 33", "3", "46"] },
+  { code: "DT-14", standards: ["IPSAS 23", "47", "35"] },
+  { code: "DT-15", standards: ["IPSAS 35", "2", "24"] },
 ]
 
-const PAIN_POINTS = [
-  {
-    title: "Opening balances and transition",
-    body: "The unglamorous work that derails most IPSAS adoptions. First-time recognition of assets and liabilities. Restating prior-year comparatives. Opening balance sheet construction when source data is patchy.",
-  },
-  {
-    title: "Revenue, grants, and donor funds",
-    body: "Where small governments live or die. IPSAS 23 (non-exchange revenue) at the level you'll actually apply it. Grant conditions, restrictions, and timing. Consolidating donor-funded special purpose funds into the whole-of-government accounts.",
-  },
-  {
-    title: "Reporting and consolidation",
-    body: "What auditors actually look at. Whole-of-government consolidation under IPSAS 35. GFS-to-IPSAS mapping. Cash-flow statement construction in environments where the IFMIS doesn't help. Disclosure quality.",
-  },
-]
+const PAIN_KEYS = ["1", "2", "3"] as const
+const STEP_KEYS = ["1", "2", "3"] as const
+const AUDIENCE_KEYS = ["1", "2", "3"] as const
+const FAQ_KEYS = ["1", "2", "3"] as const
 
-const HOW_IT_WORKS = [
-  {
-    step: "1",
-    title: "Pick your level",
-    body: "Tell us your role and what you're working on. We'll start you with drills appropriate to your situation, not generic exam prep.",
-  },
-  {
-    step: "2",
-    title: "Drill, daily",
-    body: "Ten to fifteen minutes per session. Each question gives you the answer, the standard, the paragraph, and — where it matters — the implementation note from real projects.",
-  },
-  {
-    step: "3",
-    title: "Track the team",
-    body: "Solo users see their own progress. Team and ministry plans give the lead accountant a dashboard: who's drilling, where the team is weakest, and what to focus on next.",
-  },
-]
+export default async function DrillsPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Drills" })
+  const tDonors = await getTranslations({ locale, namespace: "Donors" })
 
-const AUDIENCE_CARDS = [
-  {
-    title: "Government finance teams",
-    body: "For Ministries, line ministries, and statutory bodies adopting or applying IPSAS. Especially useful where the team is small, capacity is stretched, and external training is hard to access.",
-  },
-  {
-    title: "Audit firms with public-sector clients",
-    body: "For small and mid-size firms where government audit isn't the firm's main practice. Bring your team's IPSAS knowledge up to a level where you can confidently sign the opinion.",
-  },
-  {
-    title: "PFM consultants and donor-project staff",
-    body: "For staff supporting government counterparts on IPSAS reform. Use Drills yourself; deploy it to the teams you're supporting.",
-  },
-]
-
-const FAQ = [
-  {
-    q: "Do I get a certificate?",
-    a: "Drills isn't a certificate program — that's CIPFA and ACCA's territory, and they do it well. Drills makes you better at the daily work. Many teams use Drills alongside a CIPFA Certificate or Diploma, not instead of one.",
-  },
-  {
-    q: "Is this aligned to the current IPSAS standards?",
-    a: "Yes — Drills covers IPSAS 1 through the most recent issued standards, including IPSAS 41 (Financial Instruments), 43 (Leases), and the public-sector-specific standards (23, 24, 32). Updates are pushed as standards are revised.",
-  },
-  {
-    q: "We're a Ministry — can we get a single account for the whole finance team?",
-    a: "Yes. Ministry plans cover unlimited staff in one entity, with a dashboard for the Director of Accounts. We also offer donor-funded pricing for governments where adoption is being supported by an international donor.",
-  },
-  // Q4 cross-references IPSAS Desk — leave the link as a JSX node so we can render it inline.
-] as const
-
-export default function DrillsPage() {
   return (
     <>
       <Navbar />
@@ -120,30 +75,30 @@ export default function DrillsPage() {
         <section className="bg-ppf-navy px-6 pt-[140px] pb-20 text-white md:px-12 md:pt-[160px] md:pb-24">
           <div className="mx-auto max-w-[1240px]">
             <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-ppf-sky">
-              Now in beta · Pacific, Sub-Saharan Africa, South Asia
+              {t("hero.eyebrow")}
             </p>
             <h1 className="mt-3 max-w-[18ch] text-[clamp(36px,5vw,64px)] font-semibold leading-[1.05] tracking-[-0.03em]">
-              IPSAS Drills
+              {t("hero.headline")}
             </h1>
             <p className="mt-4 max-w-[40ch] text-[clamp(18px,2vw,22px)] font-medium leading-[1.4] text-ppf-sky">
-              Build the reflexes. Close the books faster.
+              {t("hero.tagline")}
             </p>
             <p className="mt-6 max-w-[62ch] text-[16px] leading-[1.65] text-white/80 md:text-[17px]">
-              Short, focused practice questions tuned to the situations your team will actually face — opening balances that won&rsquo;t reconcile, donor grants under IPSAS 23, GFS mapping with a chart of accounts that wasn&rsquo;t designed for it. Built from current implementation work in a Pacific Treasury, not from a textbook.
+              {t("hero.lead")}
             </p>
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/register"
                 className="rounded-md bg-ppf-sky px-6 py-3 text-center text-sm font-semibold text-white shadow-crisp-sm transition-colors hover:bg-ppf-sky-hover"
               >
-                Start free trial
+                {t("hero.ctaTrial")}
               </Link>
               {/* TODO: wire to a real sample drill route once one exists. */}
               <Link
                 href="/register"
                 className="rounded-md border border-ppf-sky/60 px-6 py-3 text-center text-sm font-semibold text-white transition-colors hover:border-ppf-sky hover:bg-ppf-sky/10"
               >
-                See a sample drill →
+                {t("hero.ctaSample")}
               </Link>
             </div>
           </div>
@@ -152,17 +107,13 @@ export default function DrillsPage() {
         {/* ---------- SECTION 2 — Why this isn't another IPSAS course ---------- */}
         <section className="border-b border-ink-200 px-6 py-20 md:px-12 md:py-24">
           <div className="mx-auto max-w-[920px]">
-            <p className="eyebrow">Why this isn&rsquo;t another IPSAS course</p>
+            <p className="eyebrow">{t("whyNot.eyebrow")}</p>
             <h2 className="mt-3 text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-ink-900">
-              This isn&rsquo;t a course. It&rsquo;s training the way professionals actually train.
+              {t("whyNot.headline")}
             </h2>
             <div className="mt-8 space-y-5 text-[16px] leading-[1.7] text-ink-700">
-              <p>
-                Most IPSAS training is built around the standards. You read the standard, you watch the video, you sit the exam. That&rsquo;s how you get a certificate — but it&rsquo;s not how you get faster, more accurate, or more confident on a Monday morning when the books need closing.
-              </p>
-              <p>
-                Drills works the way a junior surgeon, a pilot, or an auditor in a Big Four firm trains: short, repeated, focused on the moves you&rsquo;ll actually make. Ten to fifteen minutes a day. Targeted at the situations that come up in real public-sector accounting — not edge cases, not exam tricks, not US-only treatments.
-              </p>
+              <p>{t("whyNot.p1")}</p>
+              <p>{t("whyNot.p2")}</p>
             </div>
           </div>
         </section>
@@ -170,24 +121,24 @@ export default function DrillsPage() {
         {/* ---------- SECTION 3 — Built around real implementation pain points ---------- */}
         <section className="bg-ink-50 px-6 py-20 md:px-12 md:py-24">
           <div className="mx-auto max-w-[1240px]">
-            <p className="eyebrow">What&rsquo;s in the drills</p>
+            <p className="eyebrow">{t("painPoints.eyebrow")}</p>
             <h2 className="mt-3 max-w-[28ch] text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-ink-900">
-              Built around the problems that actually stop IPSAS adoption.
+              {t("painPoints.headline")}
             </h2>
             <p className="mt-5 max-w-[60ch] text-[15px] leading-[1.65] text-ink-700">
-              Each drill is graduated by difficulty and tagged to the standard, but organised around real implementation pain points:
+              {t("painPoints.lead")}
             </p>
             <div className="mt-10 grid gap-5 md:grid-cols-3">
-              {PAIN_POINTS.map((p) => (
+              {PAIN_KEYS.map((id) => (
                 <div
-                  key={p.title}
+                  key={id}
                   className="rounded-lg border border-ink-200 bg-white p-6 shadow-crisp-sm"
                 >
                   <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-ink-900">
-                    {p.title}
+                    {t(`painPoints.card${id}Title` as `painPoints.card${typeof id}Title`)}
                   </h3>
                   <p className="mt-3 text-[14px] leading-[1.65] text-ink-700">
-                    {p.body}
+                    {t(`painPoints.card${id}Body` as `painPoints.card${typeof id}Body`)}
                   </p>
                 </div>
               ))}
@@ -200,35 +151,40 @@ export default function DrillsPage() {
             page so visitors searching for "IPSAS 17 PPE" or "IPSAS 43 leases" land here. */}
         <section className="border-t border-ink-200 bg-white px-6 py-20 md:px-12 md:py-24">
           <div className="mx-auto max-w-[1240px]">
-            <p className="eyebrow">Full topic coverage</p>
+            <p className="eyebrow">{t("topics.eyebrow")}</p>
             <h2 className="mt-3 max-w-[28ch] text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-ink-900">
-              15 topics. Every standard your team will actually meet.
+              {t("topics.headline")}
             </h2>
             <p className="mt-5 max-w-[60ch] text-[15px] leading-[1.65] text-ink-700">
-              The pain points above are where most teams start. Here&rsquo;s the full topic coverage — each tagged to the standards that govern it.
+              {t("topics.lead")}
             </p>
 
             <ul className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-              {DRILL_TOPICS.map((t) => (
-                <li
-                  key={t.code}
-                  className="rounded-md border border-ink-200 bg-white p-4 shadow-crisp-sm"
-                >
-                  <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-500">
-                    {t.code}
-                  </p>
-                  <h3 className="mt-1.5 text-[14px] font-semibold leading-[1.3] tracking-[-0.01em] text-ink-900">
-                    {t.name}
-                  </h3>
-                  <p className="mt-1.5 text-[12.5px] leading-[1.5] text-ink-700">
-                    {t.tagline}
-                  </p>
-                  <p className="mt-3 text-[11px] font-medium text-ppf-blue">
-                    {/* Render full IPSAS prefix on first standard, then bare numbers separated by middle-dot. */}
-                    {t.standards.map((s, i) => (i === 0 ? s : ` · ${s}`)).join("")}
-                  </p>
-                </li>
-              ))}
+              {DRILL_TOPICS.map((topic) => {
+                // Topic name + tagline come from messages, keyed by drill code (DT-01 …).
+                const name = t(`topics.items.${topic.code}-name` as `topics.items.${typeof topic.code}-name`)
+                const tagline = t(`topics.items.${topic.code}-tagline` as `topics.items.${typeof topic.code}-tagline`)
+                return (
+                  <li
+                    key={topic.code}
+                    className="rounded-md border border-ink-200 bg-white p-4 shadow-crisp-sm"
+                  >
+                    <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-ink-500">
+                      {topic.code}
+                    </p>
+                    <h3 className="mt-1.5 text-[14px] font-semibold leading-[1.3] tracking-[-0.01em] text-ink-900">
+                      {name}
+                    </h3>
+                    <p className="mt-1.5 text-[12.5px] leading-[1.5] text-ink-700">
+                      {tagline}
+                    </p>
+                    <p className="mt-3 text-[11px] font-medium text-ppf-blue">
+                      {/* Render full IPSAS prefix on first standard, then bare numbers separated by middle-dot. */}
+                      {topic.standards.map((s, i) => (i === 0 ? s : ` · ${s}`)).join("")}
+                    </p>
+                  </li>
+                )
+              })}
             </ul>
           </div>
         </section>
@@ -236,21 +192,21 @@ export default function DrillsPage() {
         {/* ---------- SECTION 4 — How it works ---------- */}
         <section className="px-6 py-20 md:px-12 md:py-24">
           <div className="mx-auto max-w-[1240px]">
-            <p className="eyebrow">How it works</p>
+            <p className="eyebrow">{t("howItWorks.eyebrow")}</p>
             <h2 className="mt-3 text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-ink-900">
-              Three steps. Ten minutes a day.
+              {t("howItWorks.headline")}
             </h2>
             <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {HOW_IT_WORKS.map((s) => (
-                <div key={s.step}>
+              {STEP_KEYS.map((id) => (
+                <div key={id}>
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-ppf-sky text-lg font-bold text-white">
-                    {s.step}
+                    {id}
                   </div>
                   <h3 className="mt-4 text-[17px] font-semibold tracking-[-0.01em] text-ink-900">
-                    {s.title}
+                    {t(`howItWorks.step${id}Title` as `howItWorks.step${typeof id}Title`)}
                   </h3>
                   <p className="mt-2 text-[14px] leading-[1.65] text-ink-700">
-                    {s.body}
+                    {t(`howItWorks.step${id}Body` as `howItWorks.step${typeof id}Body`)}
                   </p>
                 </div>
               ))}
@@ -261,21 +217,21 @@ export default function DrillsPage() {
         {/* ---------- SECTION 5 — Who it's for ---------- */}
         <section className="bg-ink-50 px-6 py-20 md:px-12 md:py-24">
           <div className="mx-auto max-w-[1240px]">
-            <p className="eyebrow">Who it&rsquo;s for</p>
+            <p className="eyebrow">{t("audience.eyebrow")}</p>
             <h2 className="mt-3 max-w-[32ch] text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-ink-900">
-              Built for the teams who actually have to make IPSAS work.
+              {t("audience.headline")}
             </h2>
             <div className="mt-10 grid gap-5 md:grid-cols-3">
-              {AUDIENCE_CARDS.map((c) => (
+              {AUDIENCE_KEYS.map((id) => (
                 <div
-                  key={c.title}
+                  key={id}
                   className="rounded-lg border border-ink-200 bg-white p-6 shadow-crisp-sm"
                 >
                   <h3 className="text-[17px] font-semibold tracking-[-0.01em] text-ink-900">
-                    {c.title}
+                    {t(`audience.card${id}Title` as `audience.card${typeof id}Title`)}
                   </h3>
                   <p className="mt-3 text-[14px] leading-[1.65] text-ink-700">
-                    {c.body}
+                    {t(`audience.card${id}Body` as `audience.card${typeof id}Body`)}
                   </p>
                 </div>
               ))}
@@ -286,35 +242,38 @@ export default function DrillsPage() {
         {/* ---------- SECTION 6 — Trust signals + donor logo strip ---------- */}
         <section className="border-y border-ink-200 px-6 py-20 md:px-12 md:py-24">
           <div className="mx-auto max-w-[920px]">
-            <p className="eyebrow">Trust signals</p>
+            <p className="eyebrow">{t("trust.eyebrow")}</p>
             <h2 className="mt-3 text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-ink-900">
-              Built by someone currently doing the work.
+              {t("trust.headline")}
             </h2>
             <p className="mt-6 text-[16px] leading-[1.7] text-ink-700">
-              Drills is written and curated by Gregg Pavitt — a public financial management specialist with 25 years of experience across Sub-Saharan Africa, South Asia, and the Pacific, and currently embedded in the Solomon Islands Ministry of Finance &amp; Treasury. The questions come from the implementations he is running and has run, with input from the counterparts who have lived the problems.
+              {t("trust.lead")}
             </p>
           </div>
 
           <div className="mx-auto mt-12 max-w-[1240px]">
             <p className="text-center text-[12px] font-semibold uppercase tracking-[0.14em] text-ink-500">
-              Donors funding the underlying consulting practice
+              {t("trust.donorsHeadline")}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-ink-200 bg-ink-200 sm:grid-cols-3 lg:grid-cols-6">
-              {donors.map((d) => (
-                <div
-                  key={d.id}
-                  title={d.name}
-                  className="group flex h-[96px] items-center justify-center bg-white p-5 transition-colors hover:bg-ink-50"
-                >
-                  <Image
-                    src={d.logo}
-                    alt={d.name}
-                    width={140}
-                    height={40}
-                    className="max-h-[40px] w-auto object-contain opacity-70 grayscale transition-[filter,opacity] duration-200 group-hover:opacity-100 group-hover:grayscale-0"
-                  />
-                </div>
-              ))}
+              {donors.map((d) => {
+                const name = tDonors(`names.${d.id}` as `names.${typeof d.id}`)
+                return (
+                  <div
+                    key={d.id}
+                    title={name}
+                    className="group flex h-[96px] items-center justify-center bg-white p-5 transition-colors hover:bg-ink-50"
+                  >
+                    <Image
+                      src={d.logo}
+                      alt={name}
+                      width={140}
+                      height={40}
+                      className="max-h-[40px] w-auto object-contain opacity-70 grayscale transition-[filter,opacity] duration-200 group-hover:opacity-100 group-hover:grayscale-0"
+                    />
+                  </div>
+                )
+              })}
             </div>
           </div>
         </section>
@@ -322,30 +281,26 @@ export default function DrillsPage() {
         {/* ---------- SECTION 7 — Pricing teaser ---------- */}
         <section className="bg-ppf-pale px-6 py-20 md:px-12 md:py-24">
           <div className="mx-auto max-w-[920px] text-center">
-            <p className="eyebrow">Pricing</p>
+            <p className="eyebrow">{t("pricing.eyebrow")}</p>
             <h2 className="mt-3 text-[clamp(26px,3vw,40px)] font-semibold leading-[1.15] tracking-[-0.025em] text-ink-900">
-              Try it free. Subscribe when it&rsquo;s earning its keep.
+              {t("pricing.headline")}
             </h2>
             <div className="mt-6 space-y-4 text-[16px] leading-[1.7] text-ink-700">
-              <p>
-                Start with a 14-day free trial — no credit card needed to look around. Add a card to keep going past day 14. Cancel any time before the first charge.
-              </p>
-              <p>
-                For teams of 5 or more, ministries, or audit firms wanting a single account for the whole staff, see team and organisation pricing.
-              </p>
+              <p>{t("pricing.p1")}</p>
+              <p>{t("pricing.p2")}</p>
             </div>
             <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Link
                 href="/register"
                 className="rounded-md bg-ppf-sky px-6 py-3 text-sm font-semibold text-white shadow-crisp-sm transition-colors hover:bg-ppf-sky-hover"
               >
-                Start free trial
+                {t("pricing.ctaTrial")}
               </Link>
               <Link
                 href="/pricing#drills"
                 className="rounded-md border border-ppf-sky px-6 py-3 text-sm font-semibold text-ppf-sky transition-colors hover:bg-ppf-sky hover:text-white"
               >
-                See pricing →
+                {t("pricing.ctaPricing")}
               </Link>
             </div>
           </div>
@@ -354,32 +309,32 @@ export default function DrillsPage() {
         {/* ---------- SECTION 8 — FAQ ---------- */}
         <section className="px-6 py-20 md:px-12 md:py-24">
           <div className="mx-auto max-w-[920px]">
-            <p className="eyebrow">FAQ</p>
+            <p className="eyebrow">{t("faq.eyebrow")}</p>
             <h3 className="mt-3 text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[-0.02em] text-ink-900">
-              Common questions
+              {t("faq.headline")}
             </h3>
             <dl className="mt-8 divide-y divide-ink-200">
-              {FAQ.map((item) => (
-                <div key={item.q} className="py-5">
+              {FAQ_KEYS.map((id) => (
+                <div key={id} className="py-5">
                   <dt className="text-[15px] font-semibold text-ink-900">
-                    {item.q}
+                    {t(`faq.q${id}` as `faq.q${typeof id}`)}
                   </dt>
                   <dd className="mt-1.5 text-[14px] leading-[1.65] text-ink-700">
-                    {item.a}
+                    {t(`faq.a${id}` as `faq.a${typeof id}`)}
                   </dd>
                 </div>
               ))}
               {/* Q4 — kept inline so the cross-link to /desk renders as a Link, not raw text. */}
               <div className="py-5">
                 <dt className="text-[15px] font-semibold text-ink-900">
-                  What if I want one-on-one help on something specific?
+                  {t("faq.q4")}
                 </dt>
                 <dd className="mt-1.5 text-[14px] leading-[1.65] text-ink-700">
-                  That&rsquo;s what{" "}
+                  {t("faq.a4Part1")}
                   <Link href="/desk" className="text-ppf-sky underline-offset-2 hover:underline">
-                    IPSAS Desk
-                  </Link>{" "}
-                  is for. Drills builds reflexes; Desk handles the hard cases.
+                    {t("faq.a4LinkLabel")}
+                  </Link>
+                  {t("faq.a4Part2")}
                 </dd>
               </div>
             </dl>
@@ -391,17 +346,17 @@ export default function DrillsPage() {
           <div className="mx-auto flex max-w-[1240px] flex-col items-start gap-5 md:flex-row md:items-center md:justify-between">
             <div>
               <h3 className="text-[clamp(22px,2.4vw,30px)] font-semibold tracking-[-0.02em]">
-                Drills + Desk go together.
+                {t("cross.headline")}
               </h3>
               <p className="mt-2 max-w-[60ch] text-[15px] leading-[1.65] text-white/80">
-                Drills builds your team&rsquo;s reflexes on routine treatments. Desk handles the hard cases when they come up.
+                {t("cross.body")}
               </p>
             </div>
             <Link
               href="/pricing#bundle"
               className="shrink-0 rounded-md bg-ppf-sky px-5 py-3 text-sm font-semibold text-white shadow-crisp-sm transition-colors hover:bg-ppf-sky-hover"
             >
-              See bundle pricing →
+              {t("cross.cta")}
             </Link>
           </div>
         </section>

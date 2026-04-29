@@ -371,5 +371,345 @@
     "minRead": "min de lectura",
     "readPost": "Leer el artículo",
     "noPosts": "Aún no hay artículos."
+  },
+  "Desk": {
+    "metaTitle": "IPSAS Desk — Pavitt Public Finance",
+    "metaDescription": "Respuestas sobre IPSAS con citas por párrafo para equipos de finanzas gubernamentales y firmas de auditoría. Diseñado para IPSAS desde el inicio, no IFRS con modo para el sector público. Prueba gratuita.",
+    "hero": {
+      "eyebrow": "Ahora en beta · Para profesionales y equipos de auditoría",
+      "headline": "IPSAS Desk",
+      "tagline": "El escritorio de referencia técnica para equipos que no tienen uno.",
+      "lead": "Haga cualquier pregunta sobre IPSAS en inglés sencillo. Reciba una respuesta con la cita exacta del párrafo, redactada para que pueda integrarse directamente en sus papeles de trabajo. Diseñado específicamente para IPSAS — no IFRS con contenido para el sector público añadido.",
+      "ctaTrial": "Inicie la prueba gratuita",
+      "ctaSample": "Ver una respuesta de ejemplo →"
+    },
+    "what": {
+      "eyebrow": "Qué hace",
+      "headline": "Veinte segundos. Referencia por párrafo. Inglés sencillo.",
+      "p1": "Un asesor senior de PFM cobra entre USD 800 y USD 2,000 por día. Para la mayoría de las preguntas de contabilidad del sector público, esa no es la herramienta adecuada: es demasiado costosa, demasiado lenta y no está disponible cuando necesita una respuesta a tiempo para el cierre.",
+      "p2": "El Desk es la herramienta adecuada para esas preguntas. Pregunte en inglés sencillo. Suba documentación de apoyo si es útil. Recibirá el estándar aplicable, el(los) párrafo(s) específico(s), el tratamiento recomendado para su contexto y, donde sea relevante, una nota sobre la documentación de papeles de trabajo que un auditor esperará.",
+      "p3": "Cada respuesta se basa en el texto fuente real de IPSAS. Las citas son reales y verificables. El Desk está diseñado para nunca inventar una referencia de párrafo que no exista."
+    },
+    "ipsasFirst": {
+      "eyebrow": "Primero IPSAS",
+      "headline": "Diseñado para IPSAS desde el inicio, no IFRS con modo para el sector público.",
+      "p1": "La mayoría de las herramientas de contabilidad basadas en IA fueron diseñadas para el mercado IFRS / FASB y añadieron IPSAS más tarde, si es que lo hicieron. El resultado: un manejo superficial de las normas que más importan en el sector público — IPSAS 23 (ingresos no procedentes de intercambio), 24 (informes presupuestarios), 32 (acuerdos de concesión de servicios), 35 (estados consolidados) y la conciliación GFS que vincula las cuentas gubernamentales con los informes fiscales.",
+      "p2": "El Desk está diseñado en torno a esas normas, por un profesional que las aplica en compromisos reales. Los tratamientos equivalentes a IFRS también están presentes, donde son útiles, pero el centro de gravedad es el sector público."
+    },
+    "howItWorks": {
+      "eyebrow": "Cómo funciona",
+      "headline": "Tres pasos. Respuesta fundamentada.",
+      "steps": {
+        "step1Title": "Establezca su contexto",
+        "step1Body": "Indique al Desk su jurisdicción, tipo de entidad, base de reporte (efectivo, devengo modificado, devengo completo) y qué normas IPSAS ha adoptado. Las respuestas se ajustan a su situación, no son genéricas.",
+        "step2Title": "Pregunte en lenguaje sencillo",
+        "step2Body": "“Recibimos una subvención de 4 millones de USD de un donante bilateral con condiciones vinculadas a hitos de construcción. ¿Cómo reconocemos esto bajo IPSAS 23?” El Desk identifica la norma aplicable, lee cualquier documento que usted cargue y responde en contexto.",
+        "step3Title": "Utilice la respuesta",
+        "step3Body": "Citas de párrafos, tratamiento recomendado, nota sugerida para el papel de trabajo. Copie lo que necesite en su archivo. La cita es verificable: apunta a un párrafo real en una norma real."
+      }
+    },
+    "audience": {
+      "eyebrow": "Quién usa el Desk",
+      "headline": "Diseñado para equipos que necesitan una respuesta fundamentada rápidamente.",
+      "cards": {
+        "card1Title": "Contadores sénior y CFOs en el gobierno",
+        "card1Body": "Para cuando la pregunta es demasiado difícil para el equipo pero demasiado pequeña para contratar a un consultor. Obtenga una respuesta fundamentada rápidamente, defiéndala ante su auditor y siga adelante.",
+        "card2Title": "Firmas de auditoría fuera de las Big Four",
+        "card2Body": "Para empresas que auditan gobiernos pero no tienen un departamento técnico especializado en el sector público. El Desk cumple esa función: preguntar, citar, documentar, firmar.",
+        "card3Title": "Asesores de PFM y personal de proyectos de donantes",
+        "card3Body": "Para consultores que necesitan dar una respuesta defendible rápidamente a un homólogo del Ministerio, con la cita ya adjunta."
+      }
+    },
+    "limits": {
+      "eyebrow": "Límites",
+      "headline": "Lo que el Desk no hace.",
+      "p1": "El Desk es una herramienta de investigación y referencia, no un sustituto del juicio profesional o la auditoría. Le proporcionará una posición fundamentada sobre una pregunta de IPSAS; usted y su equipo siguen siendo responsables de la decisión contable y la respuesta de auditoría.",
+      "p2": "Tampoco pretende saber lo que no sabe. Si una pregunta requiere información específica de la entidad que el Desk no tiene, lo indicará. Si una pregunta está fuera del ámbito de IPSAS y entra en estatutos o regulaciones locales, también lo dirá, a menos que esté en un plan personalizado, donde los estatutos y regulaciones locales pueden añadirse a la base de referencia del Desk."
+    },
+    "trust": {
+      "eyebrow": "Señales de confianza",
+      "headline": "Respuestas fundamentadas. Creado por un profesional, no por un proveedor de chatbots.",
+      "lead": "El Desk es curado y operado por Gregg Pavitt, un especialista en gestión financiera pública con 25 años de experiencia en África Subsahariana, Asia del Sur y el Pacífico. La base de referencia son los estándares reales de IPSAS — desde IPSAS 1 hasta el más reciente emitido — además de documentos del marco de IPSASB y guías de aplicación seleccionadas para el sector público. Las actualizaciones se implementan a medida que se revisan los estándares.",
+      "donorsHeadline": "Donantes que financian la práctica de consultoría subyacente"
+    },
+    "pricing": {
+      "eyebrow": "Precios",
+      "headline": "Pruébelo gratis. Suscríbase cuando lo haya usado en una pregunta real.",
+      "p1": "Comience con una prueba gratuita de 14 días — generosa cantidad de consultas, no se necesita tarjeta de crédito para explorar. Agregue una tarjeta para continuar después del día 14.",
+      "p2": "Para firmas de auditoría, ministerios y organizaciones financiadas por donantes, consulte los precios para equipos y organizaciones. Los planes personalizados (sus estatutos y regulaciones locales añadidos a la base de referencia) están disponibles para las organizaciones que los necesiten.",
+      "ctaTrial": "Comience la prueba gratuita",
+      "ctaPricing": "Ver precios →"
+    },
+    "faq": {
+      "eyebrow": "Preguntas frecuentes",
+      "headline": "Preguntas comunes",
+      "q1": "¿En qué se diferencia esto de ChatGPT u otras herramientas de IA general?",
+      "a1": "ChatGPT citará con confianza números de párrafos de IPSAS que no existen. The Desk se basa en los estándares reales: cada cita es rastreable a un párrafo real. Si la respuesta no está en la fuente, The Desk lo indica.",
+      "q2": "¿En qué se diferencia esto de IFRS Buddy / Acclara / IFRS Companion?",
+      "a2": "Esas herramientas son excelentes para IFRS. Manejan IPSAS como una característica secundaria, si es que lo hacen. The Desk está diseñado principalmente para IPSAS.",
+      "q3": "¿Puede manejar nuestra jurisdicción local?",
+      "a3": "Los planes estándar responden en términos de IPSAS con un contexto general del sector público. Los planes personalizados añaden su legislación local, regulaciones y manual contable a la base de referencia, para que la respuesta refleje su entorno específico de cumplimiento.",
+      "q4": "¿La respuesta resistirá una auditoría?",
+      "a4": "La cita sí lo hará. La posición contable es algo que usted y su auditor deben acordar, pero The Desk le proporciona un punto de partida defendible y fundamentado con la referencia al párrafo que su auditor pedirá de todos modos.",
+      "q5": "¿Qué pasa si estoy aprendiendo IPSAS?",
+      "a5Part1": "The Desk está diseñado para profesionales con conocimientos prácticos. Si está aprendiendo los estándares, ",
+      "a5LinkLabel": "IPSAS Drills",
+      "a5Part2": " es el mejor punto de partida."
+    },
+    "cross": {
+      "headline": "Drills + Desk van de la mano.",
+      "body": "Drills desarrolla los reflejos de su equipo en tratamientos rutinarios. Desk maneja los casos difíciles cuando surgen.",
+      "cta": "Ver precios del paquete →"
+    }
+  },
+  "Drills": {
+    "metaTitle": "IPSAS Drills — Pavitt Public Finance",
+    "metaDescription": "Práctica de IPSAS probada en campo para equipos de finanzas gubernamentales y firmas de auditoría. Creado por un líder de implementación actual del Tesoro del Pacífico, no de un libro de texto. Prueba gratuita.",
+    "hero": {
+      "eyebrow": "Ahora en beta · Pacífico, África Subsahariana, Asia del Sur",
+      "headline": "IPSAS Drills",
+      "tagline": "Desarrolle los reflejos. Cierre los libros más rápido.",
+      "lead": "Preguntas de práctica breves y enfocadas, ajustadas a las situaciones que su equipo realmente enfrentará: saldos iniciales que no cuadran, subvenciones de donantes bajo IPSAS 23, mapeo GFS con un plan de cuentas que no fue diseñado para ello. Construido a partir de trabajo de implementación actual en un Tesoro del Pacífico, no de un libro de texto.",
+      "ctaTrial": "Iniciar prueba gratuita",
+      "ctaSample": "Ver un ejemplo de ejercicio →"
+    },
+    "whyNot": {
+      "eyebrow": "Por qué esto no es otro curso de IPSAS",
+      "headline": "Esto no es un curso. Es entrenamiento como los profesionales realmente entrenan.",
+      "p1": "La mayoría de las capacitaciones de IPSAS están diseñadas en torno a las normas. Usted lee la norma, ve el video, realiza el examen. Así es como obtiene un certificado, pero no es cómo se vuelve más rápido, más preciso o más seguro un lunes por la mañana cuando los libros necesitan cerrarse.",
+      "p2": "Drills funciona de la misma manera en que se entrena un cirujano junior, un piloto o un auditor en una firma de las Big Four: ejercicios cortos, repetidos y enfocados en los movimientos que realmente realizará. Diez a quince minutos al día. Dirigido a las situaciones que surgen en la contabilidad del sector público real: no casos excepcionales, no trucos de examen, no tratamientos exclusivos de EE. UU."
+    },
+    "painPoints": {
+      "eyebrow": "Qué incluyen los ejercicios",
+      "headline": "Diseñado en torno a los problemas que realmente dificultan la adopción de las IPSAS.",
+      "lead": "Cada ejercicio está graduado por nivel de dificultad y vinculado a la norma, pero organizado en torno a los problemas reales de implementación:",
+      "card1Title": "Saldos iniciales y transición",
+      "card1Body": "El trabajo poco glamoroso que descarrila la mayoría de las adopciones de las IPSAS. Reconocimiento inicial de activos y pasivos. Reexpresión de comparativos del año anterior. Construcción del balance inicial cuando los datos de origen son incompletos.",
+      "card2Title": "Ingresos, subvenciones y fondos de donantes",
+      "card2Body": "Donde los pequeños gobiernos se juegan su supervivencia. IPSAS 23 (ingresos no intercambiados) al nivel en que realmente lo aplicará. Condiciones, restricciones y tiempos de las subvenciones. Consolidación de fondos de propósito especial financiados por donantes en las cuentas del gobierno en su conjunto.",
+      "card3Title": "Informes y consolidación",
+      "card3Body": "Lo que los auditores realmente revisan. Consolidación del gobierno en su conjunto bajo las IPSAS 35. Mapeo de GFS a IPSAS. Construcción del estado de flujos de efectivo en entornos donde el IFMIS no ayuda. Calidad de las divulgaciones."
+    },
+    "topics": {
+      "eyebrow": "Cobertura completa de temas",
+      "headline": "15 temas. Cada norma que su equipo realmente encontrará.",
+      "lead": "Los problemas mencionados anteriormente son donde la mayoría de los equipos comienzan. Aquí está la cobertura completa de temas, cada uno vinculado a las normas que lo rigen.",
+      "items": {
+        "DT-01-name": "Propiedades, planta y equipo",
+        "DT-01-tagline": "El mayor rubro del balance general — y la mayor fuente de observaciones de auditoría.",
+        "DT-02-name": "Ingresos no intercambiados",
+        "DT-02-tagline": "Donde las IPSAS más difieren de la contabilidad comercial.",
+        "DT-03-name": "Beneficios a empleados",
+        "DT-03-tagline": "Obligaciones de pensiones y licencias correctamente calculadas, con método actuarial.",
+        "DT-04-name": "Provisiones y contingencias",
+        "DT-04-tagline": "Reclamaciones legales, garantías y obligaciones de APP — usualmente subdeclaradas.",
+        "DT-05-name": "Consolidación",
+        "DT-05-tagline": "Definiendo la entidad informante y los mecanismos para consolidarla.",
+        "DT-06-name": "Presupuesto vs reales",
+        "DT-06-tagline": "Presupuesto original, presupuesto final, reales — con la narrativa de variación que los auditores buscan.",
+        "DT-07-name": "Instrumentos financieros",
+        "DT-07-tagline": "Préstamos concesionales, etapas de ECL y carteras de préstamos gubernamentales.",
+        "DT-08-name": "Deterioro de activos",
+        "DT-08-tagline": "Monto recuperable de servicio para escuelas, hospitales y carreteras.",
+        "DT-09-name": "Concesiones de servicio (APPs)",
+        "DT-09-tagline": "Incorporando los activos de APP en el balance, donde pertenecen.",
+        "DT-10-name": "Inventarios",
+        "DT-10-tagline": "Stock de distribución, reservas estratégicas y bienes donados.",
+        "DT-11-name": "Arrendamientos",
+        "DT-11-tagline": "Activos por derecho de uso y pasivos por arrendamiento según IPSAS 43.",
+        "DT-12-name": "Presentación de estados financieros",
+        "DT-12-tagline": "Los cuatro estados principales, políticas contables y errores de períodos anteriores.",
+        "DT-13-name": "Saldos iniciales y transición",
+        "DT-13-tagline": "Reconocimiento inicial, costo estimado y reexpresión comparativa.",
+        "DT-14-name": "Ingresos, subvenciones y fondos de donantes",
+        "DT-14-tagline": "Subvenciones plurianuales, contribuciones en especie y riesgo de recuperación.",
+        "DT-15-name": "Preparación para informes y auditorías",
+        "DT-15-tagline": "Consolidación del gobierno en su totalidad, mapeo GFS y papeles de trabajo de auditoría."
+      }
+    },
+    "howItWorks": {
+      "eyebrow": "Cómo funciona",
+      "headline": "Tres pasos. Diez minutos al día.",
+      "step1Title": "Elija su nivel",
+      "step1Body": "Indíquenos su rol y en qué está trabajando. Le proporcionaremos ejercicios adecuados a su situación, no una preparación genérica para exámenes.",
+      "step2Title": "Practique diariamente",
+      "step2Body": "Diez a quince minutos por sesión. Cada pregunta le proporciona la respuesta, la norma, el párrafo y, cuando es relevante, la nota de implementación de proyectos reales.",
+      "step3Title": "Monitoree al equipo",
+      "step3Body": "Los usuarios individuales ven su propio progreso. Los planes para equipos y ministerios ofrecen al contador principal un panel de control: quién está practicando, dónde el equipo es más débil y en qué enfocarse a continuación."
+    },
+    "audience": {
+      "eyebrow": "Para quién es",
+      "headline": "Diseñado para los equipos que realmente tienen que implementar IPSAS.",
+      "card1Title": "Equipos de finanzas gubernamentales",
+      "card1Body": "Para Ministerios, ministerios sectoriales y organismos estatutarios que adoptan o aplican IPSAS. Especialmente útil donde el equipo es pequeño, la capacidad está limitada y el acceso a formación externa es difícil.",
+      "card2Title": "Firmas de auditoría con clientes del sector público",
+      "card2Body": "Para firmas pequeñas y medianas donde la auditoría gubernamental no es la práctica principal de la firma. Eleve el conocimiento de IPSAS de su equipo a un nivel donde pueda firmar la opinión con confianza.",
+      "card3Title": "Consultores de PFM y personal de proyectos de donantes",
+      "card3Body": "Para el personal que apoya a contrapartes gubernamentales en la reforma de IPSAS. Use Drills usted mismo; impleméntelo en los equipos que está apoyando."
+    },
+    "trust": {
+      "eyebrow": "Señales de confianza",
+      "headline": "Creado por alguien que actualmente realiza el trabajo.",
+      "lead": "Drills está escrito y curado por Gregg Pavitt, un especialista en gestión financiera pública con 25 años de experiencia en África Subsahariana, Asia del Sur y el Pacífico, y actualmente integrado en el Ministerio de Finanzas y Tesorería de las Islas Salomón. Las preguntas provienen de las implementaciones que está llevando a cabo y ha llevado a cabo, con aportes de los colegas que han vivido los problemas.",
+      "donorsHeadline": "Donantes que financian la práctica de consultoría subyacente"
+    },
+    "pricing": {
+      "eyebrow": "Precios",
+      "headline": "Pruébelo gratis. Suscríbase cuando demuestre su valor.",
+      "p1": "Comience con una prueba gratuita de 14 días, sin necesidad de tarjeta de crédito para explorar. Agregue una tarjeta para continuar después del día 14. Cancele en cualquier momento antes del primer cargo.",
+      "p2": "Para equipos de 5 o más personas, ministerios o firmas de auditoría que deseen una sola cuenta para todo el personal, consulte los precios para equipos y organizaciones.",
+      "ctaTrial": "Comience la prueba gratuita",
+      "ctaPricing": "Ver precios →"
+    },
+    "faq": {
+      "eyebrow": "Preguntas frecuentes",
+      "headline": "Preguntas comunes",
+      "q1": "¿Obtengo un certificado?",
+      "a1": "Drills no es un programa de certificación; eso es territorio de CIPFA y ACCA, y lo hacen bien. Drills le mejora en el trabajo diario. Muchos equipos usan Drills junto con un Certificado o Diploma de CIPFA, no como sustituto.",
+      "q2": "¿Está alineado con los estándares actuales de IPSAS?",
+      "a2": "Sí, Drills cubre desde IPSAS 1 hasta los estándares más recientes emitidos, incluyendo IPSAS 41 (Instrumentos Financieros), 43 (Arrendamientos) y los estándares específicos del sector público (23, 24, 32). Las actualizaciones se implementan a medida que se revisan los estándares.",
+      "q3": "Somos un Ministerio — ¿podemos obtener una cuenta única para todo el equipo de finanzas?",
+      "a3": "Sí. Los planes para Ministerios cubren personal ilimitado en una entidad, con un panel de control para el Director de Cuentas. También ofrecemos precios financiados por donantes para gobiernos donde la adopción está siendo apoyada por un donante internacional.",
+      "q4": "¿Qué pasa si quiero ayuda personalizada en algo específico?",
+      "a4Part1": "Para eso está ",
+      "a4LinkLabel": "IPSAS Desk",
+      "a4Part2": ". Drills desarrolla reflejos; Desk maneja los casos difíciles."
+    },
+    "cross": {
+      "headline": "Drills + Desk van de la mano.",
+      "body": "Drills desarrolla los reflejos de su equipo en tratamientos rutinarios. Desk maneja los casos difíciles cuando surgen.",
+      "cta": "Ver precios del paquete →"
+    }
+  },
+  "Pricing": {
+    "metaTitle": "Precios — Pavitt Public Finance",
+    "metaDescription": "Precios para IPSAS Drills e IPSAS Desk. Planes de autoservicio para individuos y equipos pequeños; planes organizacionales para ministerios y firmas de auditoría; precios financiados por donantes y regionales disponibles.",
+    "hero": {
+      "eyebrow": "Precios",
+      "headline": "Precios",
+      "tagline": "Diseñado para ser asequible para los equipos que más lo necesitan.",
+      "lead": "Planes de autoservicio para individuos y equipos pequeños. Planes organizacionales para ministerios y firmas de auditoría. Precios financiados por donantes para gobiernos que adoptan IPSAS con apoyo de donantes internacionales. Todos los precios en USD; precios reducidos disponibles para organizaciones en países de ingresos bajos y medianos bajos — vea más abajo."
+    },
+    "drillsSection": {
+      "eyebrow": "Ejercicios IPSAS",
+      "headline": "Para personal y equipos que desarrollan reflejos IPSAS.",
+      "donorNotePart1": "¿Despliegue financiado por donantes? ",
+      "donorNotePart2": "Si su adopción de IPSAS está siendo apoyada por el World Bank, EU, DFAT, USAID, MCC, FCDO u otro donante, ",
+      "donorNoteLink": "pregunte sobre",
+      "donorNotePart3": " nuestro formato de precios financiado por donantes, diseñado para integrarse directamente en una línea presupuestaria del proyecto."
+    },
+    "deskSection": {
+      "eyebrow": "Mesa IPSAS",
+      "headline": "Para profesionales y equipos de auditoría que necesitan respuestas fundamentadas, rápidamente."
+    },
+    "bundle": {
+      "eyebrow": "Ejercicios + Mesa",
+      "headline": "Ahorre un 20% al tomar ambos.",
+      "lead": "Los ejercicios desarrollan los reflejos para tratamientos rutinarios. La Mesa maneja los casos difíciles cuando surgen. La mayoría de nuestros clientes, tanto equipos como ministerios, quieren ambos, por lo que los ofrecemos juntos con descuento.",
+      "boxTitle": "Paquete Ejercicios + Mesa",
+      "line1Label": "Individual + Profesional",
+      "line1Price": "USD 54 / mes o USD 528 / año",
+      "line2Label": "Equipo + Firma",
+      "line2Price": "USD 2,400 / año",
+      "line3Label": "Organización + Firma",
+      "line3Price": "Contáctenos para precios combinados",
+      "line4Label": "Organización + Personalizado",
+      "line4Price": "Contáctenos para precios combinados",
+      "cta": "Contáctenos para configurar el paquete"
+    },
+    "regional": {
+      "eyebrow": "Regional y donantes",
+      "headline": "Precios regionales y financiados por donantes",
+      "p1": "Cobramos el precio completo de lista a las organizaciones en países de ingresos altos. Para organizaciones ubicadas en países de la lista del CAD de la OCDE de receptores de AOD — particularmente Países Menos Adelantados y Países de Ingresos Medios-Bajos — ofrecemos precios reducidos del 30 al 50 por ciento sobre el precio de lista, dependiendo del nivel del país y el tipo de organización.",
+      "p2": "Para gobiernos que adoptan IPSAS con el apoyo de un donante internacional (World Bank, EU, DFAT, USAID, MCC, FCDO, y otros), ofrecemos precios en un formato diseñado para integrarse directamente en una línea presupuestaria de proyecto. Proporcionaremos una muestra de justificación presupuestaria a solicitud.",
+      "p3": "Para solicitar precios regionales o financiados por donantes, envíenos un breve resumen sobre su organización, país y uso previsto, y le responderemos en un plazo de dos días hábiles.",
+      "cta": "Solicitar precios regionales / financiados por donantes"
+    },
+    "faq": {
+      "eyebrow": "Preguntas frecuentes",
+      "headline": "Preguntas comunes sobre precios",
+      "q1": "¿Los precios incluyen IVA o impuestos locales?",
+      "a1": "Los precios no incluyen ningún impuesto local sobre ventas o IVA. Para los planes organizacionales facturados, los impuestos aplicables se mostrarán en la factura.",
+      "q2": "¿Podemos pagar mediante factura en lugar de tarjeta?",
+      "a2": "Sí — los planes de Equipo, Organización, Firma y Personalizados pueden facturarse anualmente por adelantado. Los planes Individual y Practicante son únicamente con tarjeta.",
+      "q3": "¿Podemos cancelar en cualquier momento?",
+      "a3": "Sí. Los planes mensuales autogestionados se cancelan en la próxima fecha de facturación. Los planes anuales se mantienen hasta el final del período; no hacemos reembolsos prorrateados, pero no renovamos automáticamente sin un recordatorio.",
+      "q4": "¿Qué cuenta como una “consulta” en el Desk?",
+      "a4": "Una consulta es una pregunta con una respuesta, incluyendo cualquier aclaración de seguimiento dentro de la misma conversación. Los planes para practicantes tienen una generosa asignación de 100/mes; en un uso normal, muy pocos practicantes alcanzan el límite.",
+      "q5": "¿Existe una versión gratuita?",
+      "a5": "Ambos productos ofrecen una prueba gratuita de 14 días sin necesidad de tarjeta de crédito para comenzar. No ofrecemos un nivel gratuito permanente — mantener los productos enfocados, precisos y bien mantenidos requiere ingresos reales."
+    },
+    "ctaTrial": "Iniciar prueba gratuita",
+    "ctaContact": "Contáctenos",
+    "tiers": {
+      "drills-individual": {
+        "name": "Individual",
+        "price": "USD 19 / mes",
+        "priceSub": "o USD 180 / año (ahorre USD 48)",
+        "description": "Para contadores individuales, personal junior y consultores de PFM que desarrollan sus propias habilidades en IPSAS.",
+        "f1": "Biblioteca completa de ejercicios, todos los estándares",
+        "f2": "Seguimiento personal del progreso",
+        "f3": "Actualizado a medida que se revisan los estándares",
+        "f4": "Prueba gratuita de 14 días — no se requiere tarjeta para explorar",
+        "smallText": "Precio para estudiantes (USD 9/mes, verificación .edu o equivalente) — ",
+        "smallLink": "contáctenos"
+      },
+      "drills-team": {
+        "name": "Equipo",
+        "price": "USD 600 / año para 5 usuarios",
+        "priceSub": "Usuarios adicionales: USD 80 / usuario / año",
+        "description": "Para pequeñas firmas de auditoría, equipos de proyectos de donantes y pequeños departamentos financieros.",
+        "f1": "Todo en Individual",
+        "f2": "Hasta 5 empleados en una sola cuenta",
+        "f3": "Panel de progreso del equipo para el líder",
+        "f4": "Revisión trimestral de los puntos débiles del equipo",
+        "f5": "Facturación disponible (anual, por adelantado)",
+        "badge": "Más popular para pequeñas firmas de auditoría"
+      },
+      "drills-organisation": {
+        "name": "Organización",
+        "price": "Desde USD 4,800 / año",
+        "priceSub": "Personal ilimitado en una entidad",
+        "description": "Para ministerios, organismos estatutarios y grandes firmas de auditoría.",
+        "f1": "Todo lo incluido en Team",
+        "f2": "Asientos ilimitados dentro de una organización",
+        "f3": "Panel del director con análisis a nivel de equipo",
+        "f4": "Sesión de incorporación para el contador principal",
+        "f5": "Facturación anual, formato de presupuesto para proyectos financiados por donantes a solicitud"
+      },
+      "desk-practitioner": {
+        "name": "Profesional",
+        "price": "USD 49 / mes",
+        "priceSub": "o USD 480 / año (ahorre USD 108)",
+        "description": "Para contadores senior, profesionales independientes y consultores de PFM.",
+        "f1": "Hasta 100 consultas / mes",
+        "f2": "Respuestas citadas de la fuente IPSAS",
+        "f3": "Carga de documentos (PDF) para preguntas específicas al contexto",
+        "f4": "Prueba gratuita de 14 días — generosa cantidad de consultas, no se requiere tarjeta para explorar"
+      },
+      "desk-firm": {
+        "name": "Firma / Ministerio Pequeño",
+        "price": "USD 2,400 / año",
+        "priceSub": "Hasta 10 usuarios designados · 1,000 consultas/mes compartidas",
+        "description": "Para firmas de auditoría pequeñas y medianas y Ministerios de Finanzas pequeños.",
+        "f1": "Todo en Practitioner",
+        "f2": "Hasta 10 usuarios designados en una cuenta",
+        "f3": "Cantidad de consultas compartidas (1,000/mes)",
+        "f4": "Formato de exportación de papeles de trabajo para archivos de auditoría",
+        "f5": "Facturación anual",
+        "badge": "Más popular para firmas de auditoría fuera de las Big Four"
+      },
+      "desk-customised": {
+        "name": "Personalizado",
+        "price": "Desde USD 6,000 / año",
+        "priceSub": "Estatuto y regulación local añadidos",
+        "description": "Para organizaciones que necesitan que el Desk refleje su entorno específico de cumplimiento.",
+        "f1": "Todo en Firma / Ministerio Pequeño",
+        "f2": "Su estatuto local, regulaciones y manual contable añadidos a la base de referencia",
+        "f3": "Respuestas personalizadas vinculadas a su jurisdicción",
+        "f4": "Revisión y actualización trimestral de la base de referencia personalizada",
+        "f5": "Punto de contacto dedicado"
+      }
+    }
   }
 }

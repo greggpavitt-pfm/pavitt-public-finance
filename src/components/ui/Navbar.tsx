@@ -12,6 +12,7 @@ import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { siteConfig, images } from "@/lib/content"
+import LanguagePicker from "@/components/ui/LanguagePicker"
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -127,6 +128,10 @@ export default function Navbar() {
             })}
           </ul>
 
+          {/* Language picker — sits between the link list and the product CTAs.
+              `onDark` flips the styling when the navbar is over the dark hero. */}
+          <LanguagePicker onDark={!solid} />
+
           <Link
             href="/drills"
             className="rounded-md bg-ppf-sky px-3.5 py-1.5 text-sm font-medium text-white shadow-crisp-sm transition-colors hover:bg-ppf-sky-hover"
@@ -201,6 +206,16 @@ export default function Navbar() {
             )
           })}
           <li className="mt-4 flex flex-col gap-2">
+            {/* Language picker on its own row above the product CTAs. */}
+            <div className="flex items-center justify-between border-b border-ink-100 pb-3">
+              <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-ink-500">
+                {/* The label translates because LanguagePicker reads it from
+                    the LanguagePicker namespace. We render it here for the
+                    mobile sheet only — desktop relies on the select's own
+                    aria-label for screen readers. */}
+              </span>
+              <LanguagePicker variant="compact" onDark={false} />
+            </div>
             <Link
               href="/drills"
               onClick={() => setOpen(false)}

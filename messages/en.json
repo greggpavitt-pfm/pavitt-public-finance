@@ -841,5 +841,86 @@
     "footerPart3": ". The unique token in this URL confirms the result has not been altered.",
     "tokenLabel": "Token: ",
     "helperText": "Hiring managers and donors can use this page to confirm a candidate's module completion. No login required."
+  },
+  "Products": {
+    "metaTitle": "Products — IPSAS Drills and IPSAS Desk",
+    "metaDescription": "Two software products for public sector accounting teams: IPSAS Drills, short focused practice questions tuned to real implementation pain points; and IPSAS Desk, a paragraph-cited reference desk for hard IPSAS questions.",
+    "hero": {
+      "eyebrow": "Products",
+      "headline": "The same IPSAS systems Gregg uses — available to your ministry.",
+      "lead": "Two web-based products built for public sector finance teams in developing countries. Low-bandwidth friendly, ESL-aware, and licensed by organisation."
+    },
+    "common": {
+      "whatIsIncluded": "What is included",
+      "licensing": "Licensing"
+    },
+    "drillsProduct": {
+      "kicker": "Product 01",
+      "name": "IPSAS Drills",
+      "tagline": "Build the reflexes. Close the books faster.",
+      "summary": "Short, focused practice questions tuned to the situations your team will actually face — opening balances that won't reconcile, donor grants under IPSAS 23, GFS mapping with a chart of accounts that wasn't designed for it. Built from current implementation work in a Pacific Treasury, not from a textbook.",
+      "ctaLabel": "See IPSAS Drills →",
+      "f1": "110+ drills across accrual, cash-basis, and shared content",
+      "f2": "Graduated by difficulty and tagged to the standard",
+      "f3": "Organised around real implementation pain points",
+      "f4": "Solomon Islands jurisdiction overlay (more jurisdictions on request)",
+      "f5": "Team progress dashboard for the lead accountant",
+      "f6": "Usage caps with inheritance (user → subgroup → org → unlimited)",
+      "f7": "14-day free trial, no card required",
+      "f8": "Certificate on 70% pass, with verifiable URL",
+      "tier1Name": "Individual",
+      "tier1Headline": "USD 19 / month",
+      "tier1Detail": "Single seat for individual accountants and PFM consultants. Or USD 180 / year (save USD 48).",
+      "tier2Name": "Team",
+      "tier2Headline": "USD 600 / year for 5",
+      "tier2Detail": "For small audit firms and finance departments. Additional seats USD 80/seat/year.",
+      "tier3Name": "Organisation",
+      "tier3Headline": "From USD 4,800 / year",
+      "tier3Detail": "Unlimited staff in one Ministry, statutory body, or larger audit firm."
+    },
+    "deskProduct": {
+      "kicker": "Product 02",
+      "name": "IPSAS Desk",
+      "tagline": "The technical reference desk for teams without one.",
+      "summary": "Ask any IPSAS question in plain English. Get a sourced answer with the exact paragraph citation, written so it can go straight into your working papers. Built specifically for IPSAS — not IFRS with public-sector content bolted on.",
+      "ctaLabel": "See IPSAS Desk →",
+      "f1": "Plain-English questions; paragraph-cited answers from the IPSAS source",
+      "f2": "Context-aware — jurisdiction, entity type, reporting basis per conversation",
+      "f3": "PDF document upload (up to 4MB) for transaction-specific questions",
+      "f4": "Working-paper export format on Firm and above",
+      "f5": "Customised plans add your local statute and regulation",
+      "f6": "Conversation history saved for audit reference",
+      "f7": "Daily + rolling 7-day token caps (cost controlled)",
+      "f8": "Admin-configurable LLM routing via OpenRouter",
+      "tier1Name": "Practitioner",
+      "tier1Headline": "USD 49 / month",
+      "tier1Detail": "Up to 100 queries / month. Or USD 480 / year (save USD 108).",
+      "tier2Name": "Firm / Small Ministry",
+      "tier2Headline": "USD 2,400 / year",
+      "tier2Detail": "Up to 10 named users sharing 1,000 queries / month. Annual invoicing.",
+      "tier3Name": "Customised",
+      "tier3Headline": "From USD 6,000 / year",
+      "tier3Detail": "Local statute, regulations, and accounting manual added to the reference base."
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "headline": "Common questions",
+      "q1": "Who is this for?",
+      "a1": "Ministries of Finance, national treasuries, and audit offices adopting or already using IPSAS. Jurisdiction overlays available for Solomon Islands; others on request.",
+      "q2": "How is user data protected?",
+      "a2": "Row-level security on every table. Org admins see only their org. Correct answers are never returned to the browser — answer-checking runs server-side with a service role key.",
+      "q3": "Does the advisor hallucinate citations?",
+      "a3": "The advisor cites only paragraphs retrieved from the IPSAS knowledge base. Citations can be hovered to see the source text. If no paragraph is found, the advisor is instructed to say so rather than guess.",
+      "q4": "What LLM does the advisor use?",
+      "a4": "Routed via OpenRouter: DeepSeek R1 for primary reasoning, Gemini 1.5 Flash for citation verification, GPT-5-nano for summaries. Admins can change the model per task.",
+      "q5": "Is my org's data used to train any model?",
+      "a5": "No. Conversations are stored in your org's Supabase tables only. No data leaves the hosting infrastructure for model training."
+    },
+    "pilot": {
+      "eyebrow": "Next step",
+      "headline": "Pilot programme is open.",
+      "body": "Eligible ministries get a 14-day pilot with full access to both products. Send a brief and Gregg will respond within two working days.",
+      "cta": "Start a conversation"
+    }
   }
 }

@@ -841,5 +841,86 @@
     "footerPart3": ". O token único neste URL confirma que o resultado não foi alterado.",
     "tokenLabel": "Token: ",
     "helperText": "Gerentes de contratação e doadores podem usar esta página para confirmar a conclusão de módulos por um candidato. Não é necessário login."
+  },
+  "Products": {
+    "metaTitle": "Produtos — IPSAS Drills e IPSAS Desk",
+    "metaDescription": "Dois produtos de software para equipes de contabilidade do setor público: IPSAS Drills, perguntas práticas curtas e focadas ajustadas aos pontos críticos reais de implementação; e IPSAS Desk, um balcão de referência com citações de parágrafos para questões complexas de IPSAS.",
+    "hero": {
+      "eyebrow": "Produtos",
+      "headline": "Os mesmos sistemas IPSAS usados por Gregg — disponíveis para o seu ministério.",
+      "lead": "Dois produtos baseados na web desenvolvidos para equipes de finanças do setor público em países em desenvolvimento. Compatíveis com baixa largura de banda, adaptados para ESL e licenciados por organização."
+    },
+    "common": {
+      "whatIsIncluded": "O que está incluído",
+      "licensing": "Licenciamento"
+    },
+    "drillsProduct": {
+      "kicker": "Produto 01",
+      "name": "IPSAS Drills",
+      "tagline": "Construa os reflexos. Feche os livros mais rápido.",
+      "summary": "Perguntas práticas curtas e focadas ajustadas às situações que sua equipe realmente enfrentará — saldos iniciais que não conciliam, doações de doadores sob IPSAS 23, mapeamento GFS com um plano de contas que não foi projetado para isso. Desenvolvido a partir de trabalhos de implementação atuais em um Tesouro do Pacífico, não de um livro didático.",
+      "ctaLabel": "Veja o IPSAS Drills →",
+      "f1": "Mais de 110 exercícios sobre regime de competência, regime de caixa e conteúdo compartilhado",
+      "f2": "Graduados por dificuldade e vinculados ao padrão",
+      "f3": "Organizados em torno de pontos críticos reais de implementação",
+      "f4": "Sobreposição de jurisdição das Ilhas Salomão (mais jurisdições sob solicitação)",
+      "f5": "Painel de progresso da equipe para o contador principal",
+      "f6": "Limites de uso com herança (usuário → subgrupo → organização → ilimitado)",
+      "f7": "Teste gratuito de 14 dias, sem necessidade de cartão",
+      "f8": "Certificado com 70% de aprovação, com URL verificável",
+      "tier1Name": "Individual",
+      "tier1Headline": "USD 19 / mês",
+      "tier1Detail": "Assento único para contadores individuais e consultores de PFM. Ou USD 180 / ano (economize USD 48).",
+      "tier2Name": "Equipe",
+      "tier2Headline": "USD 600 / ano para 5",
+      "tier2Detail": "Para pequenas empresas de auditoria e departamentos financeiros. Assentos adicionais USD 80/assento/ano.",
+      "tier3Name": "Organização",
+      "tier3Headline": "A partir de USD 4.800 / ano",
+      "tier3Detail": "Funcionários ilimitados em um Ministério, órgão estatutário ou empresa de auditoria maior."
+    },
+    "deskProduct": {
+      "kicker": "Produto 02",
+      "name": "IPSAS Desk",
+      "tagline": "A referência técnica para equipes que não têm uma.",
+      "summary": "Faça qualquer pergunta sobre IPSAS em português claro. Receba uma resposta fundamentada com a citação exata do parágrafo, escrita para ser incluída diretamente nos seus papéis de trabalho. Desenvolvido especificamente para IPSAS — não IFRS com conteúdo do setor público adaptado.",
+      "ctaLabel": "Veja o IPSAS Desk →",
+      "f1": "Perguntas em linguagem clara; respostas com citação de parágrafo diretamente da fonte IPSAS",
+      "f2": "Contexto adaptado — jurisdição, tipo de entidade, base de relato por conversa",
+      "f3": "Upload de documentos em PDF (até 4MB) para perguntas específicas sobre transações",
+      "f4": "Formato de exportação para papéis de trabalho no plano Firm e superiores",
+      "f5": "Planos personalizados incluem seus estatutos e regulamentos locais",
+      "f6": "Histórico de conversas salvo para referência em auditorias",
+      "f7": "Limites diários + acumulados de 7 dias de tokens (controle de custos)",
+      "f8": "Roteamento LLM configurável pelo administrador via OpenRouter",
+      "tier1Name": "Profissional",
+      "tier1Headline": "USD 49 / mês",
+      "tier1Detail": "Até 100 consultas / mês. Ou USD 480 / ano (economize USD 108).",
+      "tier2Name": "Empresa / Pequeno Ministério",
+      "tier2Headline": "USD 2.400 / ano",
+      "tier2Detail": "Até 10 usuários nomeados compartilhando 1.000 consultas / mês. Faturamento anual.",
+      "tier3Name": "Personalizado",
+      "tier3Headline": "A partir de USD 6.000 / ano",
+      "tier3Detail": "Estatuto local, regulamentos e manual de contabilidade adicionados à base de referência."
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "headline": "Perguntas comuns",
+      "q1": "Para quem é isso?",
+      "a1": "Ministérios das Finanças, tesourarias nacionais e órgãos de auditoria que estão adotando ou já utilizam IPSAS. Sobreposições de jurisdição disponíveis para Ilhas Salomão; outras sob solicitação.",
+      "q2": "Como os dados dos usuários são protegidos?",
+      "a2": "Segurança em nível de linha em todas as tabelas. Administradores da organização veem apenas sua própria organização. Respostas corretas nunca são retornadas ao navegador — a verificação das respostas é executada no servidor com uma chave de função de serviço.",
+      "q3": "O consultor inventa citações?",
+      "a3": "O consultor cita apenas parágrafos recuperados da base de conhecimento IPSAS. As citações podem ser visualizadas ao passar o cursor para ver o texto da fonte. Se nenhum parágrafo for encontrado, o consultor é instruído a informar isso em vez de adivinhar.",
+      "q4": "Qual LLM o consultor utiliza?",
+      "a4": "Roteado via OpenRouter: DeepSeek R1 para raciocínio primário, Gemini 1.5 Flash para verificação de citações, GPT-5-nano para resumos. Os administradores podem alterar o modelo por tarefa.",
+      "q5": "Os dados da minha organização são usados para treinar algum modelo?",
+      "a5": "Não. As conversas são armazenadas apenas nas tabelas Supabase da sua organização. Nenhum dado sai da infraestrutura de hospedagem para treinamento de modelos."
+    },
+    "pilot": {
+      "eyebrow": "Próximo passo",
+      "headline": "O programa piloto está aberto.",
+      "body": "Ministérios elegíveis recebem um piloto de 14 dias com acesso completo a ambos os produtos. Envie um resumo e Gregg responderá em até dois dias úteis.",
+      "cta": "Inicie uma conversa"
+    }
   }
 }

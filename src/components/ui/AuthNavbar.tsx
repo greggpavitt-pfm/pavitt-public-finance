@@ -7,6 +7,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { logoutUser } from "@/app/auth/actions"
+import LanguagePicker from "@/components/ui/LanguagePicker"
 
 interface AuthNavbarProps {
   userName?: string
@@ -45,6 +46,9 @@ export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
             <li><Link href="/advisor" className={linkClass("/advisor")}>{t("advisor")}</Link></li>
           </ul>
           <div className="flex items-center gap-3 pl-3 border-l border-blue-800">
+            {/* Language picker sits to the left of the user menu on the
+                authenticated nav. onDark={true} matches the navy bar. */}
+            <LanguagePicker variant="compact" onDark />
             {userName && <span className="text-sm text-blue-200">{userName}</span>}
             <button
               onClick={handleLogout}
@@ -89,13 +93,17 @@ export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
               {t("advisor")}
             </Link>
             <div className="border-t border-blue-900 pt-3 flex items-center justify-between">
-              {userName && <span className="text-sm text-blue-300">{userName}</span>}
-              <button
-                onClick={handleLogout}
-                className="text-sm font-medium text-blue-200 hover:text-white transition-colors"
-              >
-                {tCommon("logOut")}
-              </button>
+              {/* Language picker on the left, user + logout on the right. */}
+              <LanguagePicker variant="compact" onDark />
+              <div className="flex items-center gap-3">
+                {userName && <span className="text-sm text-blue-300">{userName}</span>}
+                <button
+                  onClick={handleLogout}
+                  className="text-sm font-medium text-blue-200 hover:text-white transition-colors"
+                >
+                  {tCommon("logOut")}
+                </button>
+              </div>
             </div>
           </div>
         )}

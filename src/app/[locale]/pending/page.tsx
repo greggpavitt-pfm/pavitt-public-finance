@@ -3,15 +3,33 @@
 // The middleware redirects unapproved users here if they try to access /training.
 
 import type { Metadata } from "next"
+import { getTranslations } from "next-intl/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import { logoutUser } from "@/app/auth/actions"
 
-export const metadata: Metadata = {
-  title: "Awaiting Approval — IPSAS Training",
+const SUPPORT_EMAIL = "gregg.pavitt@pfmexpert.net"
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Pending" })
+  return {
+    title: t("metaTitle"),
+  }
 }
 
-export default function PendingPage() {
+export default async function PendingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Pending" })
+
   return (
     <>
       <Navbar />
@@ -25,14 +43,16 @@ export default function PendingPage() {
               </svg>
             </div>
 
-            <h1 className="mb-3 text-2xl font-bold text-ppf-navy">Account pending approval</h1>
+            <h1 className="mb-3 text-2xl font-bold text-ppf-navy">{t("title")}</h1>
             <p className="mb-6 text-sm leading-relaxed text-slate-600">
-              Your registration has been received and is waiting for review.
-              You will be contacted by email once your account is approved.
+              {t("body")}
             </p>
             <p className="mb-8 text-sm text-slate-500">
-              If you haven&apos;t heard back within a few business days, please get in touch
-              at <a href="mailto:gregg.pavitt@pfmexpert.net" className="text-ppf-sky hover:underline">gregg.pavitt@pfmexpert.net</a>.
+              {t("contactPrefix")}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-ppf-sky hover:underline">
+                {SUPPORT_EMAIL}
+              </a>
+              {t("contactSuffix")}
             </p>
 
             {/* Sign out — uses a form so it triggers the server action */}
@@ -41,7 +61,7 @@ export default function PendingPage() {
                 type="submit"
                 className="text-sm font-medium text-ppf-sky hover:underline"
               >
-                Sign out
+                {t("signOut")}
               </button>
             </form>
           </div>

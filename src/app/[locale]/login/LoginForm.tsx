@@ -4,6 +4,7 @@
 
 import { useActionState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { loginUser, type AuthFormState } from "@/app/auth/actions"
 import { createClient } from "@/lib/supabase/client"
 
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function LoginForm({ redirectTo = "/training" }: Props) {
+  const t = useTranslations("Login")
   const [state, formAction, isPending] = useActionState(loginUser, initialState)
   const searchParams = useSearchParams()
 
@@ -41,18 +43,19 @@ export default function LoginForm({ redirectTo = "/training" }: Props) {
       {/* Suspended-account banner */}
       {isSuspended && (
         <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          Your account has been suspended. Please contact support.
+          {t("suspendedBanner")}
         </div>
       )}
 
       {/* Expired/invalid confirmation link banner */}
       {isConfirmationFailed && (
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          The confirmation link has expired or is invalid. Please register again or contact support.
+          {t("confirmationFailedBanner")}
         </div>
       )}
 
-      {/* Error banner */}
+      {/* Error banner — message comes from auth/actions.ts and is currently
+          English-only. TODO move action error messages to translation keys. */}
       {state.status === "error" && (
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.message}
@@ -61,7 +64,7 @@ export default function LoginForm({ redirectTo = "/training" }: Props) {
 
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700">
-          Email address
+          {t("emailLabel")}
         </label>
         <input
           id="email"
@@ -70,13 +73,13 @@ export default function LoginForm({ redirectTo = "/training" }: Props) {
           required
           autoComplete="email"
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
-          placeholder="you@example.com"
+          placeholder={t("emailPlaceholder")}
         />
       </div>
 
       <div>
         <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-700">
-          Password
+          {t("passwordLabel")}
         </label>
         <input
           id="password"
@@ -85,7 +88,7 @@ export default function LoginForm({ redirectTo = "/training" }: Props) {
           required
           autoComplete="current-password"
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
-          placeholder="••••••••"
+          placeholder={t("passwordPlaceholder")}
         />
       </div>
 
@@ -94,7 +97,7 @@ export default function LoginForm({ redirectTo = "/training" }: Props) {
         disabled={isPending}
         className="w-full rounded-md bg-ppf-sky px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue disabled:opacity-60"
       >
-        {isPending ? "Signing in…" : "Sign in"}
+        {isPending ? t("signingIn") : t("signInButton")}
       </button>
     </form>
   )

@@ -5,16 +5,32 @@
 
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import { createClient } from "@/lib/supabase/server"
 import OnboardingForm from "./OnboardingForm"
 
-export const metadata: Metadata = {
-  title: "Get Started — IPSAS Training",
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Onboarding" })
+  return {
+    title: t("metaTitle"),
+  }
 }
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Onboarding" })
+
   // Load the user's current profile so we can pre-fill their selections
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -58,9 +74,9 @@ export default async function OnboardingPage() {
               </svg>
             </div>
 
-            <h1 className="mb-2 text-center text-2xl font-bold text-ppf-navy">You&apos;re approved!</h1>
+            <h1 className="mb-2 text-center text-2xl font-bold text-ppf-navy">{t("approvedTitle")}</h1>
             <p className="mb-8 text-center text-sm text-slate-500">
-              Confirm your training settings before you begin.
+              {t("approvedSubtitle")}
             </p>
 
             {/* Pass current values so the form can pre-select them */}

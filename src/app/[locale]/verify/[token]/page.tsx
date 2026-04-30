@@ -7,12 +7,13 @@
 
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { getTranslations } from "next-intl/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import { createClient } from "@/lib/supabase/server"
 
 interface PageProps {
-  params: Promise<{ token: string }>
+  params: Promise<{ locale: string; token: string }>
 }
 
 interface VerifiedCertificate {
@@ -25,11 +26,22 @@ interface VerifiedCertificate {
   attempt_number: number
 }
 
+// Date locale codes for Intl.DateTimeFormat.
+const DATE_LOCALE: Record<string, string> = {
+  en: "en-GB",
+  fr: "fr-FR",
+  es: "es-ES",
+  pt: "pt-PT",
+}
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { token } = await params
+  const { locale, token } = await params
+  const t = await getTranslations({ locale, namespace: "Verify" })
   return {
-    title: `Verify Certificate — ${token.slice(0, 8)}…`,
-    description: "Public verification of a Pavitt Public Finance training certificate.",
+    // Title shows a token prefix for debug-ability without translating the
+    // token itself; the description translates fully.
+    title: `${t("verifiedBadge")} — ${token.slice(0, 8)}…`,
+    description: t("metaDescription"),
     robots: { index: false, follow: false },
   }
 }
@@ -38,7 +50,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export default async function VerifyCertificatePage({ params }: PageProps) {
-  const { token } = await params
+  const { locale, token } = await params
+  const t = await getTranslations({ locale, namespace: "Verify" })
 
   if (!UUID_REGEX.test(token)) {
     notFound()
@@ -53,7 +66,8 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
 
   const cert: VerifiedCertificate = Array.isArray(data) ? data[0] : data
 
-  const submittedDate = new Date(cert.submitted_at).toLocaleDateString("en-GB", {
+  const dateLocale = DATE_LOCALE[locale] ?? "en-GB"
+  const submittedDate = new Date(cert.submitted_at).toLocaleDateString(dateLocale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -82,7 +96,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
                 </svg>
               </span>
               <p className="font-mono text-[11px] uppercase tracking-[0.12em] text-success-fg">
-                Verified Certificate
+                {t("verifiedBadge")}
               </p>
             </div>
 
@@ -93,7 +107,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
             <dl className="mt-6 grid gap-4 sm:grid-cols-2">
               <div>
                 <dt className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-500">
-                  Awarded to
+                  {t("awardedTo")}
                 </dt>
                 <dd className="mt-1 text-[16px] font-semibold text-ink-900">
                   {cert.student_name || "—"}
@@ -102,14 +116,14 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
               {cert.org_name && (
                 <div>
                   <dt className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-500">
-                    Organisation
+                    {t("organisation")}
                   </dt>
                   <dd className="mt-1 text-[16px] text-ink-900">{cert.org_name}</dd>
                 </div>
               )}
               <div>
                 <dt className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-500">
-                  Score
+                  {t("score")}
                 </dt>
                 <dd className="mt-1 text-[16px] font-semibold tabular-nums text-ink-900">
                   {cert.score}%
@@ -117,7 +131,7 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
               </div>
               <div>
                 <dt className="font-mono text-[11px] uppercase tracking-[0.1em] text-ink-500">
-                  Date awarded
+                  {t("dateAwarded")}
                 </dt>
                 <dd className="mt-1 text-[16px] tabular-nums text-ink-900">
                   {submittedDate}
@@ -127,21 +141,20 @@ export default async function VerifyCertificatePage({ params }: PageProps) {
 
             <div className="mt-8 border-t border-ink-200 pt-5">
               <p className="text-[13px] leading-[1.6] text-ink-600">
-                This certificate was issued by{" "}
-                <span className="font-semibold text-ink-900">Pavitt Public Finance</span>{" "}
-                via the IPSAS Training platform at{" "}
-                <span className="font-mono">pfmexpert.net</span>. The unique token
-                in this URL confirms the result has not been altered.
+                {t("footerPart1")}
+                <span className="font-semibold text-ink-900">{t("footerCompanyName")}</span>
+                {t("footerPart2")}
+                <span className="font-mono">pfmexpert.net</span>
+                {t("footerPart3")}
               </p>
               <p className="mt-3 font-mono text-[11px] tracking-[0.06em] text-ink-400 break-all">
-                Token: {token}
+                {t("tokenLabel")}{token}
               </p>
             </div>
           </div>
 
           <p className="mt-6 text-center text-[12px] text-ink-500">
-            Hiring managers and donors can use this page to confirm a candidate&apos;s
-            module completion. No login required.
+            {t("helperText")}
           </p>
         </section>
       </main>

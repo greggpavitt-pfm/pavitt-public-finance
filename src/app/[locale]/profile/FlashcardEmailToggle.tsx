@@ -4,12 +4,14 @@
 // Uses a Server Action (in actions.ts) to save the change.
 
 import { useState, useTransition } from "react"
+import { useTranslations } from "next-intl"
 import { saveFlashcardEmailPrefs } from "./actions"
 
 export function FlashcardEmailToggle(props: {
   initialEnabled: boolean
   initialHour: number | null
 }) {
+  const t = useTranslations("Profile")
   const [enabled, setEnabled] = useState(props.initialEnabled)
   const [hour, setHour] = useState<number | null>(props.initialHour)
   const [pending, startTransition] = useTransition()
@@ -20,7 +22,9 @@ export function FlashcardEmailToggle(props: {
     setMessage(null)
     startTransition(async () => {
       const result = await saveFlashcardEmailPrefs({ enabled, hour })
-      setMessage(result.ok ? "Saved." : `Error: ${result.error}`)
+      // Server-action error strings remain English for now; the localized
+      // prefix tags them so the UI line still reads consistently.
+      setMessage(result.ok ? t("savedMessage") : `${t("errorPrefix")}${result.error}`)
     })
   }
 
@@ -33,12 +37,12 @@ export function FlashcardEmailToggle(props: {
           onChange={(e) => setEnabled(e.target.checked)}
           className="h-4 w-4"
         />
-        <span>Send me a daily flashcard email</span>
+        <span>{t("flashcardCheckbox")}</span>
       </label>
 
       {enabled && (
         <label className="block text-sm">
-          <span className="text-gray-700">Preferred send hour (UTC)</span>
+          <span className="text-gray-700">{t("flashcardHourLabel")}</span>
           <select
             value={hour ?? ""}
             onChange={(e) =>
@@ -46,7 +50,7 @@ export function FlashcardEmailToggle(props: {
             }
             className="ml-2 border border-gray-300 rounded px-2 py-1"
           >
-            <option value="">Default (09:00 UTC)</option>
+            <option value="">{t("flashcardHourDefault")}</option>
             {Array.from({ length: 24 }, (_, h) => (
               <option key={h} value={h}>
                 {String(h).padStart(2, "0")}:00
@@ -61,7 +65,7 @@ export function FlashcardEmailToggle(props: {
         disabled={pending}
         className="rounded-md bg-blue-700 text-white px-4 py-2 text-sm font-medium disabled:opacity-50"
       >
-        {pending ? "Saving..." : "Save"}
+        {pending ? t("saving") : t("saveButton")}
       </button>
 
       {message && <p className="text-sm text-gray-700">{message}</p>}

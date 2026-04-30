@@ -5,17 +5,33 @@
 // Organisations are managed by the admin at /admin/orgs — no licence key required.
 
 import type { Metadata } from "next"
+import { getTranslations } from "next-intl/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import RegisterForm from "./RegisterForm"
 import { createServiceClient } from "@/lib/supabase/server"
 
-export const metadata: Metadata = {
-  title: "Register — IPSAS Training",
-  description: "Create your IPSAS Training account.",
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Register" })
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+  }
 }
 
-export default async function RegisterPage() {
+export default async function RegisterPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}) {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: "Register" })
+
   // Fetch the list of active/beta organisations so the form can show a dropdown.
   // We use the service client here because this page is unauthenticated — there is
   // no RLS policy that allows anonymous users to read organisation names.
@@ -33,16 +49,15 @@ export default async function RegisterPage() {
       <main className="min-h-screen bg-ppf-light flex items-center justify-center px-4 py-16">
         <div className="w-full max-w-lg">
           <div className="rounded-lg border border-ppf-sky/20 bg-white p-8 shadow-sm">
-            <h1 className="mb-2 text-2xl font-bold text-ppf-navy">Create an account</h1>
+            <h1 className="mb-2 text-2xl font-bold text-ppf-navy">{t("title")}</h1>
             <p className="mb-8 text-sm text-slate-500">
-              Select your organisation, or register as a beta tester. Your account will be
-              reviewed before you can access training materials.
+              {t("subtitle")}
             </p>
             <RegisterForm orgs={orgs ?? []} />
             <p className="mt-6 text-center text-sm text-slate-500">
-              Already have an account?{" "}
+              {t("alreadyAccountPrompt")}{" "}
               <a href="/login" className="font-medium text-ppf-sky hover:underline">
-                Sign in
+                {t("alreadyAccountLink")}
               </a>
             </p>
           </div>

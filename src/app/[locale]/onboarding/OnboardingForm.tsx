@@ -3,6 +3,7 @@
 // Pre-fills pathway and difficulty with values already on the user's profile.
 
 import { useActionState, useState } from "react"
+import { useTranslations } from "next-intl"
 import { completeOnboarding, type AuthFormState } from "@/app/auth/actions"
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
 const initialState: AuthFormState = { status: "idle", message: "" }
 
 export default function OnboardingForm({ currentPathway, currentAbility }: Props) {
+  const t = useTranslations("Onboarding")
   const [state, formAction, isPending] = useActionState(completeOnboarding, initialState)
   const [pathway, setPathway] = useState(currentPathway)
 
@@ -26,7 +28,7 @@ export default function OnboardingForm({ currentPathway, currentAbility }: Props
 
       <div>
         <label htmlFor="pathway" className="mb-1.5 block text-sm font-medium text-slate-700">
-          Reporting pathway
+          {t("pathwayLabel")}
         </label>
         <select
           id="pathway"
@@ -36,16 +38,16 @@ export default function OnboardingForm({ currentPathway, currentAbility }: Props
           onChange={(e) => setPathway(e.target.value)}
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
         >
-          <option value="">— Select a pathway —</option>
-          <option value="accrual">Accrual basis (IPSAS 1–48)</option>
-          <option value="cash-basis">Cash basis (IPSAS C4)</option>
+          <option value="">{t("pathwayPlaceholder")}</option>
+          <option value="accrual">{t("pathwayAccrual")}</option>
+          <option value="cash-basis">{t("pathwayCashBasis")}</option>
         </select>
       </div>
 
       {pathway === "accrual" && (
         <div>
           <label htmlFor="ability_level" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Starting level
+            {t("levelLabel")}
           </label>
           <select
             id="ability_level"
@@ -54,10 +56,10 @@ export default function OnboardingForm({ currentPathway, currentAbility }: Props
             defaultValue={currentAbility}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
           >
-            <option value="">— Select a level —</option>
-            <option value="beginner">Beginner — new to IPSAS accrual</option>
-            <option value="intermediate">Intermediate — familiar with the basics</option>
-            <option value="advanced">Advanced — working with complex standards</option>
+            <option value="">{t("levelPlaceholder")}</option>
+            <option value="beginner">{t("levelBeginner")}</option>
+            <option value="intermediate">{t("levelIntermediate")}</option>
+            <option value="advanced">{t("levelAdvanced")}</option>
           </select>
         </div>
       )}
@@ -67,7 +69,7 @@ export default function OnboardingForm({ currentPathway, currentAbility }: Props
         disabled={isPending}
         className="w-full rounded-md bg-ppf-sky px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue disabled:opacity-60"
       >
-        {isPending ? "Saving…" : "Start training"}
+        {isPending ? t("saving") : t("saveButton")}
       </button>
     </form>
   )

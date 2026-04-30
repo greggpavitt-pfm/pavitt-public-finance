@@ -4,6 +4,7 @@
 // The pathway selector is only shown for beta testers (no org) who must choose manually.
 
 import { useActionState, useState } from "react"
+import { useTranslations } from "next-intl"
 import { registerUser, type AuthFormState } from "@/app/auth/actions"
 
 interface Org {
@@ -18,15 +19,10 @@ interface Props {
   orgs: Org[]
 }
 
-const ACCOUNTING_LABELS: Record<string, string> = {
-  "cash-basis": "Cash Basis (IPSAS C4)",
-  "accrual":    "Accrual (IPSAS 1–48)",
-  "custom":     "Custom (Solomon Islands — cash basis overlay)",
-}
-
 const initialState: AuthFormState = { status: "idle", message: "" }
 
 export default function RegisterForm({ orgs }: Props) {
+  const t = useTranslations("Register")
   const [state, formAction, isPending] = useActionState(registerUser, initialState)
   const [selectedOrgId, setSelectedOrgId] = useState("")
   const [pathway, setPathway] = useState("")
@@ -35,12 +31,20 @@ export default function RegisterForm({ orgs }: Props) {
   const isBeta = selectedOrgId === "beta"
   // For orgs, pathway is derived from accounting_type; only beta testers choose manually
   const showPathwaySelector = isBeta
-  // Resolved pathway for display (when org selected)
-  const orgPathwayLabel = selectedOrg ? ACCOUNTING_LABELS[selectedOrg.accounting_type] ?? selectedOrg.accounting_type : null
+  // Resolved pathway for display (when org selected) — fall back to the raw
+  // accounting_type if it doesn't match one of the known keys.
+  const knownAccountingKeys = new Set(["cash-basis", "accrual", "custom"])
+  const orgAccountingKey = selectedOrg && knownAccountingKeys.has(selectedOrg.accounting_type)
+    ? (selectedOrg.accounting_type as "cash-basis" | "accrual" | "custom")
+    : null
+  const orgPathwayLabel = orgAccountingKey
+    ? t(`accountingLabels.${orgAccountingKey}` as `accountingLabels.${typeof orgAccountingKey}`)
+    : selectedOrg?.accounting_type ?? null
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
-      {/* Error banner */}
+      {/* Error banner — message comes from auth/actions.ts and is currently
+          English-only. TODO move action error messages to translation keys. */}
       {state.status === "error" && (
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.message}
@@ -51,7 +55,7 @@ export default function RegisterForm({ orgs }: Props) {
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <div>
           <label htmlFor="full_name" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Full name <span className="text-red-500">*</span>
+            {t("fullNameLabel")} <span className="text-red-500">*</span>
           </label>
           <input
             id="full_name"
@@ -60,13 +64,13 @@ export default function RegisterForm({ orgs }: Props) {
             required
             autoComplete="name"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
-            placeholder="Your full name"
+            placeholder={t("fullNamePlaceholder")}
           />
         </div>
 
         <div>
           <label htmlFor="job_title" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Job title
+            {t("jobTitleLabel")}
           </label>
           <input
             id="job_title"
@@ -74,14 +78,14 @@ export default function RegisterForm({ orgs }: Props) {
             type="text"
             autoComplete="organization-title"
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
-            placeholder="e.g. Senior Accountant"
+            placeholder={t("jobTitlePlaceholder")}
           />
         </div>
       </div>
 
       <div>
         <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-slate-700">
-          Email address <span className="text-red-500">*</span>
+          {t("emailLabel")} <span className="text-red-500">*</span>
         </label>
         <input
           id="email"
@@ -90,13 +94,13 @@ export default function RegisterForm({ orgs }: Props) {
           required
           autoComplete="email"
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
-          placeholder="you@example.com"
+          placeholder={t("emailPlaceholder")}
         />
       </div>
 
       <div>
         <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-slate-700">
-          Password <span className="text-red-500">*</span>
+          {t("passwordLabel")} <span className="text-red-500">*</span>
         </label>
         <input
           id="password"
@@ -106,14 +110,14 @@ export default function RegisterForm({ orgs }: Props) {
           autoComplete="new-password"
           minLength={8}
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
-          placeholder="At least 8 characters"
+          placeholder={t("passwordPlaceholder")}
         />
       </div>
 
       {/* Organisation / registration type */}
       <div>
         <label htmlFor="org_id" className="mb-1.5 block text-sm font-medium text-slate-700">
-          Organisation <span className="text-red-500">*</span>
+          {t("orgLabel")} <span className="text-red-500">*</span>
         </label>
         <select
           id="org_id"
@@ -126,33 +130,33 @@ export default function RegisterForm({ orgs }: Props) {
           }}
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
         >
-          <option value="" disabled>— Select your organisation —</option>
+          <option value="" disabled>{t("orgPlaceholder")}</option>
           {orgs.map((org) => (
             <option key={org.id} value={org.id}>
               {org.name}{org.country && org.country !== "Demo" ? `, ${org.country}` : ""}
-              {org.demo ? " (demo — instant access)" : ""}
+              {org.demo ? t("orgDemoSuffix") : ""}
             </option>
           ))}
           {/* Beta tester option — shown below a visual separator */}
-          <optgroup label="Other">
-            <option value="beta">Beta tester (independent)</option>
+          <optgroup label={t("orgGroupOther")}>
+            <option value="beta">{t("orgBetaTesterOption")}</option>
           </optgroup>
         </select>
         <p className="mt-1.5 text-xs text-slate-500">
           {selectedOrg?.demo
-            ? "Demo accounts are approved instantly — no review needed."
+            ? t("orgHelpDemo")
             : isBeta
-            ? "Beta tester accounts are reviewed before access is granted."
-            : "If your organisation is not listed, select \"Beta tester\" to register independently."}
+            ? t("orgHelpBeta")
+            : t("orgHelpDefault")}
         </p>
       </div>
 
       {/* Accounting pathway — shown as info label when org selected, selector for beta */}
       {selectedOrg && (
         <div className="rounded-md border border-ppf-sky/20 bg-ppf-pale px-4 py-3 text-sm">
-          <p className="font-medium text-ppf-navy">Accounting basis</p>
+          <p className="font-medium text-ppf-navy">{t("accountingBasisTitle")}</p>
           <p className="mt-0.5 text-slate-600">{orgPathwayLabel}</p>
-          <p className="mt-1 text-xs text-slate-400">Set by your organisation. Contact the administrator to change.</p>
+          <p className="mt-1 text-xs text-slate-400">{t("accountingBasisNote")}</p>
           {/* Hidden field so server action still receives pathway */}
           <input type="hidden" name="pathway" value={
             selectedOrg.accounting_type === "accrual" ? "accrual" : "cash-basis"
@@ -163,7 +167,7 @@ export default function RegisterForm({ orgs }: Props) {
       {showPathwaySelector && (
         <div>
           <label htmlFor="pathway" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Basis of accounting <span className="text-red-500">*</span>
+            {t("pathwayLabel")} <span className="text-red-500">*</span>
           </label>
           <select
             id="pathway"
@@ -173,12 +177,12 @@ export default function RegisterForm({ orgs }: Props) {
             onChange={(e) => setPathway(e.target.value)}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
           >
-            <option value="">— Select a pathway —</option>
-            <option value="accrual">Accrual basis (IPSAS 1–48)</option>
-            <option value="cash-basis">Cash basis (IPSAS C4)</option>
+            <option value="">{t("pathwayPlaceholder")}</option>
+            <option value="accrual">{t("pathwayAccrual")}</option>
+            <option value="cash-basis">{t("pathwayCashBasis")}</option>
           </select>
           <p className="mt-1.5 text-xs text-slate-500">
-            Choose the accounting basis your organisation uses or is transitioning to.
+            {t("pathwayHelp")}
           </p>
         </div>
       )}
@@ -187,7 +191,7 @@ export default function RegisterForm({ orgs }: Props) {
       {(selectedOrg?.accounting_type === "accrual" || (isBeta && pathway === "accrual")) && (
         <div>
           <label htmlFor="ability_level" className="mb-1.5 block text-sm font-medium text-slate-700">
-            Starting level <span className="text-red-500">*</span>
+            {t("levelLabel")} <span className="text-red-500">*</span>
           </label>
           <select
             id="ability_level"
@@ -195,13 +199,13 @@ export default function RegisterForm({ orgs }: Props) {
             required
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
           >
-            <option value="">— Select a level —</option>
-            <option value="beginner">Beginner — new to IPSAS accrual</option>
-            <option value="intermediate">Intermediate — familiar with the basics</option>
-            <option value="advanced">Advanced — working with complex standards</option>
+            <option value="">{t("levelPlaceholder")}</option>
+            <option value="beginner">{t("levelBeginner")}</option>
+            <option value="intermediate">{t("levelIntermediate")}</option>
+            <option value="advanced">{t("levelAdvanced")}</option>
           </select>
           <p className="mt-1.5 text-xs text-slate-500">
-            You can change this later from your profile.
+            {t("levelHelp")}
           </p>
         </div>
       )}
@@ -209,7 +213,7 @@ export default function RegisterForm({ orgs }: Props) {
       {/* Product access — which part of the platform the user needs */}
       <div>
         <label htmlFor="product_access" className="mb-1.5 block text-sm font-medium text-slate-700">
-          What will you use this for? <span className="text-red-500">*</span>
+          {t("productAccessLabel")} <span className="text-red-500">*</span>
         </label>
         <select
           id="product_access"
@@ -218,13 +222,13 @@ export default function RegisterForm({ orgs }: Props) {
           defaultValue=""
           className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 focus:border-ppf-sky focus:outline-none focus:ring-1 focus:ring-ppf-sky"
         >
-          <option value="" disabled>— Select access type —</option>
-          <option value="training">Training modules (student)</option>
-          <option value="advisor">Practitioner Advisor (Q&amp;A)</option>
-          <option value="both">Both training and advisor</option>
+          <option value="" disabled>{t("productAccessPlaceholder")}</option>
+          <option value="training">{t("productTraining")}</option>
+          <option value="advisor">{t("productAdvisor")}</option>
+          <option value="both">{t("productBoth")}</option>
         </select>
         <p className="mt-1.5 text-xs text-slate-500">
-          You can use both products once your account is approved.
+          {t("productHelp")}
         </p>
       </div>
 
@@ -233,7 +237,7 @@ export default function RegisterForm({ orgs }: Props) {
         disabled={isPending}
         className="w-full rounded-md bg-ppf-sky px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-ppf-blue disabled:opacity-60"
       >
-        {isPending ? "Creating account…" : "Create account"}
+        {isPending ? t("creating") : t("createButton")}
       </button>
     </form>
   )

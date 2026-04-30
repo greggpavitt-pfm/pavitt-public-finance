@@ -80,12 +80,16 @@ export default function Navbar() {
           : "bg-transparent border-b border-transparent",
       ].join(" ")}
     >
-      <div className="mx-auto flex h-[96px] max-w-[1240px] items-center justify-between px-6 md:px-12">
-        {/* Brand */}
+      <div className="mx-auto flex h-[96px] max-w-[1240px] items-center justify-between px-6">
+        {/* Brand. shrink-0 keeps the logo + company-name block at its natural
+            width even when the desktop nav cluster on the right gets wider
+            (e.g. with the language picker added). Without this the company
+            name was wrapping to multiple lines on French/Spanish renders and
+            colliding with the first nav link. */}
         <Link
           href="/"
           className={[
-            "flex items-center gap-3 text-sm font-semibold tracking-tight transition-colors",
+            "flex shrink-0 items-center gap-3 whitespace-nowrap text-sm font-semibold tracking-tight transition-colors",
             solid ? "text-ink-900" : "text-white",
           ].join(" ")}
         >
@@ -98,12 +102,20 @@ export default function Navbar() {
             unoptimized
             className="h-[84px] w-auto"
           />
-          <span>{siteConfig.companyName}</span>
+          {/* Wordmark sits beside the logo only on wide screens (xl+).
+              The logo itself already carries the "PPF" mark, so on standard
+              laptop widths we hide the full company name to leave room for
+              translated nav labels (longer in fr/es/pt) and the language
+              picker. The screen reader still receives the brand via the
+              logo's alt text. */}
+          <span className="hidden xl:inline">{siteConfig.companyName}</span>
         </Link>
 
-        {/* Desktop links */}
-        <div className="hidden items-center gap-7 md:flex">
-          <ul className="flex gap-7">
+        {/* Desktop links. min-w-0 lets the cluster shrink before the brand
+            does; whitespace-nowrap on each link keeps individual labels intact
+            (particularly important for translated labels like "À propos"). */}
+        <div className="hidden min-w-0 items-center gap-7 md:flex">
+          <ul className="flex shrink-0 gap-7 whitespace-nowrap">
             {navLinks.map((link) => {
               const isRoute = link.href.startsWith("/") && !link.href.includes("#")
               const className = [

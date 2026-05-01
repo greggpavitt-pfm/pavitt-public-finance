@@ -9,6 +9,7 @@ import Link from "next/link"
 import { getTranslations } from "next-intl/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
+import { localizePath } from "@/i18n/routing"
 
 export async function generateMetadata({
   params,
@@ -20,7 +21,7 @@ export async function generateMetadata({
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/products" },
+    alternates: { canonical: localizePath("/products", locale) },
   }
 }
 

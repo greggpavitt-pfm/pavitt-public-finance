@@ -7,9 +7,10 @@ import { notFound } from "next/navigation"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import { INSIGHTS, getInsightBySlug, type InsightBlock } from "@/lib/insights"
+import { getDateLocale, localizePath } from "@/i18n/routing"
 
 interface PageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string; locale: string }>
 }
 
 export async function generateStaticParams() {
@@ -17,14 +18,14 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params
+  const { slug, locale } = await params
   const post = getInsightBySlug(slug)
   if (!post) return { title: "Post not found" }
 
   return {
     title: post.title,
     description: post.summary,
-    alternates: { canonical: `/insights/${post.slug}` },
+    alternates: { canonical: localizePath(`/insights/${post.slug}`, locale) },
     openGraph: {
       type: "article",
       title: post.title,
@@ -106,9 +107,10 @@ function renderBlock(block: InsightBlock, idx: number) {
 }
 
 export default async function InsightPostPage({ params }: PageProps) {
-  const { slug } = await params
+  const { slug, locale } = await params
   const post = getInsightBySlug(slug)
   if (!post) notFound()
+  const dateLocale = getDateLocale(locale)
 
   // JSON-LD Article schema for rich snippets
   const articleJsonLd = {
@@ -141,7 +143,7 @@ export default async function InsightPostPage({ params }: PageProps) {
           <header className="mt-6">
             <div className="flex flex-wrap items-baseline gap-3 font-mono text-[11px] uppercase tracking-[0.1em] text-ink-500">
               <time dateTime={post.publishedAt}>
-                {new Date(post.publishedAt).toLocaleDateString("en-GB", {
+                {new Date(post.publishedAt).toLocaleDateString(dateLocale, {
                   day: "numeric",
                   month: "short",
                   year: "numeric",

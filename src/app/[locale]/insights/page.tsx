@@ -7,15 +7,7 @@ import { getTranslations } from "next-intl/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import { listInsights } from "@/lib/insights"
-
-// Date locale codes for Intl.DateTimeFormat. The post.publishedAt is an ISO
-// date in en-GB ordering ("4 May 2026"); other locales reformat naturally.
-const DATE_LOCALE: Record<string, string> = {
-  en: "en-GB",
-  fr: "fr-FR",
-  es: "es-ES",
-  pt: "pt-PT",
-}
+import { getDateLocale, localizePath } from "@/i18n/routing"
 
 export async function generateMetadata({
   params,
@@ -27,7 +19,7 @@ export async function generateMetadata({
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/insights" },
+    alternates: { canonical: localizePath("/insights", locale) },
   }
 }
 
@@ -38,7 +30,7 @@ export default async function InsightsIndexPage({
 }) {
   const { locale } = await params
   const t = await getTranslations({ locale, namespace: "Insights" })
-  const dateLocale = DATE_LOCALE[locale] ?? "en-GB"
+  const dateLocale = getDateLocale(locale)
   const posts = listInsights()
 
   return (

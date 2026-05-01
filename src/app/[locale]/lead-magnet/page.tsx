@@ -6,6 +6,7 @@ import { getTranslations } from "next-intl/server"
 import Navbar from "@/components/ui/Navbar"
 import Footer from "@/components/ui/Footer"
 import LeadMagnetForm from "./LeadMagnetForm"
+import { localizePath } from "@/i18n/routing"
 
 // 12 checklist items keyed item1..item12 — fixed list, so the array of keys
 // stays in sync with messages/<locale>.json. Reordering means renaming the
@@ -25,7 +26,7 @@ export async function generateMetadata({
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/lead-magnet" },
+    alternates: { canonical: localizePath("/lead-magnet", locale) },
   }
 }
 

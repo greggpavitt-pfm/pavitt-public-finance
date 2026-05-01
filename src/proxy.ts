@@ -51,6 +51,25 @@ function localizedUrl(path: string, locale: string, base: string | URL): URL {
   return new URL(`${prefix}${path}`, base)
 }
 
+/**
+ * Build a redirect response that carries any cookies the @supabase/ssr setAll
+ * callback wrote onto `cookieSource`. Without this, refreshed Supabase
+ * session cookies (rotated by getUser() near token expiry) are dropped on
+ * every auth-driven redirect, causing the browser to keep the stale token
+ * until it fully expires — a recipe for unexpected logouts in edge cases
+ * (parallel tabs racing refresh, redirect chains, REUSE_INTERVAL elapsed).
+ */
+function redirectWithCookies(
+  url: URL,
+  cookieSource: NextResponse,
+): NextResponse {
+  const response = NextResponse.redirect(url)
+  cookieSource.cookies.getAll().forEach((cookie) => {
+    response.cookies.set(cookie)
+  })
+  return response
+}
+
 export async function proxy(request: NextRequest) {
   // 1. Let next-intl decide locale routing first. The returned response will
   //    either be a redirect (e.g. unknown locale → default), a rewrite (bare
@@ -96,7 +115,7 @@ export async function proxy(request: NextRequest) {
   // --- Protect /training/* ---
   if (path.startsWith('/training')) {
     if (!user) {
-      return NextResponse.redirect(localizedUrl('/login', locale, request.url))
+      return redirectWithCookies(localizedUrl('/login', locale, request.url), i18nResponse)
     }
 
     const { data: profile } = await supabase
@@ -106,11 +125,11 @@ export async function proxy(request: NextRequest) {
       .single()
 
     if (!profile) {
-      return NextResponse.redirect(localizedUrl('/onboarding', locale, request.url))
+      return redirectWithCookies(localizedUrl('/onboarding', locale, request.url), i18nResponse)
     }
 
     if (profile.account_status === 'pending') {
-      return NextResponse.redirect(localizedUrl('/pending', locale, request.url))
+      return redirectWithCookies(localizedUrl('/pending', locale, request.url), i18nResponse)
     }
 
     if (profile.account_status === 'suspended') {
@@ -118,11 +137,11 @@ export async function proxy(request: NextRequest) {
       // initiating a Supabase server-side signOut from the edge causes
       // MIDDLEWARE_INVOCATION_FAILED on Vercel. The login page clears the
       // session client-side after it loads.
-      return NextResponse.redirect(localizedUrl('/login?reason=suspended', locale, request.url))
+      return redirectWithCookies(localizedUrl('/login?reason=suspended', locale, request.url), i18nResponse)
     }
 
     if (!profile.onboarding_complete) {
-      return NextResponse.redirect(localizedUrl('/onboarding', locale, request.url))
+      return redirectWithCookies(localizedUrl('/onboarding', locale, request.url), i18nResponse)
     }
   }
 
@@ -131,7 +150,7 @@ export async function proxy(request: NextRequest) {
   // practitioners set their context inside the advisor via ContextPanel.
   if (path.startsWith('/advisor')) {
     if (!user) {
-      return NextResponse.redirect(localizedUrl('/practitioner-login', locale, request.url))
+      return redirectWithCookies(localizedUrl('/practitioner-login', locale, request.url), i18nResponse)
     }
 
     const { data: profile } = await supabase
@@ -141,11 +160,11 @@ export async function proxy(request: NextRequest) {
       .single()
 
     if (!profile || profile.account_status === 'pending') {
-      return NextResponse.redirect(localizedUrl('/pending', locale, request.url))
+      return redirectWithCookies(localizedUrl('/pending', locale, request.url), i18nResponse)
     }
 
     if (profile.account_status === 'suspended') {
-      return NextResponse.redirect(localizedUrl('/practitioner-login?reason=suspended', locale, request.url))
+      return redirectWithCookies(localizedUrl('/practitioner-login?reason=suspended', locale, request.url), i18nResponse)
     }
   }
 
@@ -154,16 +173,16 @@ export async function proxy(request: NextRequest) {
   // this just blocks non-logged-in users at the edge.
   if (path.startsWith('/admin')) {
     if (!user) {
-      return NextResponse.redirect(localizedUrl('/login', locale, request.url))
+      return redirectWithCookies(localizedUrl('/login', locale, request.url), i18nResponse)
     }
   }
 
   // --- Redirect logged-in users away from /login and /register ---
   if (user && (path === '/login' || path === '/register')) {
-    return NextResponse.redirect(localizedUrl('/training', locale, request.url))
+    return redirectWithCookies(localizedUrl('/training', locale, request.url), i18nResponse)
   }
   if (user && path === '/practitioner-login') {
-    return NextResponse.redirect(localizedUrl('/advisor', locale, request.url))
+    return redirectWithCookies(localizedUrl('/advisor', locale, request.url), i18nResponse)
   }
 
   // No auth redirect — return next-intl's response (with refreshed Supabase

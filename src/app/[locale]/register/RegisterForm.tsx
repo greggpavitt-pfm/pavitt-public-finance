@@ -4,7 +4,7 @@
 // The pathway selector is only shown for beta testers (no org) who must choose manually.
 
 import { useActionState, useState } from "react"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { registerUser, type AuthFormState } from "@/app/auth/actions"
 
 interface Org {
@@ -23,6 +23,7 @@ const initialState: AuthFormState = { status: "idle", message: "" }
 
 export default function RegisterForm({ orgs }: Props) {
   const t = useTranslations("Register")
+  const locale = useLocale()
   const [state, formAction, isPending] = useActionState(registerUser, initialState)
   const [selectedOrgId, setSelectedOrgId] = useState("")
   const [pathway, setPathway] = useState("")
@@ -43,6 +44,8 @@ export default function RegisterForm({ orgs }: Props) {
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
+      {/* Hidden field carries the active locale so the redirect preserves it */}
+      <input type="hidden" name="locale" value={locale} />
       {/* Error banner — message comes from auth/actions.ts and is currently
           English-only. TODO move action error messages to translation keys. */}
       {state.status === "error" && (

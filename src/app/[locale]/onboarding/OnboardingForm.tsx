@@ -3,7 +3,7 @@
 // Pre-fills pathway and difficulty with values already on the user's profile.
 
 import { useActionState, useState } from "react"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { completeOnboarding, type AuthFormState } from "@/app/auth/actions"
 
 interface Props {
@@ -15,11 +15,14 @@ const initialState: AuthFormState = { status: "idle", message: "" }
 
 export default function OnboardingForm({ currentPathway, currentAbility }: Props) {
   const t = useTranslations("Onboarding")
+  const locale = useLocale()
   const [state, formAction, isPending] = useActionState(completeOnboarding, initialState)
   const [pathway, setPathway] = useState(currentPathway)
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
+      {/* Hidden field carries the active locale so the redirect preserves it */}
+      <input type="hidden" name="locale" value={locale} />
       {state.status === "error" && (
         <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.message}

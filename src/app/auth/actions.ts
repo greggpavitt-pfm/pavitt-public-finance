@@ -10,7 +10,35 @@
 //   - All other writes use the anon client with the user's session.
 
 import { redirect } from "next/navigation"
+import { headers } from "next/headers"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
+import { LOCALE_PREFIX_RE, localizePath, routing } from "@/i18n/routing"
+
+// Resolve locale from a hidden form field; fall back to default. Forms in the
+// [locale] route group submit useLocale() into a hidden 'locale' input.
+function resolveLocale(formData: FormData): string {
+  const raw = (formData.get("locale") as string | null) ?? ""
+  return (routing.locales as readonly string[]).includes(raw) ? raw : routing.defaultLocale
+}
+
+// Resolve locale from the Referer header — used by logoutUser, which has no
+// FormData. The referer is the page the user clicked logout from, so its
+// locale prefix is the active locale. Falls back to the default locale.
+async function resolveLocaleFromReferer(): Promise<string> {
+  const h = await headers()
+  const referer = h.get("referer") ?? ""
+  try {
+    const path = new URL(referer).pathname
+    const match = path.match(LOCALE_PREFIX_RE)
+    if (match) {
+      const segment = match[0].slice(1) // strip leading '/'
+      if ((routing.locales as readonly string[]).includes(segment)) return segment
+    }
+  } catch {
+    // Bad URL — fall through.
+  }
+  return routing.defaultLocale
+}
 
 export interface AuthFormState {
   status: "idle" | "success" | "error"
@@ -156,7 +184,8 @@ export async function registerUser(
 
   // Demo org users are already approved — send straight to training.
   // All others wait for admin approval.
-  redirect(isDemo ? "/training" : "/pending")
+  const locale = resolveLocale(formData)
+  redirect(localizePath(isDemo ? "/training" : "/pending", locale))
 }
 
 // ---------------------------------------------------------------------------
@@ -191,7 +220,8 @@ export async function loginUser(
 
   // Middleware will redirect them to the right page based on profile state
   // (pending → /pending, onboarding incomplete → /onboarding).
-  redirect(destination)
+  const locale = resolveLocale(formData)
+  redirect(localizePath(destination, locale))
 }
 
 // ---------------------------------------------------------------------------
@@ -201,7 +231,8 @@ export async function loginUser(
 export async function logoutUser(): Promise<void> {
   const supabase = await createClient()
   await supabase.auth.signOut()
-  redirect("/login")
+  const locale = await resolveLocaleFromReferer()
+  redirect(localizePath("/login", locale))
 }
 
 // ---------------------------------------------------------------------------
@@ -226,8 +257,9 @@ export async function completeOnboarding(
 
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  const locale = resolveLocale(formData)
   if (!user) {
-    redirect("/login")
+    redirect(localizePath("/login", locale))
   }
 
   const { error } = await supabase
@@ -243,5 +275,5 @@ export async function completeOnboarding(
     return { status: "error", message: "Could not save your settings. Please try again." }
   }
 
-  redirect("/training")
+  redirect(localizePath("/training", locale))
 }

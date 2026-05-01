@@ -4,7 +4,7 @@
 
 import { useActionState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import { loginUser, type AuthFormState } from "@/app/auth/actions"
 import { createClient } from "@/lib/supabase/client"
 
@@ -18,6 +18,7 @@ interface Props {
 
 export default function LoginForm({ redirectTo = "/training" }: Props) {
   const t = useTranslations("Login")
+  const locale = useLocale()
   const [state, formAction, isPending] = useActionState(loginUser, initialState)
   const searchParams = useSearchParams()
 
@@ -40,6 +41,8 @@ export default function LoginForm({ redirectTo = "/training" }: Props) {
     <form action={formAction} className="flex flex-col gap-5">
       {/* Hidden field tells the server action where to redirect after login */}
       <input type="hidden" name="redirect_to" value={redirectTo} />
+      {/* Hidden field carries the active locale so the redirect preserves it */}
+      <input type="hidden" name="locale" value={locale} />
       {/* Suspended-account banner */}
       {isSuspended && (
         <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">

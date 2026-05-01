@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { setRequestLocale, getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { routing } from "@/i18n/routing";
+import { routing, getOgLocale, getAlternateOgLocales, localizePath } from "@/i18n/routing";
 import "../globals.css";
 
 const geistSans = Geist({
@@ -21,74 +21,89 @@ const SITE_TITLE = "Pavitt Public Finance — International PFM Expert"
 const SITE_DESCRIPTION =
   "Gregg Pavitt brings 25+ years of public financial management expertise to governments and organizations across Sub-Saharan Africa, South Asia, and the Pacific."
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: SITE_TITLE,
-    template: "%s — Pavitt Public Finance",
-  },
-  description: SITE_DESCRIPTION,
-  keywords: [
-    "IPSAS",
-    "public financial management",
-    "PFM",
-    "PEFA",
-    "IFMIS",
-    "domestic revenue mobilisation",
-    "public expenditure management",
-    "public sector accounting",
-    "Solomon Islands",
-    "Pacific",
-    "Sub-Saharan Africa",
-  ],
-  authors: [{ name: "Gregg Pavitt" }],
-  creator: "Gregg Pavitt",
-  publisher: "Pavitt Public Finance",
-  alternates: {
-    canonical: "/",
-    // Per-locale alternates so search engines understand the site is multilingual.
-    // Per-page metadata can override this with richer hreflang where needed.
-    languages: {
-      en: "/",
-      fr: "/fr",
-      es: "/es",
-      pt: "/pt",
+// Per-locale languages map for hreflang. Built once at module scope so the
+// metadata generator can spread it into per-page output.
+const HREFLANG_HOMEPAGES = Object.fromEntries(
+  routing.locales.map((l) => [l, localizePath("/", l)]),
+)
+
+// Locale-aware metadata. Pages that override `alternates` field-merge in this
+// `languages` map (Next.js merges alternates by subfield, replacing canonical
+// while preserving languages); pages that don't override alternates inherit
+// the homepage map and a homepage canonical for the active locale.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>
+}): Promise<Metadata> {
+  const { locale } = await params
+  const ogLocale = getOgLocale(locale)
+  const ogAlternates = getAlternateOgLocales(locale)
+  const homepagePath = localizePath("/", locale)
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: SITE_TITLE,
+      template: "%s — Pavitt Public Finance",
     },
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: SITE_URL,
-    siteName: "Pavitt Public Finance",
-    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    images: [
-      {
-        url: "/Photos/Phot_05_of_19.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Gregg Pavitt — PFM fieldwork",
-      },
+    keywords: [
+      "IPSAS",
+      "public financial management",
+      "PFM",
+      "PEFA",
+      "IFMIS",
+      "domestic revenue mobilisation",
+      "public expenditure management",
+      "public sector accounting",
+      "Solomon Islands",
+      "Pacific",
+      "Sub-Saharan Africa",
     ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    images: ["/Photos/Phot_05_of_19.jpg"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
+    authors: [{ name: "Gregg Pavitt" }],
+    creator: "Gregg Pavitt",
+    publisher: "Pavitt Public Finance",
+    alternates: {
+      canonical: homepagePath,
+      languages: HREFLANG_HOMEPAGES,
+    },
+    openGraph: {
+      type: "website",
+      locale: ogLocale,
+      alternateLocale: ogAlternates,
+      url: `${SITE_URL}${homepagePath === "/" ? "" : homepagePath}`,
+      siteName: "Pavitt Public Finance",
+      title: SITE_TITLE,
+      description: SITE_DESCRIPTION,
+      images: [
+        {
+          url: "/Photos/Phot_05_of_19.jpg",
+          width: 1200,
+          height: 630,
+          alt: "Gregg Pavitt — PFM fieldwork",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: SITE_TITLE,
+      description: SITE_DESCRIPTION,
+      images: ["/Photos/Phot_05_of_19.jpg"],
+    },
+    robots: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
-  },
-};
+  }
+}
 
 export const viewport: Viewport = {
   width: "device-width",

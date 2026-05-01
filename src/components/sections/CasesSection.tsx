@@ -40,7 +40,7 @@ const CASES: CaseStudy[] = [
     years: "2019–2022",
     title: "PFM Diagnostic Studies",
     desc: "Delivered tax reform analysis, fiscal transparency assessments, and local revenue modeling across Mozambique and Malawi — including PEFA reviews, VAT and corporate tax reform, property tax restructuring, and subnational fiscal decentralization for the Millennium Challenge Corporation.",
-    image: images.checklist,
+    image: images.ssaAccounting,
     metrics: [
       { label: "Studies Conducted", value: "7", pos: true },
       { label: "Countries", value: "2" },

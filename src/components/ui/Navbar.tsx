@@ -8,7 +8,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { siteConfig, images } from "@/lib/content"
@@ -143,8 +143,12 @@ export default function Navbar() {
           </ul>
 
           {/* Language picker — sits between the link list and the product CTAs.
-              `onDark` flips the styling when the navbar is over the dark hero. */}
-          <LanguagePicker onDark={!solid} />
+              `onDark` flips the styling when the navbar is over the dark hero.
+              Wrapped in Suspense because LanguagePicker uses useSearchParams,
+              which forces a client-side bailout during static prerender. */}
+          <Suspense fallback={null}>
+            <LanguagePicker onDark={!solid} />
+          </Suspense>
 
           <Link
             href="/drills"
@@ -225,7 +229,9 @@ export default function Navbar() {
               <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-ink-500">
                 {tLang("label")}
               </span>
-              <LanguagePicker variant="compact" onDark={false} />
+              <Suspense fallback={null}>
+                <LanguagePicker variant="compact" onDark={false} />
+              </Suspense>
             </div>
             <Link
               href="/drills"

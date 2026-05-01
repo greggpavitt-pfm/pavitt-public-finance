@@ -8,8 +8,8 @@
 // option labels translate ("English", "Français", …).
 
 import { useLocale, useTranslations } from "next-intl"
-import { usePathname, useRouter } from "next/navigation"
-import { routing, type Locale } from "@/i18n/routing"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
+import { LOCALE_PREFIX_RE, localizePath, routing, type Locale } from "@/i18n/routing"
 
 interface Props {
   /** Use a compact set of styles (e.g. inside the mobile navigation sheet). */
@@ -31,18 +31,22 @@ export default function LanguagePicker({ variant = "default", className = "", on
   const t = useTranslations("LanguagePicker")
   const locale = useLocale() as Locale
   const pathname = usePathname() ?? "/"
+  const searchParams = useSearchParams()
   const router = useRouter()
 
   function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value as Locale
     if (next === locale) return
 
-    // Strip an existing locale prefix (e.g. /fr/desk → /desk) and prepend the
-    // new one, omitting the prefix entirely for the default locale.
-    const localeRe = new RegExp(`^/(${routing.locales.join("|")})(?=/|$)`)
-    const stripped = pathname.replace(localeRe, "") || "/"
-    const prefix = next === routing.defaultLocale ? "" : `/${next}`
-    const target = `${prefix}${stripped}` || "/"
+    // Build the new path. usePathname() returns only the pathname; query
+    // string and hash must be re-attached separately or banner state
+    // (?reason=suspended on /login) and scroll anchors (#contact, #bundle)
+    // are lost. Hash is only readable client-side.
+    const stripped = pathname.replace(LOCALE_PREFIX_RE, "") || "/"
+    const localizedPath = localizePath(stripped, next)
+    const search = searchParams?.toString() ?? ""
+    const hash = typeof window !== "undefined" ? window.location.hash : ""
+    const target = `${localizedPath}${search ? `?${search}` : ""}${hash}`
     router.push(target)
   }
 

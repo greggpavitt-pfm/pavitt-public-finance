@@ -8,6 +8,7 @@ import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { logoutUser } from "@/app/auth/actions"
 import LanguagePicker from "@/components/ui/LanguagePicker"
+import { LOCALE_PREFIX_RE } from "@/i18n/routing"
 
 interface AuthNavbarProps {
   userName?: string
@@ -25,7 +26,7 @@ export default function AuthNavbar({ userName, currentPath }: AuthNavbarProps) {
 
   // Active-state detection ignores the leading locale segment so /fr/training
   // still matches the "Training" link as active.
-  const stripped = currentPath?.replace(/^\/(en|fr|es|pt)(?=\/|$)/, "") ?? ""
+  const stripped = currentPath?.replace(LOCALE_PREFIX_RE, "") ?? ""
   const isActive = (path: string) => stripped.startsWith(path)
 
   const linkClass = (path: string) =>

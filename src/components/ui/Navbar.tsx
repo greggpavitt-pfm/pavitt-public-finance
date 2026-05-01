@@ -13,15 +13,17 @@ import { usePathname } from "next/navigation"
 import { useTranslations } from "next-intl"
 import { siteConfig, images } from "@/lib/content"
 import LanguagePicker from "@/components/ui/LanguagePicker"
+import { LOCALE_PREFIX_RE } from "@/i18n/routing"
 
 export default function Navbar() {
   const pathname = usePathname()
   const t = useTranslations("Navbar")
+  const tLang = useTranslations("LanguagePicker")
 
   // Path comparison must ignore the locale prefix — the homepage is `/` for
   // English but `/fr`, `/es`, `/pt` for other locales. Strip a leading
   // /xx segment if present.
-  const localeStripped = pathname.replace(/^\/(en|fr|es|pt)(?=\/|$)/, "") || "/"
+  const localeStripped = pathname.replace(LOCALE_PREFIX_RE, "") || "/"
   const isHome = localeStripped === "/"
 
   // next-intl's <Link> isn't used here because the nav has section anchors
@@ -221,10 +223,7 @@ export default function Navbar() {
             {/* Language picker on its own row above the product CTAs. */}
             <div className="flex items-center justify-between border-b border-ink-100 pb-3">
               <span className="text-[12px] font-medium uppercase tracking-[0.08em] text-ink-500">
-                {/* The label translates because LanguagePicker reads it from
-                    the LanguagePicker namespace. We render it here for the
-                    mobile sheet only — desktop relies on the select's own
-                    aria-label for screen readers. */}
+                {tLang("label")}
               </span>
               <LanguagePicker variant="compact" onDark={false} />
             </div>
